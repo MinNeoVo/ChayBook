@@ -1,46 +1,38 @@
 import React from 'react';
 
-/**
- * Component Input tái sử dụng linh hoạt:
- * - Hỗ trợ label, placeholder, type
- * - Hỗ trợ icon (Search, Lock, Mail, v.v.)
- * - Hỗ trợ tùy biến className bên ngoài truyền vào
- */
-function Input({ 
-  label, 
-  type = "text", 
-  placeholder, 
-  icon: Icon, 
-  value, 
-  onChange, 
-  className = "", 
-  ...props 
+function Input({
+  label,
+  type = "text",
+  placeholder,
+  icon: Icon,
+  value,
+  onChange,
+  name,
+  className = "",
+  ...props
 }) {
   return (
     <div className="space-y-1 w-full">
-      {/* Hiển thị label nếu được truyền vào */}
       {label && (
         <label className="block text-sm font-semibold text-gray-700">
           {label}
         </label>
       )}
-
       <div className="relative flex items-center">
-        {/* Render Icon ở đầu ô Input nếu có */}
         {Icon && (
           <span className="absolute left-3.5 text-gray-400 pointer-events-none flex items-center justify-center">
             <Icon className="w-4 h-4" />
           </span>
         )}
-
         <input
           type={type}
+          name={name}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           className={`
             w-full
-            ${Icon ? 'pl-10' : 'px-4'} 
+            ${Icon ? 'pl-10' : 'px-4'}
             pr-4
             py-2.5
             rounded-xl

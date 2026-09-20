@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --color-chaybook-primary: #006b2c;
+  --color-chaybook-hover: #00873a;
+  --color-chaybook-bg: #f7faf7;
+  --color-chaybook-container: #f1f4f1;
+}
+
 html,
 body,
 #root {
