@@ -182,3 +182,8 @@ CREATE TABLE AI_MODERATION (
     reviewed_at DATETIME,
     created_at DATETIME DEFAULT GETDATE()
 );
+CREATE TABLE ALLERGY_INGREDIENT (
+    allergy_id INT,
+    ingredient_id INT,
+    PRIMARY KEY (allergy_id, ingredient_id)
+);
