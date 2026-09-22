@@ -1,8 +1,8 @@
 -- Bang quan ly nguoi dung (Phan BE User/Auth)
 CREATE TABLE [USER] (
-    user_id INT PRIMARY KEY,
+    user_id INT IDENTITY(1,1) PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255),
     avatar_url VARCHAR(255),
@@ -16,7 +16,7 @@ CREATE TABLE [USER] (
 -- PHAN CONTENT
 -- ==========================================
 CREATE TABLE CATEGORY (
-    category_id INT PRIMARY KEY,
+    category_id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(50),
     description VARCHAR(MAX)
@@ -34,7 +34,7 @@ CREATE TABLE INGREDIENT (
 );
 
 CREATE TABLE ARTICLE (
-    article_id INT PRIMARY KEY,
+    article_id INT IDENTITY(1,1) PRIMARY KEY,
     category_id INT,
     created_by INT,
     title VARCHAR(255) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE ARTICLE (
 );
 
 CREATE TABLE RECIPE (
-    recipe_id INT PRIMARY KEY,
+    recipe_id INT IDENTITY(1,1) PRIMARY KEY,
     category_id INT,
     created_by INT,
     name VARCHAR(255) NOT NULL,
