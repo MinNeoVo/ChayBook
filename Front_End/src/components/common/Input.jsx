@@ -1,5 +1,3 @@
-import React from 'react';
-
 function Input({
   label,
   type = "text",
@@ -32,7 +30,7 @@ function Input({
           placeholder={placeholder}
           className={`
             w-full
-            ${Icon ? 'pl-10' : 'px-4'}
+            ${Icon ? "pl-10" : "px-4"}
             pr-4
             py-2.5
             rounded-xl
@@ -44,9 +42,9 @@ function Input({
             placeholder:text-gray-400
             outline-none
             transition-all
-            focus:border-[#006b2c]
+            focus:border-chaybook-primary
             focus:ring-2
-            focus:ring-[#006b2c]/20
+            focus:ring-chaybook-primary/20
             ${className}
           `}
           {...props}
