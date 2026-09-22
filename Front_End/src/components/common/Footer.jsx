@@ -1,6 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Share2, MessageSquare, Mail } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Share2, MessageSquare, Mail } from "lucide-react";
 
 function Footer() {
   return (
@@ -11,35 +10,36 @@ function Footer() {
           {/* Col 1: Logo & Info */}
           <div className="lg:col-span-1 flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#006b2c] flex items-center justify-center text-white font-bold text-base shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-chaybook-primary flex items-center justify-center text-white font-bold text-base shadow-sm">
                 C
               </div>
-              <span className="text-xl font-bold tracking-tight text-[#006b2c]">
+              <span className="text-xl font-bold tracking-tight text-chaybook-primary">
                 ChayBook
               </span>
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Eat Better. Live Healthier. Your complete companion for a thriving vegetarian lifestyle.
+              Eat Better. Live Healthier. Your complete companion for a thriving
+              vegetarian lifestyle.
             </p>
             {/* Social Icons */}
             <div className="flex items-center gap-2 pt-2">
               <a
                 href="#"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-[#006b2c] hover:bg-gray-50 transition-colors shadow-xs"
+                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
                 aria-label="Share"
               >
                 <Share2 className="w-4 h-4" />
               </a>
               <a
                 href="#"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-[#006b2c] hover:bg-gray-50 transition-colors shadow-xs"
+                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
                 aria-label="Message"
               >
                 <MessageSquare className="w-4 h-4" />
               </a>
               <a
                 href="mailto:contact@chaybook.com"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-[#006b2c] hover:bg-gray-50 transition-colors shadow-xs"
+                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
                 aria-label="Contact Email"
               >
                 <Mail className="w-4 h-4" />
@@ -53,10 +53,38 @@ function Footer() {
               Explore
             </h4>
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li><Link to="/content" className="hover:text-[#006b2c] transition-colors">Nutrition Guides</Link></li>
-              <li><Link to="/content" className="hover:text-[#006b2c] transition-colors">Healthy Recipes</Link></li>
-              <li><Link to="/content" className="hover:text-[#006b2c] transition-colors">Video Tutorials</Link></li>
-              <li><Link to="/content" className="hover:text-[#006b2c] transition-colors">Meal Plans</Link></li>
+              <li>
+                <Link
+                  to="/content"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Nutrition Guides
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/content"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Healthy Recipes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/content"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Video Tutorials
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/content"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Meal Plans
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -66,10 +94,38 @@ function Footer() {
               Interactive Tools
             </h4>
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li><Link to="/ai-assistant" className="hover:text-[#006b2c] transition-colors">AI Nutrition Assistant</Link></li>
-              <li><Link to="/bmi" className="hover:text-[#006b2c] transition-colors">BMI Calculator</Link></li>
-              <li><Link to="/bmi" className="hover:text-[#006b2c] transition-colors">Macro Analyzer</Link></li>
-              <li><Link to="/bmi" className="hover:text-[#006b2c] transition-colors">Daily Calorie Tracker</Link></li>
+              <li>
+                <Link
+                  to="/ai-assistant"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  AI Nutrition Assistant
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/bmi"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  BMI Calculator
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/bmi"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Macro Analyzer
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/bmi"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Daily Calorie Tracker
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -79,10 +135,38 @@ function Footer() {
               Community
             </h4>
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li><Link to="/community" className="hover:text-[#006b2c] transition-colors">Discussions</Link></li>
-              <li><Link to="/community" className="hover:text-[#006b2c] transition-colors">Member Stories</Link></li>
-              <li><Link to="/community" className="hover:text-[#006b2c] transition-colors">Dietary Guidelines</Link></li>
-              <li><Link to="/community" className="hover:text-[#006b2c] transition-colors">Weekly Challenges</Link></li>
+              <li>
+                <Link
+                  to="/community"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Discussions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/community"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Member Stories
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/community"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Dietary Guidelines
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/community"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Weekly Challenges
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -93,13 +177,32 @@ function Footer() {
             </h4>
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
               <li>
-                <a href="mailto:contact@chaybook.com" className="hover:text-[#006b2c] transition-colors">
+                <a
+                  href="mailto:contact@chaybook.com"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
                   contact@chaybook.com
                 </a>
               </li>
-              <li><a href="#" className="hover:text-[#006b2c] transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-[#006b2c] transition-colors">Terms of Service</a></li>
-              <li className="text-gray-400 pt-1">FPT University Capstone Initiative</li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-chaybook-primary transition-colors"
+                >
+                  Terms of Service
+                </a>
+              </li>
+              <li className="text-gray-400 pt-1">
+                FPT University Capstone Initiative
+              </li>
             </ul>
           </div>
         </div>
@@ -108,9 +211,24 @@ function Footer() {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>© 2025 ChayBook. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-[#006b2c] transition-colors">Cookies</a>
-            <a href="#" className="hover:text-[#006b2c] transition-colors">Security</a>
-            <a href="#" className="hover:text-[#006b2c] transition-colors">Accessibility</a>
+            <a
+              href="#"
+              className="hover:text-chaybook-primary transition-colors"
+            >
+              Cookies
+            </a>
+            <a
+              href="#"
+              className="hover:text-chaybook-primary transition-colors"
+            >
+              Security
+            </a>
+            <a
+              href="#"
+              className="hover:text-chaybook-primary transition-colors"
+            >
+              Accessibility
+            </a>
           </div>
         </div>
       </div>
