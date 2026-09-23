@@ -1,25 +1,28 @@
 import { useState } from "react";
-import { Mail, Lock } from "lucide-react";
-
+import { User, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import Input from "../common/Input";
 import Button from "../common/Button";
 import SocialLogin from "./SocialLogin";
 
-function LoginForm() {
+function RegisterForm() {
   const [formData, setFormData] = useState({
+    fullName: "",
     email: "",
     password: "",
-    rememberMe: false,
+    confirmPassword: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState({});
 
   const validateForm = () => {
     const newError = {};
+
+    if (!formData.fullName.trim()) {
+      newError.fullName = "Full name is required";
+    }
 
     if (!formData.email.trim()) {
       newError.email = "Email is required";
@@ -29,18 +32,25 @@ function LoginForm() {
 
     if (!formData.password) {
       newError.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newError.password = "Password must be at least 6 characters";
     }
+
+    if (formData.password !== formData.confirmPassword) {
+      newError.confirmPassword = "Passwords do not match";
+    }
+
     setError(newError);
 
     return Object.keys(newError).length === 0;
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -61,7 +71,20 @@ function LoginForm() {
 
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {/* Full Name */}
+        <Input
+          label="Full Name"
+          type="text"
+          name="fullName"
+          placeholder="Enter your full name"
+          icon={User}
+          value={formData.fullName}
+          onChange={handleChange}
+          error={error.fullName}
+        />
+
+        {/* Email */}
         <Input
           label="Email"
           type="email"
@@ -73,53 +96,48 @@ function LoginForm() {
           error={error.email}
         />
 
+        {/* Password */}
         <Input
           label="Password"
           type="password"
           name="password"
-          placeholder="Enter your password"
+          placeholder="Create your password"
           icon={Lock}
           value={formData.password}
           onChange={handleChange}
           error={error.password}
         />
 
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 cursor-pointer text-gray-600">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formData.rememberMe}
-              onChange={handleChange}
-              className="rounded border-gray-300 text-chaybook-primary focus:ring-chaybook-primary"
-            />
-            Remember me
-          </label>
+        {/* Confirm Password */}
+        <Input
+          label="Confirm Password"
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm your password"
+          icon={Lock}
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          error={error.confirmPassword}
+        />
 
-          <a
-            href="#"
-            className="text-chaybook-primary hover:underline font-medium"
-          >
-            Forgot password?
-          </a>
-        </div>
-
-        <Button type="submit" disabled={isLoading} size="md" className="w-full">
-          {isLoading ? "Signing in..." : "Login"}
+        {/* Create Account */}
+        <Button type="submit" size="md" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
       </form>
+
       {/* Google + Facebook */}
       <SocialLogin />
 
-      {/* Register */}
+      {/* Login */}
       <div className="mt-6 pt-6 border-t border-gray-200 text-center">
         <p className="text-sm text-gray-500">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/register"
+            to="/login"
             className="text-chaybook-primary hover:underline font-medium"
           >
-            Register
+            Login
           </Link>
         </p>
       </div>
@@ -127,4 +145,4 @@ function LoginForm() {
   );
 }
 
-export default LoginForm;
+export default RegisterForm;
