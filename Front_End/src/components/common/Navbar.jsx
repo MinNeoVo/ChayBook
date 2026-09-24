@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Search, Bookmark, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { useAuth } from "../../context/useAuth";
 import Input from "./Input";
 
