@@ -1,6 +1,7 @@
 package com.chaybook.backend.service;
 
 import com.chaybook.backend.dto.Auth.LoginRequest;
+import com.chaybook.backend.dto.Auth.LoginResponse;
 import com.chaybook.backend.dto.Auth.RegisterRequest;
 import com.chaybook.backend.dto.Auth.RegisterResponse;
 import com.chaybook.backend.entity.User;
@@ -27,26 +28,51 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String login(LoginRequest request) {
-        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+public LoginResponse login(LoginRequest request) {
 
-        if (userOpt.isEmpty()) {
-            return "Sai tài khoản đăng nhập!";
-        }
+    Optional<User> userOpt =
+            userRepository.findByEmailIgnoreCase(request.getEmail());
 
-        User user = userOpt.get();
-
-        // Lưu ý: Hiện tại đang so sánh mật khẩu chữ thô để dễ test.
-        if (!user.getPasswordHash().equals(request.getPassword())) {
-            return "Sai mật khẩu!";
-        }
-
-        if ("Banned".equalsIgnoreCase(user.getStatus())) {
-            return "Tài khoản của bạn đã bị khóa!";
-        }
-
-        return "Đăng nhập thành công!";
+    // Case 1: Không tìm thấy tài khoản
+    if (userOpt.isEmpty()) {
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "No account found with this email."
+        );
     }
+
+    User user = userOpt.get();
+
+    // Case 2: Sai mật khẩu
+    if (!passwordEncoder.matches(
+            request.getPassword(),
+            user.getPasswordHash()
+    )) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Incorrect email or password."
+        );
+    }
+
+    // Case 3: Tài khoản bị disable
+    if ("DISABLED".equalsIgnoreCase(user.getStatus())) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Your account has been disabled."
+        );
+    }
+
+    return new LoginResponse(
+            "Login successful",
+            new LoginResponse.UserData(
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getFullName(),
+                    user.getRole()
+            )
+    );
+}
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {

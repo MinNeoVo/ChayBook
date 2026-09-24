@@ -2,6 +2,8 @@ import { useState } from "react";
 import { User, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { registerUser } from "../../services/authServices";
+
 import Input from "../common/Input";
 import Button from "../common/Button";
 import SocialLogin from "./SocialLogin";
@@ -9,6 +11,7 @@ import SocialLogin from "./SocialLogin";
 function RegisterForm() {
   const [formData, setFormData] = useState({
     fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -20,23 +23,43 @@ function RegisterForm() {
   const validateForm = () => {
     const newError = {};
 
+    // Full Name
     if (!formData.fullName.trim()) {
       newError.fullName = "Full name is required";
+    } else if (formData.fullName.trim().length > 255) {
+      newError.fullName = "Full name must not exceed 255 characters";
     }
 
+    // Username
+    if (!formData.username.trim()) {
+      newError.username = "Username is required";
+    } else if (!/^[a-z0-9_.]{3,50}$/.test(formData.username)) {
+      newError.username =
+        "Username must be 3-50 characters and contain only lowercase letters, numbers, _ or .";
+    }
+
+    // Email
     if (!formData.email.trim()) {
       newError.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (formData.email.trim().length > 255) {
+      newError.email = "Email must not exceed 255 characters";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newError.email = "Email is invalid";
     }
 
+    // Password
     if (!formData.password) {
       newError.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newError.password = "Password must be at least 6 characters";
+    } else if (formData.password.length < 8) {
+      newError.password = "Password must be at least 8 characters";
+    } else if (formData.password.length > 72) {
+      newError.password = "Password must not exceed 72 characters";
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // Confirm Password
+    if (!formData.confirmPassword) {
+      newError.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
       newError.confirmPassword = "Passwords do not match";
     }
 
@@ -62,11 +85,23 @@ function RegisterForm() {
       return;
     }
     setIsLoading(true);
-    console.log("Dữ liệu sẵn sàng gửi cho Backend API:", formData);
 
-    setTimeout(() => {
+    try {
+      const data = await registerUser({
+        fullName: formData.fullName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      });
+      console.log("Registration successful:", data);
+
+      alert("Account created successfully!");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert(error.message || "Registration failed");
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -83,7 +118,17 @@ function RegisterForm() {
           onChange={handleChange}
           error={error.fullName}
         />
-
+        {/* Username */}
+        <Input
+          label="Username"
+          type="text"
+          name="username"
+          placeholder="Enter your username"
+          icon={User}
+          value={formData.username}
+          onChange={handleChange}
+          error={error.username}
+        />
         {/* Email */}
         <Input
           label="Email"

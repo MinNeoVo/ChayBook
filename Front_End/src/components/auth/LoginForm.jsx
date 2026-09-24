@@ -1,17 +1,25 @@
 import { useState } from "react";
+
 import { Mail, Lock } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+import { loginUser } from "../../services/authServices";
+import { useAuth } from "../../context/useAuth";
 
 import Input from "../common/Input";
+
 import Button from "../common/Button";
+
 import SocialLogin from "./SocialLogin";
 
 function LoginForm() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    rememberMe: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -23,24 +31,25 @@ function LoginForm() {
 
     if (!formData.email.trim()) {
       newError.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newError.email = "Email is invalid";
     }
 
     if (!formData.password) {
       newError.password = "Password is required";
     }
+
     setError(newError);
 
     return Object.keys(newError).length === 0;
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -48,20 +57,49 @@ function LoginForm() {
     e.preventDefault();
 
     if (!validateForm()) {
-      setIsLoading(false);
       return;
     }
+
     setIsLoading(true);
-    console.log("Dữ liệu sẵn sàng gửi cho Backend API:", formData);
+    setError({});
 
-    setTimeout(() => {
+    try {
+      const data = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      login(data.user);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+
+      if (error.status === 404) {
+        setError({
+          email: "No account found with this email.",
+        });
+      } else if (error.status === 401) {
+        setError({
+          password: "Incorrect email or password.",
+        });
+      } else if (error.status === 403) {
+        setError({
+          general: "Your account has been disabled.",
+        });
+      } else {
+        setError({
+          general: error.message || "Login failed.",
+        });
+      }
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
-
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {/* Username */}
         <Input
           label="Email"
           type="email"
@@ -73,6 +111,7 @@ function LoginForm() {
           error={error.email}
         />
 
+        {/* Password */}
         <Input
           label="Password"
           type="password"
@@ -84,30 +123,12 @@ function LoginForm() {
           error={error.password}
         />
 
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 cursor-pointer text-gray-600">
-            <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formData.rememberMe}
-              onChange={handleChange}
-              className="rounded border-gray-300 text-chaybook-primary focus:ring-chaybook-primary"
-            />
-            Remember me
-          </label>
-
-          <a
-            href="#"
-            className="text-chaybook-primary hover:underline font-medium"
-          >
-            Forgot password?
-          </a>
-        </div>
-
-        <Button type="submit" disabled={isLoading} size="md" className="w-full">
-          {isLoading ? "Signing in..." : "Login"}
+        {/* Login */}
+        <Button type="submit" size="md" className="w-full" disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Login"}
         </Button>
       </form>
+
       {/* Google + Facebook */}
       <SocialLogin />
 
