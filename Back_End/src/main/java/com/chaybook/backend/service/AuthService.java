@@ -31,7 +31,7 @@ public class AuthService {
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Mật khẩu không được vượt quá 72 byte UTF-8"
+                    "Mật khẩu không được vượt quá 72 ký tự"
             );
         }
 
