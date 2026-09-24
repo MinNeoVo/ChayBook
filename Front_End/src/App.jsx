@@ -6,6 +6,7 @@ import Navbar from "./components/common/Navbar";
 
 import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
+import ContentPage from "./Pages/ContentPage";
 
 function App() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function App() {
           {/* <Route path="/" element={<LoginPage />} /> */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/content" element={<ContentPage />} />
         </Routes>
       </main>
       {!isAuthPage && <Footer />}

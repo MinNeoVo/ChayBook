@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Search, Bookmark, User } from "lucide-react";
+import { Search, User } from "lucide-react";
+import { useAuth } from "../../context/useAuth";
 import Input from "./Input";
 
 function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { isLoggedIn, logout } = useAuth();
 
   // Danh sách 5 menu items
   const navItems = [
-    { name: "Home", path: "/" },
+    { name: "Home", path: "/", end: true },
     { name: "Content", path: "/content" },
-    { name: "Community", path: "/community" },
+    ...(isLoggedIn ? [{ name: "Community", path: "/community" }] : []),
     { name: "AI Assistant", path: "/ai-assistant" },
     { name: "BMI Analysis", path: "/bmi" },
   ];
@@ -36,6 +38,7 @@ function Navbar() {
               <NavLink
                 key={item.name}
                 to={item.path}
+                end={item.end}
                 className={({ isActive }) =>
                   `text-sm font-semibold transition-colors py-7 relative whitespace-nowrap ${
                     isActive
@@ -71,31 +74,34 @@ function Navbar() {
             />
           </div>
 
-          {/* Nút Bookmark */}
-          <button
-            type="button"
-            aria-label="Bookmark"
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-700 hover:bg-[#eaf1ec] transition-colors cursor-pointer border-none bg-transparent"
-          >
-            <Bookmark className="w-5 h-5" />
-          </button>
-
           {/* Nút Login / Sign Up */}
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-chaybook-primary text-white font-semibold text-sm hover:bg-chaybook-hover transition-colors shadow-sm whitespace-nowrap text-decoration-none"
-          >
-            Login / Sign Up
-          </Link>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={logout}
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-chaybook-primary text-white font-semibold text-sm hover:bg-chaybook-hover transition-colors shadow-sm whitespace-nowrap"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-chaybook-primary text-white font-semibold text-sm hover:bg-chaybook-hover transition-colors shadow-sm whitespace-nowrap"
+            >
+              Login / Sign Up
+            </Link>
+          )}
 
           {/* Icon Profile User */}
-          <Link
-            to="/profile"
-            aria-label="User Account"
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-chaybook-primary text-white hover:bg-chaybook-hover transition-colors shadow-sm cursor-pointer shrink-0"
-          >
-            <User className="w-5 h-5" />
-          </Link>
+          {isLoggedIn && (
+            <Link
+              to="/profile"
+              aria-label="User Account"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-chaybook-primary text-white hover:bg-chaybook-hover transition-colors shadow-sm cursor-pointer shrink-0"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          )}
         </div>
       </div>
     </header>
