@@ -1,5 +1,6 @@
 package com.chaybook.backend.controller;
 
+import com.chaybook.backend.dto.Auth.LoginRequest;
 import com.chaybook.backend.dto.Auth.RegisterRequest;
 import com.chaybook.backend.dto.Auth.RegisterResponse;
 import com.chaybook.backend.service.AuthService;
@@ -30,5 +31,15 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        String result = authService.login(request);
+
+        if (result.equals("Đăng nhập thành công!")) {
+            return ResponseEntity.ok(result);
+        }
+        return ResponseEntity.badRequest().body(result);
     }
 }
