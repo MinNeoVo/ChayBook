@@ -5,7 +5,7 @@ import com.chaybook.backend.auth.dto.LoginRequest;
 import com.chaybook.backend.auth.dto.LoginResponse;
 import com.chaybook.backend.auth.dto.RegisterRequest;
 import com.chaybook.backend.auth.dto.RegisterResponse;
-import com.chaybook.backend.auth.repository.UserRepository;
+import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +34,6 @@ public LoginResponse login(LoginRequest request) {
     Optional<User> userOpt =
             userRepository.findByEmailIgnoreCase(request.getEmail());
 
-    // Case 1: Không tìm thấy tài khoản
     if (userOpt.isEmpty()) {
         throw new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
@@ -44,7 +43,6 @@ public LoginResponse login(LoginRequest request) {
 
     User user = userOpt.get();
 
-    // Case 2: Sai mật khẩu
     if (!passwordEncoder.matches(
             request.getPassword(),
             user.getPasswordHash()
@@ -109,8 +107,7 @@ public LoginResponse login(LoginRequest request) {
                 passwordEncoder.encode(request.password())
         );
 
-        user.setRole("USER");
-        user.setStatus("ACTIVE");
+
 
         User savedUser = userRepository.saveAndFlush(user);
 

@@ -32,9 +32,8 @@ public class AiRecognition {
     public AiRecognition() {
     }
 
-    public AiRecognition(Integer recognitionId, User user, String imageUrl,
+    public AiRecognition(User user, String imageUrl,
                          String status, LocalDateTime createdAt) {
-        this.recognitionId = recognitionId;
         this.user = user;
         this.imageUrl = imageUrl;
         this.status = status;
@@ -43,10 +42,6 @@ public class AiRecognition {
 
     public Integer getRecognitionId() {
         return recognitionId;
-    }
-
-    public void setRecognitionId(Integer recognitionId) {
-        this.recognitionId = recognitionId;
     }
 
     public User getUser() {

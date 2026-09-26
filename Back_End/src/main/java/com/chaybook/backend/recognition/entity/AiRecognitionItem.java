@@ -26,9 +26,8 @@ public class AiRecognitionItem {
     public AiRecognitionItem() {
     }
 
-    public AiRecognitionItem(Integer recognitionItemId, AiRecognition recognition,
+    public AiRecognitionItem(AiRecognition recognition,
                              Ingredient ingredient, Double confidence) {
-        this.recognitionItemId = recognitionItemId;
         this.recognition = recognition;
         this.ingredient = ingredient;
         this.confidence = confidence;
@@ -36,10 +35,6 @@ public class AiRecognitionItem {
 
     public Integer getRecognitionItemId() {
         return recognitionItemId;
-    }
-
-    public void setRecognitionItemId(Integer recognitionItemId) {
-        this.recognitionItemId = recognitionItemId;
     }
 
     public AiRecognition getRecognition() {

@@ -26,18 +26,13 @@ public class Ingredient {
     public Ingredient() {
     }
 
-    public Ingredient(Integer ingredientId, String name, String description) {
-        this.ingredientId = ingredientId;
+    public Ingredient(String name, String description) {
         this.name = name;
         this.description = description;
     }
 
     public Integer getIngredientId() {
         return ingredientId;
-    }
-
-    public void setIngredientId(Integer ingredientId) {
-        this.ingredientId = ingredientId;
     }
 
     public String getName() {

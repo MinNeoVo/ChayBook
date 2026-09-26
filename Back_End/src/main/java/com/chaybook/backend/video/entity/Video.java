@@ -54,9 +54,8 @@ public class Video {
     public Video() {
     }
 
-    public Video(Integer videoId, Category category,
+    public Video(Category category,
                  User createdBy, String title, String description, String videoUrl, String thumbnailUrl, Integer duration, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.videoId = videoId;
         this.category = category;
         this.createdBy = createdBy;
         this.title = title;
@@ -71,10 +70,6 @@ public class Video {
 
     public Integer getVideoId() {
         return videoId;
-    }
-
-    public void setVideoId(Integer videoId) {
-        this.videoId = videoId;
     }
 
     public Category getCategory() {

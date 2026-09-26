@@ -38,8 +38,7 @@ public class BmiRecord {
     public BmiRecord() {
     }
 
-    public BmiRecord(Integer bmiId, User user, Double height, Double weight, Double bmi, String category, LocalDateTime calculatedAt) {
-        this.bmiId = bmiId;
+    public BmiRecord(User user, Double height, Double weight, Double bmi, String category, LocalDateTime calculatedAt) {
         this.user = user;
         this.height = height;
         this.weight = weight;
@@ -52,9 +51,6 @@ public class BmiRecord {
         return bmiId;
     }
 
-    public void setBmiId(Integer bmiId) {
-        this.bmiId = bmiId;
-    }
 
     public User getUser() {
         return user;

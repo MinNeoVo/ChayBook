@@ -38,8 +38,7 @@ public class Comment {
     public Comment() {
     }
 
-    public Comment(Integer commentId, Post post, User user, String content, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.commentId = commentId;
+    public Comment(Post post, User user, String content, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.post = post;
         this.user = user;
         this.content = content;
@@ -51,9 +50,6 @@ public class Comment {
         return commentId;
     }
 
-    public void setCommentId(Integer commentId) {
-        this.commentId = commentId;
-    }
 
     public Post getPost() {
         return post;

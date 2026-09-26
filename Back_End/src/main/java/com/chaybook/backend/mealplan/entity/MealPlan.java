@@ -43,8 +43,7 @@ public class MealPlan {
     public MealPlan() {
     }
 
-    public MealPlan(Integer mealPlanId, User user, BmiRecord bmiRecord, String healthGoal, Integer durationDays, String dietaryPreference, LocalDateTime generatedAt, String status) {
-        this.mealPlanId = mealPlanId;
+    public MealPlan(User user, BmiRecord bmiRecord, String healthGoal, Integer durationDays, String dietaryPreference, LocalDateTime generatedAt, String status) {
         this.user = user;
         this.bmiRecord = bmiRecord;
         this.healthGoal = healthGoal;
@@ -57,10 +56,6 @@ public class MealPlan {
 
     public Integer getMealPlanId() {
         return mealPlanId;
-    }
-
-    public void setMealPlanId(Integer mealPlanId) {
-        this.mealPlanId = mealPlanId;
     }
 
     public User getUser() {

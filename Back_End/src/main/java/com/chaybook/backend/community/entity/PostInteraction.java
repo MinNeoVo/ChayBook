@@ -45,8 +45,7 @@ public class PostInteraction {
     public PostInteraction() {
     }
 
-    public PostInteraction(Integer interactionId, Post post, User user, String type, LocalDateTime createdAt) {
-        this.interactionId = interactionId;
+    public PostInteraction(Post post, User user, String type, LocalDateTime createdAt) {
         this.post = post;
         this.user = user;
         this.type = type;
@@ -55,10 +54,6 @@ public class PostInteraction {
 
     public Integer getInteractionId() {
         return interactionId;
-    }
-
-    public void setInteractionId(Integer interactionId) {
-        this.interactionId = interactionId;
     }
 
     public Post getPost() {

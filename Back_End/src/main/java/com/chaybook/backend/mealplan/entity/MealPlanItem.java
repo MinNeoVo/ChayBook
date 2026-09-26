@@ -29,8 +29,7 @@ public class MealPlanItem {
     public MealPlanItem() {
     }
 
-    public MealPlanItem(Integer mealItemId, MealPlan mealPlan, Recipe recipe, Integer dayNumber, String mealType) {
-        this.mealItemId = mealItemId;
+    public MealPlanItem(MealPlan mealPlan, Recipe recipe, Integer dayNumber, String mealType) {
         this.mealPlan = mealPlan;
         this.recipe = recipe;
         this.dayNumber = dayNumber;
@@ -39,10 +38,6 @@ public class MealPlanItem {
 
     public Integer getMealItemId() {
         return mealItemId;
-    }
-
-    public void setMealItemId(Integer mealItemId) {
-        this.mealItemId = mealItemId;
     }
 
     public MealPlan getMealPlan() {
