@@ -1,206 +1,131 @@
 import { Link } from "react-router-dom";
 import { Share2, MessageSquare, Mail } from "lucide-react";
 
+const footerSections = [
+  {
+    title: "Explore",
+    links: [
+      ["Nutrition Guides", "/content"],
+      ["Healthy Recipes", "/content"],
+      ["Video Tutorials", "/content"],
+      ["Meal Plans", "/content"],
+    ],
+  },
+  {
+    title: "Interactive Tools",
+    links: [
+      ["AI Nutrition Assistant", "/ai-assistant"],
+      ["BMI Calculator", "/bmi"],
+      ["Macro Analyzer", "/bmi"],
+      ["Daily Calorie Tracker", "/bmi"],
+    ],
+  },
+  {
+    title: "Community",
+    links: [
+      ["Discussions", "/community"],
+      ["Member Stories", "/community"],
+      ["Dietary Guidelines", "/community"],
+      ["Weekly Challenges", "/community"],
+    ],
+  },
+];
+
+const legalLinks = [
+  ["contact@chaybook.com", "mailto:contact@chaybook.com"],
+  ["Privacy Policy", "#"],
+  ["Terms of Service", "#"],
+];
+
+const socialLinks = [
+  { label: "Share", icon: Share2, href: "#" },
+  { label: "Message", icon: MessageSquare, href: "#" },
+  {
+    label: "Contact Email",
+    icon: Mail,
+    href: "mailto:contact@chaybook.com",
+  },
+];
+
 function Footer() {
   return (
-    <footer className="w-full bg-[#ebefec] border-t border-gray-200/80 pt-16 pb-12 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Grid Sections - Đúng 5 cột như thiết kế của bạn */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-12 border-b border-gray-300/60">
-          {/* Col 1: Logo & Info */}
-          <div className="lg:col-span-1 flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-chaybook-primary flex items-center justify-center text-white font-bold text-base shadow-sm">
+    <footer className="mt-auto w-full border-t border-gray-200/80 bg-[#ebefec] pb-12 pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Main Footer */}
+        <div className="grid grid-cols-1 gap-8 border-b border-gray-300/60 pb-12 md:grid-cols-2 lg:grid-cols-5">
+          {/* Logo + Description */}
+          <div className="flex flex-col gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chaybook-primary text-base font-bold text-white shadow-sm">
                 C
               </div>
+
               <span className="text-xl font-bold tracking-tight text-chaybook-primary">
                 ChayBook
               </span>
-            </div>
-            <p className="text-xs text-gray-600 leading-relaxed">
+            </Link>
+
+            <p className="text-xs leading-relaxed text-gray-600">
               Eat Better. Live Healthier. Your complete companion for a thriving
               vegetarian lifestyle.
             </p>
+
             {/* Social Icons */}
             <div className="flex items-center gap-2 pt-2">
-              <a
-                href="#"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4" />
-              </a>
-              <a
-                href="#"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
-                aria-label="Message"
-              >
-                <MessageSquare className="w-4 h-4" />
-              </a>
-              <a
-                href="mailto:contact@chaybook.com"
-                className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-gray-600 hover:text-chaybook-primary hover:bg-gray-50 transition-colors shadow-xs"
-                aria-label="Contact Email"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
+              {socialLinks.map(({ label, icon: Icon, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-chaybook-primary"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Col 2: Explore */}
-          <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-              Explore
-            </h4>
-            <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li>
-                <Link
-                  to="/content"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Nutrition Guides
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/content"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Healthy Recipes
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/content"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Video Tutorials
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/content"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Meal Plans
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Footer Sections */}
+          {footerSections.map((section) => (
+            <div key={section.title} className="flex flex-col gap-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-800">
+                {section.title}
+              </h4>
 
-          {/* Col 3: Interactive Tools */}
-          <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-              Interactive Tools
-            </h4>
-            <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li>
-                <Link
-                  to="/ai-assistant"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  AI Nutrition Assistant
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/bmi"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  BMI Calculator
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/bmi"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Macro Analyzer
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/bmi"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Daily Calorie Tracker
-                </Link>
-              </li>
-            </ul>
-          </div>
+              <ul className="flex flex-col gap-2 text-xs text-gray-600">
+                {section.links.map(([label, path]) => (
+                  <li key={label}>
+                    <Link
+                      to={path}
+                      className="transition-colors hover:text-chaybook-primary"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-          {/* Col 4: Community */}
+          {/* Contact & Legal */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-              Community
-            </h4>
-            <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li>
-                <Link
-                  to="/community"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Discussions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/community"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Member Stories
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/community"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Dietary Guidelines
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/community"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Weekly Challenges
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 5: Contact & Legal */}
-          <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-800">
               Contact & Legal
             </h4>
+
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
-              <li>
-                <a
-                  href="mailto:contact@chaybook.com"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  contact@chaybook.com
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-chaybook-primary transition-colors"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li className="text-gray-400 pt-1">
+              {legalLinks.map(([label, href]) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    className="transition-colors hover:text-chaybook-primary"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+
+              <li className="pt-1 text-gray-400">
                 FPT University Capstone Initiative
               </li>
             </ul>
@@ -208,27 +133,19 @@ function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>© 2025 ChayBook. All rights reserved.</p>
+        <div className="flex flex-col items-center justify-between gap-4 pt-6 text-xs text-gray-500 sm:flex-row">
+          <p>© 2026 ChayBook. All rights reserved.</p>
+
           <div className="flex items-center gap-6">
-            <a
-              href="#"
-              className="hover:text-chaybook-primary transition-colors"
-            >
-              Cookies
-            </a>
-            <a
-              href="#"
-              className="hover:text-chaybook-primary transition-colors"
-            >
-              Security
-            </a>
-            <a
-              href="#"
-              className="hover:text-chaybook-primary transition-colors"
-            >
-              Accessibility
-            </a>
+            {["Cookies", "Security", "Accessibility"].map((item) => (
+              <a
+                key={item}
+                href="#"
+                className="transition-colors hover:text-chaybook-primary"
+              >
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </div>

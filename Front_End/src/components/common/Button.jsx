@@ -14,7 +14,8 @@ function Button({
 
     danger: "bg-red-500 hover:bg-red-600 text-white",
 
-    outline: "border border-gray-300 hover:bg-gray-100 text-gray-800",
+    outline:
+      "border border-gray-300 hover:bg-chaybook-primary hover:text-white text-chaybook-primary",
   };
 
   const sizes = {
@@ -29,6 +30,9 @@ function Button({
       onClick={onClick}
       disabled={disabled}
       className={`
+                flex 
+                items-center 
+                justify-center
                 font-semibold
                 rounded-xl
                 transition-all
