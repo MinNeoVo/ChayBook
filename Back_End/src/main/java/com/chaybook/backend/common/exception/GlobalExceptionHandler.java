@@ -1,4 +1,4 @@
-package com.chaybook.backend.temp.exception;
+package com.chaybook.backend.common.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
