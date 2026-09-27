@@ -38,19 +38,9 @@ public class BmiRecord {
     public BmiRecord() {
     }
 
-    public BmiRecord(User user, Double height, Double weight, Double bmi, String category, LocalDateTime calculatedAt) {
-        this.user = user;
-        this.height = height;
-        this.weight = weight;
-        this.bmi = bmi;
-        this.category = category;
-        this.calculatedAt = calculatedAt;
-    }
-
     public Integer getBmiId() {
         return bmiId;
     }
-
 
     public User getUser() {
         return user;
