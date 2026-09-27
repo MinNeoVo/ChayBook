@@ -10,7 +10,6 @@ import {
   Mail,
   MenuBook,
   MessageCircle,
-  Newspaper,
   PersonStanding,
   Rss,
   Search,
@@ -274,7 +273,10 @@ function Header() {
             </span>
           </a>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -390,10 +392,11 @@ function CategoryFilter({ activeCategory, onCategoryChange }) {
             type="button"
             onClick={() => onCategoryChange(category.id)}
             aria-pressed={isActive}
-            className={`flex items-center gap-1 rounded-full px-4 py-1 text-[14px] font-semibold leading-5 shadow-sm transition-colors ${isActive
-              ? "bg-[#006b2c] text-white"
-              : "bg-white text-[#3e4a3d] hover:bg-[#ebefec]"
-              }`}
+            className={`flex items-center gap-1 rounded-full px-4 py-1 text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
+              isActive
+                ? "bg-[#006b2c] text-white"
+                : "bg-white text-[#3e4a3d] hover:bg-[#ebefec]"
+            }`}
           >
             {isActive && category.id !== "all" && (
               <span className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -410,11 +413,9 @@ function CategoryFilter({ activeCategory, onCategoryChange }) {
 function PostCard({ post }) {
   const DurationIcon = iconMap[post.durationIcon] || Timer;
 
-  const categoryStyle =
-    categoryStyles[post.category] || categoryStyles.recipes;
+  const categoryStyle = categoryStyles[post.category] || categoryStyles.recipes;
 
-  const authorStyle =
-    authorStyles[post.authorColor] || authorStyles.primary;
+  const authorStyle = authorStyles[post.authorColor] || authorStyles.primary;
 
   return (
     <article className="group flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl">
@@ -429,9 +430,7 @@ function PostCard({ post }) {
           <span
             className={`absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[12px] font-semibold leading-4 shadow-sm backdrop-blur-md ${categoryStyle.text}`}
           >
-            <span
-              className={`h-2 w-2 rounded-full ${categoryStyle.dot}`}
-            />
+            <span className={`h-2 w-2 rounded-full ${categoryStyle.dot}`} />
             {post.categoryLabel}
           </span>
 
@@ -524,7 +523,9 @@ function Pagination() {
       <p className="order-2 text-[13px] font-normal leading-5 text-[#3e4a3d] sm:order-1">
         Showing{" "}
         <span className="font-semibold text-[#181c1b]">
-          {currentPage === 1 ? "1–6" : `${(currentPage - 1) * 6 + 1}–${currentPage * 6}`}
+          {currentPage === 1
+            ? "1–6"
+            : `${(currentPage - 1) * 6 + 1}–${currentPage * 6}`}
         </span>{" "}
         of <span className="font-semibold text-[#181c1b]">48</span> articles
       </p>
@@ -534,9 +535,7 @@ function Pagination() {
           type="button"
           aria-label="Previous page"
           disabled={currentPage === 1}
-          onClick={() =>
-            setCurrentPage((page) => Math.max(1, page - 1))
-          }
+          onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
           className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#181c1b] shadow-sm transition-colors hover:bg-[#ebefec] disabled:cursor-not-allowed disabled:opacity-40"
         >
           <ChevronLeft size={18} />
@@ -548,10 +547,11 @@ function Pagination() {
             type="button"
             aria-current={currentPage === page ? "page" : undefined}
             onClick={() => setCurrentPage(page)}
-            className={`flex h-10 w-10 items-center justify-center rounded-lg text-[14px] font-semibold leading-5 shadow-sm transition-colors ${currentPage === page
-              ? "bg-[#006b2c] text-white"
-              : "bg-white text-[#181c1b] hover:bg-[#ebefec]"
-              }`}
+            className={`flex h-10 w-10 items-center justify-center rounded-lg text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
+              currentPage === page
+                ? "bg-[#006b2c] text-white"
+                : "bg-white text-[#181c1b] hover:bg-[#ebefec]"
+            }`}
           >
             {page}
           </button>
@@ -563,9 +563,7 @@ function Pagination() {
 
         <button
           type="button"
-          onClick={() =>
-            setCurrentPage((page) => Math.min(8, page + 1))
-          }
+          onClick={() => setCurrentPage((page) => Math.min(8, page + 1))}
           className="flex h-10 items-center justify-center gap-1 rounded-lg bg-white px-4 text-[14px] font-semibold leading-5 text-[#181c1b] shadow-sm transition-colors hover:bg-[#ebefec]"
         >
           Next
@@ -671,8 +669,8 @@ function Footer() {
 
             <p className="mb-4 text-[13px] font-normal leading-5 text-[#3e4a3d]">
               Your mindful companion for whole-food, plant-based living.
-              Evidence-backed nutritional guidance and empowering
-              plant-centered meal tools.
+              Evidence-backed nutritional guidance and empowering plant-centered
+              meal tools.
             </p>
 
             <div className="flex items-center gap-2 text-[#3e4a3d]">
@@ -797,11 +795,7 @@ export default function ContentPage() {
 
             <section className="relative z-10 mb-12 flex flex-col items-center text-center sm:mb-16">
               <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#92f5a4] px-3 py-1 text-[12px] font-semibold leading-4 tracking-wide text-[#007233]">
-                <Leaf
-                  size={16}
-                  strokeWidth={2}
-                  fill="currentColor"
-                />
+                <Leaf size={16} strokeWidth={2} fill="currentColor" />
                 Curated Plant-Based Living
               </span>
 
@@ -810,8 +804,8 @@ export default function ContentPage() {
               </h1>
 
               <p className="mb-8 max-w-xl text-[16px] font-normal leading-7 tracking-[-0.005em] text-[#3e4a3d] sm:text-[18px]">
-                Discover healthy recipes, nutrition tips, and inspiration for
-                a better vegetarian lifestyle.
+                Discover healthy recipes, nutrition tips, and inspiration for a
+                better vegetarian lifestyle.
               </p>
 
               <form
