@@ -64,25 +64,9 @@ public class User {
     public User() {
     }
 
-    public User(Integer userId, String username, String email, String passwordHash, String fullName, String avatarUrl, String role, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.userId = userId;
-        this.username = username;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.fullName = fullName;
-        this.avatarUrl = avatarUrl;
-        this.role = role;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 
     public Integer getUserId() {
         return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
     }
 
     public String getUsername() {
@@ -155,5 +139,13 @@ public class User {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Set<Allergy> getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(Set<Allergy> allergies) {
+        this.allergies = allergies;
     }
 }

@@ -49,8 +49,7 @@ public class AiModeration {
     public AiModeration() {
     }
 
-    public AiModeration(Integer moderationId, Post post, Video video, String result, String reason, Double confidence, User reviewedBy, LocalDateTime reviewedAt, LocalDateTime createdAt) {
-        this.moderationId = moderationId;
+    public AiModeration(Post post, Video video, String result, String reason, Double confidence, User reviewedBy, LocalDateTime reviewedAt, LocalDateTime createdAt) {
         this.post = post;
         this.video = video;
         this.result = result;
@@ -64,10 +63,6 @@ public class AiModeration {
 
     public Integer getModerationId() {
         return moderationId;
-    }
-
-    public void setModerationId(Integer moderationId) {
-        this.moderationId = moderationId;
     }
 
     public Post getPost() {

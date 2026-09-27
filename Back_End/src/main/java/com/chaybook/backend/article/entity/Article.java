@@ -48,8 +48,7 @@ public class Article {
     public Article() {
     }
 
-    public Article(Integer articleId, Category category, User createdBy, String title, String content, String coverImage, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.articleId = articleId;
+    public Article(Category category, User createdBy, String title, String content, String coverImage, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.category = category;
         this.createdBy = createdBy;
         this.title = title;
@@ -63,10 +62,6 @@ public class Article {
 
     public Integer getArticleId() {
         return articleId;
-    }
-
-    public void setArticleId(Integer articleId) {
-        this.articleId = articleId;
     }
 
     public Category getCategory() {

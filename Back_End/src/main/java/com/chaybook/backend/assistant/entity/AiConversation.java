@@ -34,8 +34,7 @@ public class AiConversation {
     public AiConversation() {
     }
 
-    public AiConversation(Integer conversationId, User user, String title, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.conversationId = conversationId;
+    public AiConversation(User user, String title, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.user = user;
         this.title = title;
         this.createdAt = createdAt;
@@ -44,10 +43,6 @@ public class AiConversation {
 
     public Integer getConversationId() {
         return conversationId;
-    }
-
-    public void setConversationId(Integer conversationId) {
-        this.conversationId = conversationId;
     }
 
     public User getUser() {

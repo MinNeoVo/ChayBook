@@ -48,8 +48,7 @@ public class Post {
     public Post() {
     }
 
-    public Post(Integer postId, User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.postId = postId;
+    public Post(User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.user = user;
         this.category = category;
         this.title = title;
@@ -64,9 +63,6 @@ public class Post {
         return postId;
     }
 
-    public void setPostId(Integer postId) {
-        this.postId = postId;
-    }
 
     public User getUser() {
         return user;

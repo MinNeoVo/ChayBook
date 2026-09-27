@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST,
-                "Thông tin đăng ký không hợp lệ"
+                "Dữ liệu không hợp lệ"
         );
 
         problem.setProperty("errors", errors);

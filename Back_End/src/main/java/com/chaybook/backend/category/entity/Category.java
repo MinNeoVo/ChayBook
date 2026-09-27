@@ -23,8 +23,7 @@ public class Category {
     public Category() {
     }
 
-    public Category(Integer categoryId, String name, String type, String description) {
-        this.categoryId = categoryId;
+    public Category(String name, String type, String description) {
         this.name = name;
         this.type = type;
         this.description = description;
@@ -34,9 +33,6 @@ public class Category {
         return categoryId;
     }
 
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
-    }
 
     public String getName() {
         return name;

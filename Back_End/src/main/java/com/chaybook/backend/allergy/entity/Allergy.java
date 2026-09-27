@@ -32,17 +32,8 @@ public class Allergy {
     public Allergy() {
     }
 
-    public Allergy(Integer allergyId, String name) {
-        this.allergyId = allergyId;
-        this.name = name;
-    }
-
     public Integer getAllergyId() {
         return allergyId;
-    }
-
-    public void setAllergyId(Integer allergyId) {
-        this.allergyId = allergyId;
     }
 
     public String getName() {

@@ -39,9 +39,7 @@ public class AiMessage {
     public AiMessage() {
     }
 
-    public AiMessage(Integer messageId, AiConversation conversation, String sender, String message, LocalDateTime createdAt) {
-        this.messageId = messageId;
-        this.conversation = conversation;
+    public AiMessage(AiConversation conversation, String sender, String message, LocalDateTime createdAt) {this.conversation = conversation;
         this.sender = sender;
         this.message = message;
         this.createdAt = createdAt;
@@ -49,10 +47,6 @@ public class AiMessage {
 
     public Integer getMessageId() {
         return messageId;
-    }
-
-    public void setMessageId(Integer messageId) {
-        this.messageId = messageId;
     }
 
     public AiConversation getConversation() {

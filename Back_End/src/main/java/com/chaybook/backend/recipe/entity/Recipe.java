@@ -73,8 +73,7 @@ public class Recipe {
     public Recipe() {
     }
 
-    public Recipe(Integer recipeId, Category category, User createdBy, String name, String description, String imageUrl, Integer prepTime, Integer cookTime, Integer servings, String difficulty, String instructions, Double calories, Double protein, Double carbs, Double fat, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.recipeId = recipeId;
+    public Recipe(Category category, User createdBy, String name, String description, String imageUrl, Integer prepTime, Integer cookTime, Integer servings, String difficulty, String instructions, Double calories, Double protein, Double carbs, Double fat, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.category = category;
         this.createdBy = createdBy;
         this.name = name;
@@ -97,9 +96,6 @@ public class Recipe {
         return recipeId;
     }
 
-    public void setRecipeId(Integer recipeId) {
-        this.recipeId = recipeId;
-    }
 
     public Category getCategory() {
         return category;
