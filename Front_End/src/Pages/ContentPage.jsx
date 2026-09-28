@@ -2,52 +2,46 @@ import { useMemo, useState } from "react";
 
 import {
   ArrowRight,
-  Bookmark,
   ChevronLeft,
   ChevronRight,
   Flame,
   Leaf,
-  LogOut,
-  Mail,
-  MenuBook,
+  BookOpen,
   MessageCircle,
+<<<<<<< HEAD
   PersonStanding,
   Rss,
+=======
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
   Search,
   Timer,
-  Globe,
-  X,
 } from "lucide-react";
 
+<<<<<<< HEAD
 import { getContentList } from "./mocks/contentData";
 
 const logoUrl =
   "https://lh3.googleusercontent.com/aida/AEtjO1VKv3kDYidvSLgjsjwk42tUI5A_ir1KG91CD1IqeBkKLqdAoaitt6UDGv-ZEyyCvlqz23nqpFNy78oD7AkccAy7oZiihRuffEd1YuUaKUmgevykqdgybf1Dvw52_vJNZj49VuZD3T2pA68KazIDEdm4TBoozvF8lWLZCQ0pwfPixoiZC014Udd4CT1u4hg2pXWf9oUOFevg-6s5CSsk5pQsX7T_EQ45WHUozJKYhQZqnEhLYzT1tFql7w0";
+=======
+import Input from "../components/common/Input";
+import Button from "../components/common/Button";
+
+import { posts } from "../data/contentData";
+
+// =========================
+// DATA
+// =========================
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
 
 const categories = [
-  {
-    id: "all",
-    label: "All",
-  },
-  {
-    id: "recipes",
-    label: "Recipes",
-    activeDot: true,
-  },
-  {
-    id: "nutrition",
-    label: "Nutrition",
-  },
-  {
-    id: "lifestyle",
-    label: "Lifestyle",
-  },
-  {
-    id: "tips",
-    label: "Tips",
-  },
+  { id: "all", label: "All" },
+  { id: "recipes", label: "Recipes" },
+  { id: "nutrition", label: "Nutrition" },
+  { id: "lifestyle", label: "Lifestyle" },
+  { id: "tips", label: "Tips" },
 ];
 
+<<<<<<< HEAD
 const footerColumns = [
   {
     title: "Explore",
@@ -82,6 +76,11 @@ const iconMap = {
   timer: Timer,
   book: MenuBook,
 };
+=======
+// =========================
+// STYLES
+// =========================
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
 
 const categoryStyles = {
   recipes: {
@@ -109,9 +108,12 @@ const authorStyles = {
   "tertiary-container": "bg-[#5e7b6a] text-[#f6fff6]",
 };
 
-function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const durationIcons = {
+  timer: Timer,
+  book: BookOpen,
+};
 
+<<<<<<< HEAD
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Content", path: "/content", active: true },
@@ -247,139 +249,156 @@ function Header() {
     </header>
   );
 }
+=======
+// =========================
+// CATEGORY FILTER
+// =========================
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
 
 function CategoryFilter({ activeCategory, onCategoryChange }) {
   return (
-    <nav
-      aria-label="Category filters"
-      className="flex flex-wrap items-center justify-center gap-2"
-    >
+    <div className="flex flex-wrap justify-center gap-2">
       {categories.map((category) => {
         const isActive = activeCategory === category.id;
 
         return (
-          <button
+          <Button
             key={category.id}
             type="button"
+            size="sm"
+            variant={isActive ? "primary" : "outline"}
             onClick={() => onCategoryChange(category.id)}
+<<<<<<< HEAD
             aria-pressed={isActive}
             className={`flex items-center gap-1 rounded-full px-4 py-1 text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
               isActive
                 ? "bg-[#006b2c] text-white"
                 : "bg-white text-[#3e4a3d] hover:bg-[#ebefec]"
             }`}
+=======
+            className={
+              isActive
+                ? "rounded-full bg-chaybook-primary px-4 py-1 text-sm text-white hover:bg-chaybook-hover"
+                : "rounded-full bg-white px-4 py-1 text-sm text-black hover:bg-chaybook-primary hover:text-white"
+            }
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
           >
-            {isActive && category.id !== "all" && (
-              <span className="h-1.5 w-1.5 rounded-full bg-white" />
-            )}
-
             {category.label}
-          </button>
+          </Button>
         );
       })}
-    </nav>
+    </div>
   );
 }
 
+// =========================
+// POST CARD
+// =========================
+
 function PostCard({ post }) {
-  const DurationIcon = iconMap[post.durationIcon] || Timer;
-
-  const categoryStyle =
-    categoryStyles[post.category] || categoryStyles.recipes;
-
-  const authorStyle =
-    authorStyles[post.authorColor] || authorStyles.primary;
+  const DurationIcon = durationIcons[post.durationIcon] || Timer;
+  const categoryStyle = categoryStyles[post.category] || categoryStyles.recipes;
+  const authorStyle = authorStyles[post.authorColor] || authorStyles.primary;
 
   return (
     <article className="group flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl">
       <div>
-        <div className="relative aspect-[16/10] overflow-hidden bg-[#ebefec]">
+        {/* Image */}
+        <div className="relative aspect-16/10 overflow-hidden bg-[#ebefec]">
           <img
             src={post.image}
             alt={post.imageAlt}
-            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
 
           <span
-            className={`absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[12px] font-semibold leading-4 shadow-sm backdrop-blur-md ${categoryStyle.text}`}
+            className={`absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md ${categoryStyle.text}`}
           >
+<<<<<<< HEAD
             <span
               className={`h-2 w-2 rounded-full ${categoryStyle.dot}`}
             />
 
+=======
+            <span className={`h-2 w-2 rounded-full ${categoryStyle.dot}`} />
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
             {post.categoryLabel}
           </span>
 
-          <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-md bg-[#2d3130]/80 px-2 py-1 text-[11px] font-medium leading-[14px] text-[#eef1ee] backdrop-blur-md">
-            <DurationIcon size={14} strokeWidth={2} />
+          <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-md bg-[#2d3130]/80 px-2 py-1 text-[11px] font-medium text-[#eef1ee] backdrop-blur-md">
+            <DurationIcon size={14} />
             {post.duration}
           </span>
         </div>
 
+        {/* Content */}
         <div className="p-6 pb-2">
-          <h2 className="mb-2 line-clamp-2 text-[18px] font-semibold leading-[26px] text-[#181c1b] transition-colors group-hover:text-[#006b2c]">
+          <h2 className="mb-2 line-clamp-2 text-lg font-semibold leading-6.5 text-[#181c1b] transition-colors group-hover:text-chaybook-primary">
             {post.title}
           </h2>
 
-          <p className="mb-4 line-clamp-2 text-[13px] font-normal leading-5 text-[#3e4a3d]">
+          <p className="mb-4 line-clamp-2 text-[13px] leading-5 text-[#3e4a3d]">
             {post.description}
           </p>
         </div>
       </div>
 
+      {/* Footer */}
       <div className="px-6 pb-6 pt-1">
         <div className="mb-2 flex items-center justify-between py-2">
           <div className="flex items-center gap-2">
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-bold ${authorStyle}`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${authorStyle}`}
             >
               {post.initials}
             </div>
 
-            <div className="flex flex-col">
-              <span className="text-[12px] font-semibold leading-4 text-[#181c1b]">
+            <div>
+              <p className="text-xs font-semibold text-[#181c1b]">
                 {post.author}
-              </span>
+              </p>
 
-              <span className="text-[11px] font-medium leading-[14px] text-[#3e4a3d]">
+              <p className="text-[11px] font-medium text-[#3e4a3d]">
                 {post.authorRole}
-              </span>
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] font-medium leading-[14px] text-[#3e4a3d]">
+          <div className="flex items-center gap-1 text-[11px] font-medium text-[#3e4a3d]">
             {post.calories && (
               <>
                 <span className="flex items-center gap-0.5">
-                  <Flame size={14} strokeWidth={2} />
+                  <Flame size={14} />
                   {post.calories}
                 </span>
-
                 <span>·</span>
               </>
             )}
 
             <span className="flex items-center gap-0.5">
-              <MessageCircle size={14} strokeWidth={2} />
+              <MessageCircle size={14} />
               {post.comments}
             </span>
           </div>
         </div>
 
-        <div className="-mx-6 -mb-6 flex items-center justify-between bg-[#f1f4f1] px-6 py-2">
-          <span className="text-[11px] font-medium leading-[14px] text-[#3e4a3d]">
+        <div className="-mx-6 -mb-6 flex items-center justify-between bg-chaybook-container px-6 py-2">
+          <span className="text-[11px] font-medium text-[#3e4a3d]">
             {post.date}
           </span>
 
           <a
+<<<<<<< HEAD
             href={`/content/${post.slug}`}
             className="inline-flex items-center gap-1 text-[14px] font-semibold leading-5 text-[#006b2c] transition-colors hover:text-[#00873a]"
+=======
+            href={`/content/${post.id}`}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-chaybook-primary transition-colors hover:text-chaybook-hover"
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
           >
             {post.action}
-
             <ArrowRight
               size={18}
-              strokeWidth={2}
               className="transition-transform group-hover:translate-x-0.5"
             />
           </a>
@@ -389,6 +408,10 @@ function PostCard({ post }) {
   );
 }
 
+// =========================
+// PAGINATION
+// =========================
+
 function Pagination() {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -396,7 +419,7 @@ function Pagination() {
 
   return (
     <div className="flex flex-col items-center justify-between gap-4 pb-12 pt-2 sm:flex-row">
-      <p className="order-2 text-[13px] font-normal leading-5 text-[#3e4a3d] sm:order-1">
+      <p className="text-[13px] text-[#3e4a3d]">
         Showing{" "}
         <span className="font-semibold text-[#181c1b]">
           {currentPage === 1
@@ -406,245 +429,146 @@ function Pagination() {
         of <span className="font-semibold text-[#181c1b]">48</span> articles
       </p>
 
-      <div className="order-1 flex items-center gap-1 sm:order-2">
-        <button
+      <div className="flex items-center gap-1">
+        <Button
           type="button"
-          aria-label="Previous page"
+          size="sm"
+          variant="outline"
           disabled={currentPage === 1}
-          onClick={() =>
-            setCurrentPage((page) => Math.max(1, page - 1))
-          }
-          className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#181c1b] shadow-sm transition-colors hover:bg-[#ebefec] disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+          className="h-10 w-10 p-0"
         >
           <ChevronLeft size={18} />
-        </button>
+        </Button>
 
         {pages.map((page) => (
-          <button
+          <Button
             key={page}
             type="button"
-            aria-current={currentPage === page ? "page" : undefined}
+            size="sm"
+            variant={currentPage === page ? "primary" : "outline"}
             onClick={() => setCurrentPage(page)}
+<<<<<<< HEAD
             className={`flex h-10 w-10 items-center justify-center rounded-lg text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
               currentPage === page
                 ? "bg-[#006b2c] text-white"
                 : "bg-white text-[#181c1b] hover:bg-[#ebefec]"
+=======
+            className={`h-10 w-10 p-0 ${
+              currentPage === page
+                ? "bg-chaybook-primary text-white"
+                : "bg-white text-black hover:bg-[#ebefec]"
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
             }`}
           >
             {page}
-          </button>
+          </Button>
         ))}
 
-        <span className="px-1 text-[14px] font-semibold leading-5 text-[#6e7b6c]">
-          …
-        </span>
+        <span className="px-1 text-sm font-semibold text-[#6e7b6c]">…</span>
 
-        <button
+        <Button
           type="button"
-          onClick={() =>
-            setCurrentPage((page) => Math.min(8, page + 1))
-          }
-          className="flex h-10 items-center justify-center gap-1 rounded-lg bg-white px-4 text-[14px] font-semibold leading-5 text-[#181c1b] shadow-sm transition-colors hover:bg-[#ebefec]"
+          size="sm"
+          variant="outline"
+          onClick={() => setCurrentPage((page) => Math.min(8, page + 1))}
+          className="h-10 px-4"
         >
           Next
           <ChevronRight size={18} />
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-function NewsletterBanner() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+// =========================
+// NEWSLETTER
+// =========================
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+// function NewsletterBanner() {
+//   const [email, setEmail] = useState("");
+//   const [submitted, setSubmitted] = useState(false);
 
-    if (!email.trim()) {
-      return;
-    }
+//   const handleSubmit = (event) => {
+//     event.preventDefault();
 
-    setSubmitted(true);
-    setEmail("");
-  };
+//     if (!email.trim()) return;
 
-  return (
-    <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-xl bg-[#92f5a4] p-6 shadow-sm sm:p-8 md:flex-row lg:p-12">
-      <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-[#62df7d]/30 blur-3xl" />
+//     setSubmitted(true);
+//     setEmail("");
+//   };
 
-      <div className="relative z-10 max-w-xl text-center md:text-left">
-        <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-[12px] font-semibold leading-4 text-[#007233] shadow-sm">
-          <Mail size={16} strokeWidth={2} />
-          Weekly Plant Wisdom
-        </div>
+//   return (
+//     <section className="relative flex flex-col items-center justify-between gap-6 overflow-hidden rounded-xl bg-[#92f5a4] p-6 shadow-sm sm:p-8 md:flex-row lg:p-12">
+//       <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-[#62df7d]/30 blur-3xl" />
 
-        <h3 className="mb-1 text-[28px] font-bold leading-9 tracking-tight text-[#00210a] sm:text-[28px]">
-          Get wholesome seasonal recipes directly in your inbox.
-        </h3>
+//       <div className="relative z-10 max-w-xl text-center md:text-left">
+//         <div className="mb-2 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#007233] shadow-sm">
+//           <Mail size={16} />
+//           Weekly Plant Wisdom
+//         </div>
 
-        <p className="text-[15px] font-normal leading-6 text-[#3e4a3d]">
-          No spam, ever. Just dietitian-reviewed meal prep ideas, mindful
-          lifestyle essays, and nutritional deep dives every Thursday.
-        </p>
-      </div>
+//         <h3 className="mb-1 text-[28px] font-bold leading-9 tracking-tight text-[#00210a]">
+//           Get wholesome seasonal recipes directly in your inbox.
+//         </h3>
 
-      <div className="relative z-10 w-full shrink-0 md:w-auto">
-        <form
-          onSubmit={handleSubmit}
-          className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
-        >
-          <label htmlFor="newsletter-email" className="sr-only">
-            Email address
-          </label>
+//         <p className="text-[15px] leading-6 text-[#3e4a3d]">
+//           No spam, ever. Just dietitian-reviewed meal prep ideas, mindful
+//           lifestyle essays, and nutritional deep dives every Thursday.
+//         </p>
+//       </div>
 
-          <input
-            id="newsletter-email"
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-              setSubmitted(false);
-            }}
-            placeholder="Enter your email address..."
-            required
-            className="h-11 min-w-0 flex-1 rounded-lg bg-white px-4 text-[15px] font-normal leading-6 text-[#181c1b] shadow-sm outline-none placeholder:text-[#6e7b6c] focus:ring-2 focus:ring-[#006b2c] sm:min-w-[240px]"
-          />
+//       <div className="relative z-10 w-full shrink-0 md:w-auto">
+//         <form
+//           onSubmit={handleSubmit}
+//           className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
+//         >
+//           <Input
+//             type="email"
+//             placeholder="Enter your email address..."
+//             value={email}
+//             onChange={(event) => {
+//               setEmail(event.target.value);
+//               setSubmitted(false);
+//             }}
+//             className="h-11 min-w-0 border-none shadow-sm sm:min-w-60"
+//           />
 
-          <button
-            type="submit"
-            className="h-11 whitespace-nowrap rounded-lg bg-[#006b2c] px-6 text-[14px] font-semibold leading-5 text-white shadow-sm transition-colors hover:bg-[#00873a]"
-          >
-            Subscribe Free
-          </button>
-        </form>
+//           <Button
+//             type="submit"
+//             size="md"
+//             className="h-11 whitespace-nowrap bg-chaybook-primary px-6 hover:bg-chaybook-hover"
+//           >
+//             Subscribe Free
+//           </Button>
+//         </form>
 
-        <p className="mt-1 text-center text-[11px] font-medium leading-[14px] text-[#3e4a3d] md:text-left">
-          {submitted
-            ? "Thanks for subscribing!"
-            : "Join 24,000+ mindful home chefs and wellness seekers."}
-        </p>
-      </div>
-    </section>
-  );
-}
+//         <p className="mt-1 text-center text-[11px] font-medium text-[#3e4a3d] md:text-left">
+//           {submitted
+//             ? "Thanks for subscribing!"
+//             : "Join 24,000+ mindful home chefs and wellness seekers."}
+//         </p>
+//       </div>
+//     </section>
+//   );
+// }
 
-function Footer() {
-  return (
-    <footer className="w-full border-t border-[#e0e3e0] bg-white">
-      <div className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-12">
-        <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <img
-                src={logoUrl}
-                alt="ChayBook logo"
-                className="h-6 w-auto object-contain"
-              />
+// =========================
+// CONTENT PAGE
+// =========================
 
-              <span className="text-[18px] font-bold text-[#006b2c]">
-                ChayBook
-              </span>
-            </div>
-
-            <p className="mb-4 text-[13px] font-normal leading-5 text-[#3e4a3d]">
-              Your mindful companion for whole-food, plant-based living.
-              Evidence-backed nutritional guidance and empowering
-              plant-centered meal tools.
-            </p>
-
-            <div className="flex items-center gap-2 text-[#3e4a3d]">
-              <a
-                href="#community"
-                aria-label="Global Community"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ebefec] transition-colors hover:text-[#006b2c]"
-              >
-                <Globe size={16} />
-              </a>
-
-              <a
-                href="#newsletter"
-                aria-label="Newsletter"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ebefec] transition-colors hover:text-[#006b2c]"
-              >
-                <Mail size={16} />
-              </a>
-
-              <a
-                href="#rss"
-                aria-label="RSS"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ebefec] transition-colors hover:text-[#006b2c]"
-              >
-                <Rss size={16} />
-              </a>
-            </div>
-          </div>
-
-          {footerColumns.map((column) => (
-            <div key={column.title}>
-              <h4 className="mb-2 text-[18px] font-semibold leading-[26px] text-[#181c1b]">
-                {column.title}
-              </h4>
-
-              <ul className="space-y-2 text-[13px] font-normal leading-5 text-[#3e4a3d]">
-                {column.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href={`#${link
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, "-")}`}
-                      className="transition-colors hover:text-[#006b2c]"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#e6e9e6] pt-6 text-[11px] font-medium leading-[14px] text-[#3e4a3d] md:flex-row">
-          <p className="text-center md:text-left">
-            © 2024 ChayBook. Cultivating mindful wellness through plant
-            nutrition.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
-              href="#privacy-policy"
-              className="transition-colors hover:text-[#181c1b]"
-            >
-              Privacy Policy
-            </a>
-
-            <a
-              href="#terms-of-service"
-              className="transition-colors hover:text-[#181c1b]"
-            >
-              Terms of Service
-            </a>
-
-            <a
-              href="#editorial-standards"
-              className="transition-colors hover:text-[#181c1b]"
-            >
-              Editorial Standards
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-export default function ContentPage() {
+function ContentPage() {
   const [activeCategory, setActiveCategory] = useState("recipes");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredPosts = useMemo(() => {
+<<<<<<< HEAD
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const posts = getContentList();
+=======
+    const query = searchQuery.trim().toLowerCase();
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
 
     return posts.filter((post) => {
       const matchesCategory =
@@ -652,52 +576,102 @@ export default function ContentPage() {
         post.category === activeCategory;
 
       const matchesSearch =
-        normalizedQuery.length === 0 ||
-        post.title.toLowerCase().includes(normalizedQuery) ||
-        post.description.toLowerCase().includes(normalizedQuery) ||
-        post.categoryLabel.toLowerCase().includes(normalizedQuery) ||
-        post.author.toLowerCase().includes(normalizedQuery);
+        !query ||
+        post.title.toLowerCase().includes(query) ||
+        post.description.toLowerCase().includes(query) ||
+        post.categoryLabel.toLowerCase().includes(query) ||
+        post.author.toLowerCase().includes(query);
 
       return matchesCategory && matchesSearch;
     });
   }, [activeCategory, searchQuery]);
 
-  const handleSearch = (event) => {
-    event.preventDefault();
+  const clearFilters = () => {
+    setSearchQuery("");
+    setActiveCategory("all");
   };
 
   return (
-    <div className="min-h-screen bg-[#f7faf7] font-sans text-[#181c1b] antialiased">
-      <Header />
+    <div className="min-h-screen bg-chaybook-bg font-sans text-[#181c1b] antialiased">
+      <main className="w-full bg-chaybook-container pt-20">
+        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-12">
+          {/* Hero */}
+          <section className="relative z-10 mb-12 flex flex-col items-center text-center sm:mb-16">
+            <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#92f5a4] px-3 py-1 text-xs font-semibold tracking-wide text-[#007233]">
+              <Leaf size={16} fill="currentColor" />
+              Curated Plant-Based Living
+            </span>
 
-      <main className="min-h-screen w-full bg-[#f7faf7] pt-16">
-        <div className="flex w-full flex-col">
-          <div className="relative mx-auto w-full max-w-[1280px] px-4 pb-16 pt-8 sm:px-6 sm:pt-10 lg:px-12 lg:pb-16 lg:pt-8">
-            <div className="pointer-events-none absolute -top-12 left-1/2 h-[240px] w-[600px] -translate-x-1/2 rounded-full bg-[#92f5a4]/20 blur-[100px]" />
+            <h1 className="mb-2 max-w-2xl text-[28px] font-bold leading-9 tracking-tight sm:text-[36px] sm:leading-11 text-chaybook-primary">
+              Explore Our Posts
+            </h1>
 
-            <section className="relative z-10 mb-12 flex flex-col items-center text-center sm:mb-16">
-              <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#92f5a4] px-3 py-1 text-[12px] font-semibold leading-4 tracking-wide text-[#007233]">
-                <Leaf
-                  size={16}
-                  strokeWidth={2}
-                  fill="currentColor"
-                />
-                Curated Plant-Based Living
-              </span>
+            <p className="mb-8 max-w-xl text-base leading-7 text-[#3e4a3d] sm:text-lg">
+              Discover healthy recipes, nutrition tips, and inspiration for a
+              better vegetarian lifestyle.
+            </p>
 
-              <h1 className="mb-2 max-w-2xl text-[28px] font-bold leading-9 tracking-tight text-[#181c1b] sm:text-[36px] sm:leading-[44px]">
-                Explore Our Posts
-              </h1>
+            {/* Search */}
+            <form
+              onSubmit={(event) => event.preventDefault()}
+              className="mb-6 flex w-full max-w-2xl items-center gap-2 rounded-xl bg-white p-1 shadow-sm focus-within:shadow-md"
+            >
+              <Input
+                type="search"
+                icon={Search}
+                placeholder="Search posts, recipes, tips..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="border-none bg-transparent shadow-none focus:ring-0"
+              />
 
-              <p className="mb-8 max-w-xl text-[16px] font-normal leading-7 tracking-[-0.005em] text-[#3e4a3d] sm:text-[18px]">
-                Discover healthy recipes, nutrition tips, and inspiration for
-                a better vegetarian lifestyle.
+              <Button
+                type="submit"
+                size="md"
+                className="shrink-0 bg-chaybook-primary px-6 hover:bg-chaybook-hover"
+              >
+                Search
+              </Button>
+            </form>
+
+            <CategoryFilter
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+            />
+          </section>
+
+          {/* Posts */}
+          {filteredPosts.length > 0 ? (
+            <section
+              aria-label="Posts"
+              className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            >
+              {filteredPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </section>
+          ) : (
+            <section className="mb-12 flex min-h-75 flex-col items-center justify-center rounded-xl bg-white p-8 text-center shadow-sm">
+              <Search
+                size={40}
+                className="mb-4 text-[#6e7b6c]"
+                strokeWidth={1.5}
+              />
+
+              <h2 className="mb-2 text-[22px] font-semibold">No posts found</h2>
+
+              <p className="max-w-md text-[15px] leading-6 text-[#3e4a3d]">
+                Try another search keyword or select a different category.
               </p>
 
-              <form
-                onSubmit={handleSearch}
-                className="mb-6 flex w-full max-w-2xl items-center gap-2 rounded-xl bg-white p-1 shadow-sm transition-shadow duration-200 focus-within:shadow-md"
+              <Button
+                type="button"
+                size="md"
+                variant="outline"
+                onClick={clearFilters}
+                className="mt-5 bg-chaybook-primary hover:bg-chaybook-hover"
               >
+<<<<<<< HEAD
                 <div className="flex items-center justify-center pl-3 text-[#6e7b6c]">
                   <Search size={24} strokeWidth={2} />
                 </div>
@@ -729,54 +703,20 @@ export default function ContentPage() {
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
               />
+=======
+                Clear filters
+              </Button>
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
             </section>
-
-            {filteredPosts.length > 0 ? (
-              <section
-                aria-label="Posts"
-                className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-              >
-                {filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </section>
-            ) : (
-              <section className="mb-12 flex min-h-[300px] flex-col items-center justify-center rounded-xl bg-white p-8 text-center shadow-sm">
-                <Search
-                  size={40}
-                  className="mb-4 text-[#6e7b6c]"
-                  strokeWidth={1.5}
-                />
-
-                <h2 className="mb-2 text-[22px] font-semibold leading-[30px] text-[#181c1b]">
-                  No posts found
-                </h2>
-
-                <p className="max-w-md text-[15px] leading-6 text-[#3e4a3d]">
-                  Try another search keyword or select a different category.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setActiveCategory("all");
-                  }}
-                  className="mt-5 rounded-lg bg-[#006b2c] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#00873a]"
-                >
-                  Clear filters
-                </button>
-              </section>
-            )}
-
-            <Pagination />
-
-            <NewsletterBanner />
-          </div>
+          )}
+          <Pagination />
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
+<<<<<<< HEAD
+=======
+
+export default ContentPage;
+>>>>>>> ceb409d6c4b49bbad479eaf590c443f81fdfe665
