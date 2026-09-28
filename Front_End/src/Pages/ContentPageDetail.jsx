@@ -140,7 +140,7 @@ function IngredientsSection({ ingredients }) {
   return (
     <section
       aria-labelledby="ingredients-heading"
-      className="space-y-space-md rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm"
+      className="space-y-space-md"
       id="ingredients"
     >
       <h2
@@ -149,19 +149,14 @@ function IngredientsSection({ ingredients }) {
       >
         Fresh Ingredients
       </h2>
-      <ul className="grid grid-cols-1 gap-space-sm pt-space-xs md:grid-cols-2">
+      <ul className="space-y-space-xs pt-space-xs">
         {ingredients.map((ingredient) => (
           <li
             key={`${ingredient.amount}-${ingredient.name}`}
-            className="rounded-xl bg-surface-container-low p-3 text-body-md font-body-md text-on-surface"
+            className="text-body-md font-body-md text-on-surface"
           >
-            <p>
-              <span className="font-semibold">{ingredient.amount}</span>{" "}
-              {ingredient.name}
-            </p>
-            <p className="mt-1 text-caption font-caption text-on-surface-variant">
-              {ingredient.description}
-            </p>
+            <span className="font-semibold">{ingredient.amount}</span>{" "}
+            {ingredient.name} — {ingredient.description}
           </li>
         ))}
       </ul>
