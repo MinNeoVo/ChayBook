@@ -2,6 +2,7 @@ package com.chaybook.backend.auth.dto;
 
 public record LoginResponse(
         String message,
+        String token,
         UserData user
 ) {
 

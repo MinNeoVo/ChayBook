@@ -1,0 +1,45 @@
+###
+### REGISTER
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "tien_test",
+    "email": "tien_test@gmail.com",
+    "password": "123456",
+    "fullName": "Tien Test"
+}
+
+
+### LOGIN
+
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "tien_test@gmail.com",
+    "password": "123456"
+}
+
+
+### LOGIN - WRONG PASSWORD
+
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "tien_test@gmail.com",
+    "password": "wrongpassword"
+}
+
+
+### LOGIN - EMAIL NOT FOUND
+
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "notfound@gmail.com",
+    "password": "123456"
+}
