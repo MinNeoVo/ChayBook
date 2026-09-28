@@ -1,22 +1,12 @@
 package com.chaybook.backend.auth.controller;
 
 
-import com.chaybook.backend.auth.dto.LoginRequest;
-import com.chaybook.backend.auth.dto.LoginResponse;
-import com.chaybook.backend.auth.dto.RegisterRequest;
-import com.chaybook.backend.auth.dto.RegisterResponse;
+import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.auth.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 // import java.util.UUID;

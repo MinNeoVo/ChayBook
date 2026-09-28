@@ -1,10 +1,7 @@
 package com.chaybook.backend.auth.service;
 
 
-import com.chaybook.backend.auth.dto.LoginRequest;
-import com.chaybook.backend.auth.dto.LoginResponse;
-import com.chaybook.backend.auth.dto.RegisterRequest;
-import com.chaybook.backend.auth.dto.RegisterResponse;
+import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 import org.springframework.http.HttpStatus;
