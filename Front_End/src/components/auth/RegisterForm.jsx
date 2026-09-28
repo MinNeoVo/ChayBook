@@ -106,7 +106,7 @@ function RegisterForm() {
 
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         {/* Full Name */}
         <Input
           label="Full Name"

@@ -314,6 +314,7 @@ function AiQuickAssistant() {
    HOME PAGE
 ========================================================= */
 
+// Displays the ChayBook home page and featured content.
 function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
 

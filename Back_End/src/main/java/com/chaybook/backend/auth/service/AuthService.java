@@ -5,6 +5,7 @@ import com.chaybook.backend.auth.dto.LoginRequest;
 import com.chaybook.backend.auth.dto.LoginResponse;
 import com.chaybook.backend.auth.dto.RegisterRequest;
 import com.chaybook.backend.auth.dto.RegisterResponse;
+import com.chaybook.backend.security.JwtService;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 import org.springframework.http.HttpStatus;
@@ -16,17 +17,21 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+
 @Service
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
 public LoginResponse login(LoginRequest request) {
@@ -61,8 +66,11 @@ public LoginResponse login(LoginRequest request) {
         );
     }
 
+    String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+
     return new LoginResponse(
             "Login successful",
+            token,
             new LoginResponse.UserData(
                     user.getUserId(),
                     user.getUsername(),

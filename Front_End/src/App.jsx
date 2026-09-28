@@ -5,7 +5,7 @@ import Navbar from "./components/common/Navbar";
 
 import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
-import ContentPage from "./Pages/ContentPage";
+import ContentPage from "./pages/ContentPage";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import CommunityPage from "./pages/CommunityPage";

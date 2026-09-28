@@ -43,20 +43,6 @@ function CommunityToolbar({
         </Button>
 
         <div className="hidden h-8 w-px bg-gray-200 sm:block" />
-
-        <div
-          className="
-                        hidden
-                        items-center
-                        gap-1.5
-                        text-xs
-                        text-gray-500
-                        sm:flex
-                    "
-        >
-          <span className="h-2 w-2 rounded-full bg-[#62df7d]" />
-          1.4k members active now
-        </div>
       </div>
 
       {/* Right */}
