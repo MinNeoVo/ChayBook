@@ -34,7 +34,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
-public LoginResponse login(LoginRequest request) {
+public LoginResult login(LoginRequest request) {
 
     Optional<User> userOpt =
             userRepository.findByEmailIgnoreCase(request.getEmail());
@@ -66,19 +66,24 @@ public LoginResponse login(LoginRequest request) {
         );
     }
 
-    String token = jwtService.generateToken(user.getUserId(), user.getEmail(), user.getRole());
+   String token = jwtService.generateToken(
+        user.getUserId(),
+        user.getEmail(),
+        user.getRole()
+);
 
-    return new LoginResponse(
-            "Login successful",
-            token,
-            new LoginResponse.UserData(
-                    user.getUserId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getFullName(),
-                    user.getRole()
-            )
-    );
+LoginResponse response = new LoginResponse(
+        "Login successful",
+        new LoginResponse.UserData(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getRole()
+        )
+);
+
+return new LoginResult(response, token);
 }
 
     @Transactional

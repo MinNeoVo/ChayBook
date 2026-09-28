@@ -3,7 +3,8 @@ package com.chaybook.backend.auth.controller;
 
 import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.auth.service.AuthService;
-import jakarta.servlet.http.*;
+import com.chaybook.backend.auth.service.LoginResult;
+
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -55,11 +56,21 @@ public ResponseEntity<LoginResponse> login(
         );
     }
 
-    LoginResponse response = authService.login(request);
+    LoginResult result = authService.login(request);
+
+    ResponseCookie cookie = ResponseCookie
+            .from("CHAYBOOK_TOKEN", result.token())
+            .httpOnly(true)
+            .secure(false) // localhost HTTP
+            .sameSite("Lax")
+            .path("/")
+            .maxAge(60 * 60)
+            .build();
 
     return ResponseEntity
             .ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
             .header("Cache-Control", "no-store")
-            .body(response);
+            .body(result.response());
 }
 }
