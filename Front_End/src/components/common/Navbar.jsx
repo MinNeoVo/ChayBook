@@ -15,7 +15,7 @@ function Navbar() {
     { name: "Content", path: "/content" },
     ...(isLoggedIn ? [{ name: "Community", path: "/community" }] : []),
     { name: "AI Assistant", path: "/ai-assistant" },
-    { name: "BMI Analysis", path: "/bmi" },
+    { name: "Recipes", path: "/recipes" },
   ];
 
   return (

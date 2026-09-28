@@ -6,7 +6,7 @@ const footerSections = [
     title: "Explore",
     links: [
       ["Nutrition Guides", "/content"],
-      ["Healthy Recipes", "/content"],
+      ["Healthy Recipes", "/recipes"],
       ["Video Tutorials", "/content"],
       ["Meal Plans", "/content"],
     ],
