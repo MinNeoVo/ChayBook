@@ -4,6 +4,7 @@ import com.chaybook.backend.user.dto.*;
 import com.chaybook.backend.user.exception.IncorrectCurrentPasswordException;
 import com.chaybook.backend.user.service.UserService;
 import jakarta.servlet.http.*;
+import com.chaybook.backend.auth.session.SessionAttributes;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowCredentials = "true"
-)
 public class UserController {
 
     private final UserService userService;
@@ -33,7 +30,7 @@ public class UserController {
     {
         HttpSession session = httpRequest.getSession(false);
 
-        Object sessionUserId = session == null? null: session.getAttribute("AUTH_USER_ID");
+        Object sessionUserId = session == null ? null : session.getAttribute(SessionAttributes.AUTH_USER_ID);
 
         if (!(sessionUserId instanceof Integer authenticatedUserId)) {
             throw new ResponseStatusException(
@@ -67,7 +64,7 @@ public class UserController {
 
         Object sessionUserId = session == null
                 ? null
-                : session.getAttribute("AUTH_USER_ID");
+                : session.getAttribute(SessionAttributes.AUTH_USER_ID);
 
         if (!(sessionUserId instanceof Integer authenticatedUserId)) {
             throw new ResponseStatusException(

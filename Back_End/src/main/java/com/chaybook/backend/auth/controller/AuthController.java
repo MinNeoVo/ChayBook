@@ -1,28 +1,34 @@
 package com.chaybook.backend.auth.controller;
 
-
 import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.auth.service.AuthService;
+import com.chaybook.backend.auth.mapper.AuthUserMapper;
+import com.chaybook.backend.auth.service.CurrentUserProvider;
+import com.chaybook.backend.auth.service.SessionAuthenticationService;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-// import java.util.UUID;
-
-@CrossOrigin(origins = "http://localhost:5173",
-allowCredentials = "true"
-        )
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final SessionAuthenticationService sessionAuthenticationService;
+    private final CurrentUserProvider currentUserProvider;
+    private final AuthUserMapper authUserMapper;
 
-
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            SessionAuthenticationService sessionAuthenticationService,
+            CurrentUserProvider currentUserProvider,
+            AuthUserMapper authUserMapper
+    ) {
         this.authService = authService;
+        this.sessionAuthenticationService = sessionAuthenticationService;
+        this.currentUserProvider = currentUserProvider;
+        this.authUserMapper = authUserMapper;
     }
 
     @PostMapping("/register")
@@ -36,37 +42,27 @@ public class AuthController {
                 .body(response);
     }
 
-@PostMapping(value = "/login",
-        consumes = MediaType.APPLICATION_JSON_VALUE)
-public ResponseEntity<LoginResponse> login(
-        @RequestBody LoginRequest request,   HttpServletRequest httpRequest
-)
-{
-    if (request.getEmail() == null
-            || request.getEmail().isBlank()
-            || request.getPassword() == null
-            || request.getPassword().isEmpty()) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Email and password are required"
-        );
+    @PostMapping(
+            value = "/login",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    ) {
+        LoginResponse response = authService.login(request);
+        sessionAuthenticationService.signIn(response.user(), httpRequest, httpResponse);
+
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(response);
     }
 
-    LoginResponse response = authService.login(request);
-
-    HttpSession session = httpRequest.getSession(true);
-
-    httpRequest.changeSessionId();
-
-    session.setAttribute(
-            "AUTH_USER_ID",
-            response.user().userId()
-    );
-
-    session.setMaxInactiveInterval(30 * 60);
-
-    return ResponseEntity.ok()
-            .header("Cache-Control", "no-store")
-            .body(response);
-}
+    @GetMapping("/me")
+    public ResponseEntity<LoginResponse.UserData> currentUser() {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(authUserMapper.toResponse(currentUserProvider.requireUser()));
+    }
 }

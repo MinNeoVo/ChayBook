@@ -1,7 +1,7 @@
 package com.chaybook.backend.auth.service;
 
-
 import com.chaybook.backend.auth.dto.*;
+import com.chaybook.backend.auth.mapper.AuthUserMapper;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 import org.springframework.http.HttpStatus;
@@ -11,64 +11,51 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 @Service
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthUserMapper authUserMapper;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AuthUserMapper authUserMapper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authUserMapper = authUserMapper;
     }
 
-public LoginResponse login(LoginRequest request) {
+    @Transactional(readOnly = true)
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmailIgnoreCase(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No account found with this email."
+                ));
 
-    Optional<User> userOpt =
-            userRepository.findByEmailIgnoreCase(request.getEmail());
-
-    if (userOpt.isEmpty()) {
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No account found with this email."
-        );
+        if (request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72
+                || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Incorrect email or password."
+            );
+        }
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "DISABLED".equalsIgnoreCase(user.getStatus())
+                            ? "Your account has been disabled."
+                            : "Your account is not active."
+            );
+        }
+        return LoginResponse.builder()
+                .message("Login successful")
+                .user(authUserMapper.toResponse(user))
+                .build();
     }
-
-    User user = userOpt.get();
-
-    if (!passwordEncoder.matches(
-            request.getPassword(),
-            user.getPasswordHash()
-    )) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Incorrect email or password."
-        );
-    }
-
-    // Case 3: Tài khoản bị disable
-    if ("DISABLED".equalsIgnoreCase(user.getStatus())) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Your account has been disabled."
-        );
-    }
-
-    return new LoginResponse(
-            "Login successful",
-            new LoginResponse.UserData(
-                    user.getUserId(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    user.getFullName(),
-                    user.getRole()
-            )
-    );
-}
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
