@@ -1,8 +1,6 @@
 package com.chaybook.backend.user.service;
 
-import com.chaybook.backend.user.dto.ChangePasswordRequest;
-import com.chaybook.backend.user.dto.UpdateProfileRequest;
-import com.chaybook.backend.user.dto.UpdateProfileResponse;
+import com.chaybook.backend.user.dto.*;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.exception.IncorrectCurrentPasswordException;
 import com.chaybook.backend.user.repository.UserRepository;
