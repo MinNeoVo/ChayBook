@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+
 import {
   ArrowRight,
   Bookmark,
@@ -10,7 +11,6 @@ import {
   Mail,
   MenuBook,
   MessageCircle,
-  Newspaper,
   PersonStanding,
   Rss,
   Search,
@@ -18,6 +18,8 @@ import {
   Globe,
   X,
 } from "lucide-react";
+
+import { getContentList } from "./mocks/contentData";
 
 const logoUrl =
   "https://lh3.googleusercontent.com/aida/AEtjO1VKv3kDYidvSLgjsjwk42tUI5A_ir1KG91CD1IqeBkKLqdAoaitt6UDGv-ZEyyCvlqz23nqpFNy78oD7AkccAy7oZiihRuffEd1YuUaKUmgevykqdgybf1Dvw52_vJNZj49VuZD3T2pA68KazIDEdm4TBoozvF8lWLZCQ0pwfPixoiZC014Udd4CT1u4hg2pXWf9oUOFevg-6s5CSsk5pQsX7T_EQ45WHUozJKYhQZqnEhLYzT1tFql7w0";
@@ -43,142 +45,6 @@ const categories = [
   {
     id: "tips",
     label: "Tips",
-  },
-];
-
-const posts = [
-  {
-    id: 1,
-    category: "recipes",
-    categoryLabel: "Recipes",
-    categoryColor: "secondary",
-    image:
-      "https://lh3.googleusercontent.com/aida/AEtjO1UmS85DWMio266GaCmBtoF5p2SbdcO-D7YXEYhjqB2bMqDjA8eeyu8SBYPi3YX9xW_DldcWAqyznz_bKUv7B1lrtk9CGVucoF_hES-abjw8Vwjt76bdkvM_MasS8akxPrNQTBGjsc0M-fF21QL0AI-MkdCTq5dZWs57F2BthWk3iFciw5sVVacB_bF8zBu2TNtClZ4oDcmbTq9JASYh-Ssi6LQFOKZQBh0LBLToo_LDPPUfeMl7fVASIw",
-    imageAlt: "Avocado Quinoa Salad",
-    title:
-      "Avocado Quinoa Salad – A healthy, easy-to-make vegetarian meal at home",
-    description:
-      "A colorful, nutrient-packed bowl full of fresh vegetables, quinoa and a zesty tahini dressing. Perfect for lunch!",
-    author: "Sarah Green",
-    authorRole: "Dietitian",
-    initials: "SG",
-    authorColor: "primary",
-    calories: "495 kcal",
-    comments: 24,
-    date: "Apr 12, 2024",
-    duration: "15 min prep",
-    durationIcon: "timer",
-    action: "Read Recipe",
-  },
-  {
-    id: 2,
-    category: "recipes",
-    categoryLabel: "Recipes",
-    categoryColor: "secondary",
-    image:
-      "https://lh3.googleusercontent.com/aida/AEtjO1VdoBwdTrLghRZZ_PtVBBlZ89DAvHTxETbhzjwbR3Ztnxx9IsbpW1-HWpGK6kQFqIzAVK0lr9gT1UbLdIQDtnjNsIVAyALcNWMopB_RFFYcR44Ze06IDeZ9QvplZy5O8iJOSZ6TFQKXTtAvf8QpVrBAOirrER8hUAwPt12b2gMcbBfe4sLtxn-ZJUacgil9zs1vbEzwfSf7DZhZ1xp2JtJROSUxvg8gjmWmqaNeqGVZGICrS--aSkdKUlo",
-    imageAlt: "Fresh Homemade Avocado Sourdough with Microgreens",
-    title: "Fresh Homemade Avocado Sourdough with Microgreens",
-    description:
-      "Loaded with monounsaturated healthy fats, crunchy radish, and living microgreen enzymes for vital mornings.",
-    author: "Sarah Green",
-    authorRole: "Dietitian",
-    initials: "SG",
-    authorColor: "primary",
-    calories: "320 kcal",
-    comments: 18,
-    date: "Apr 10, 2024",
-    duration: "10 min",
-    durationIcon: "timer",
-    action: "Read Recipe",
-  },
-  {
-    id: 3,
-    category: "nutrition",
-    categoryLabel: "Nutrition",
-    categoryColor: "tertiary",
-    image:
-      "https://lh3.googleusercontent.com/aida/AEtjO1V0eAO_LvyrGJcFiQB34FJw4nozoRO_veC_LMZNMCoM-hsyU8LQFcPaqbMRHvjXXQ7nrROnEbcWe2bNjYXms1Axu-WXuIyYcWZYzgaupKO7-pRICvxaUG2l8IuLTk7JgwPqfYpVN9cCo1Ud6mb6j5A-YGzx3QGICOrpO2tZx5bcOiNBaOJ7t28eiWzbLsigjDh1CvTEmNJiZE-aWG-xqrhwFfLg6eIngtfZPcvMo6xEwZeqUzxRdhQUW1M",
-    imageAlt: "Creamy Roasted Pumpkin Ginger Soup with Pepitas",
-    title: "Creamy Roasted Pumpkin Ginger Soup with Pepitas",
-    description:
-      "Warm anti-inflammatory comfort bowl slow-simmered with coconut milk, turmeric, and toasted pumpkin seeds.",
-    author: "Dr. Elena Rostova",
-    authorRole: "Nutritionist",
-    initials: "ER",
-    authorColor: "tertiary",
-    calories: "210 kcal",
-    comments: 32,
-    date: "Apr 08, 2024",
-    duration: "25 min",
-    durationIcon: "timer",
-    action: "Read Guide",
-  },
-  {
-    id: 4,
-    category: "recipes",
-    categoryLabel: "Recipes",
-    categoryColor: "secondary",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCZSGiIGGjN8CjLlk3LP3FeMMMXQGAaj0xartwNFiRVf_vU6A6BeIQXIpRQsI-W5Ljc2K_-3lh-KLZwXpN-ADBFkJkCGxVMGaKZoPJk_j1qTwx7_9CO-kVOltKdBms-8I_RuRM4WBPNp8Ck999j2-zM4OrI2IQN8WVmfsqpkz7EEbkzSakqe9j8oti5YpYm89VkX2lxNbhSOP5TX5EOyyaWjetfblNC7DEzGNA36Dhk3dEOHGoHmb3s",
-    imageAlt: "Crisp Summer Spring Rolls with Zesty Peanut Dip",
-    title: "Crisp Summer Spring Rolls with Zesty Peanut Dip",
-    description:
-      "Refreshing rice paper rolls packed with crisp cucumber, mint, carrots, and vermicelli with rich peanut dip.",
-    author: "Tien Nguyen",
-    authorRole: "Culinary Lead",
-    initials: "TN",
-    authorColor: "secondary",
-    calories: "280 kcal",
-    comments: 14,
-    date: "Apr 05, 2024",
-    duration: "20 min",
-    durationIcon: "timer",
-    action: "Read Recipe",
-  },
-  {
-    id: 5,
-    category: "lifestyle",
-    categoryLabel: "Lifestyle",
-    categoryColor: "lifestyle",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCLEIrN9wQ2uGj1OP6aezuzV2YQn0RpoIk-aNBblA5CqQZBkB9jtCwePqWayvgl1q_xOdv4VTEoo96Lq9hMm_CdMkU7tFQF0nN8k2wONk3rbXSveCzaeBtfJYU7U9WgtOg_xiTwZmynCHXDQx3-hhbn_lQdv_2TdolhwJWZd75IVllKaJALTVlBK4Hj84OBjB0fEIVE-M6LAglc8JYjDihwVTpP6xETydFW8iUq7x24WpLzKmpNcpxg",
-    imageAlt: "Mediterranean Herb Garden Salad with Kalamata Olives",
-    title: "Mediterranean Herb Garden Salad with Kalamata Olives",
-    description:
-      "Sun-ripened organic tomatoes, crisp Persian cucumbers, oregano-infused cold-pressed olive oil, and plant feta.",
-    author: "Marcus Vance",
-    authorRole: "Holistic Coach",
-    initials: "MV",
-    authorColor: "tertiary-container",
-    calories: "240 kcal",
-    comments: 19,
-    date: "Apr 03, 2024",
-    duration: "12 min",
-    durationIcon: "timer",
-    action: "Read Story",
-  },
-  {
-    id: 6,
-    category: "tips",
-    categoryLabel: "Tips",
-    categoryColor: "primary",
-    image:
-      "https://lh3.googleusercontent.com/aida/AEtjO1VTLHEzsp0n2ra6xBNduvIDDgPZ76VrN-cr43gmM8kp8WasUNdFB-ioeyQszojmDC3t3xmS8H_BPMJUgnGCSbFyQJYNkzp3Pi-XR4DFMK_douWI32E9NlOek1DxwgtYTS6jrkVW43i3xgZttabm-s1HHss0UFlU5N-_DVmV1c3m0TL_6NtuFtf3WEWob4cIZzzzPWbA2m_kOZhu4NBcsYns5MN8d4xk_SL5g0SW0Ok5LJxThdMaE7Gba90",
-    imageAlt: "The Complete Guide to High-Protein Vegetarian Meal Prepping",
-    title: "The Complete Guide to High-Protein Vegetarian Meal Prepping",
-    description:
-      "How to batch-cook balanced macro grain bowls with diverse plant proteins to save time during busy workweeks.",
-    author: "Sarah Green",
-    authorRole: "Dietitian",
-    initials: "SG",
-    authorColor: "primary",
-    calories: null,
-    comments: 42,
-    date: "Mar 28, 2024",
-    duration: "8 min read",
-    durationIcon: "book",
-    action: "Read Guide",
   },
 ];
 
@@ -274,7 +140,10 @@ function Header() {
             </span>
           </a>
 
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          <nav
+            className="hidden items-center gap-1 md:flex"
+            aria-label="Main navigation"
+          >
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -343,7 +212,11 @@ function Header() {
             onClick={() => setIsMobileMenuOpen((previous) => !previous)}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-[#3e4a3d] transition-colors hover:bg-[#ebefec] md:hidden"
           >
-            {isMobileMenuOpen ? <X size={20} /> : <MenuBook size={20} />}
+            {isMobileMenuOpen ? (
+              <X size={20} />
+            ) : (
+              <MenuBook size={20} />
+            )}
           </button>
         </div>
       </div>
@@ -390,10 +263,11 @@ function CategoryFilter({ activeCategory, onCategoryChange }) {
             type="button"
             onClick={() => onCategoryChange(category.id)}
             aria-pressed={isActive}
-            className={`flex items-center gap-1 rounded-full px-4 py-1 text-[14px] font-semibold leading-5 shadow-sm transition-colors ${isActive
-              ? "bg-[#006b2c] text-white"
-              : "bg-white text-[#3e4a3d] hover:bg-[#ebefec]"
-              }`}
+            className={`flex items-center gap-1 rounded-full px-4 py-1 text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
+              isActive
+                ? "bg-[#006b2c] text-white"
+                : "bg-white text-[#3e4a3d] hover:bg-[#ebefec]"
+            }`}
           >
             {isActive && category.id !== "all" && (
               <span className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -432,6 +306,7 @@ function PostCard({ post }) {
             <span
               className={`h-2 w-2 rounded-full ${categoryStyle.dot}`}
             />
+
             {post.categoryLabel}
           </span>
 
@@ -497,7 +372,7 @@ function PostCard({ post }) {
           </span>
 
           <a
-            href={`/content/${post.id}`}
+            href={`/content/${post.slug}`}
             className="inline-flex items-center gap-1 text-[14px] font-semibold leading-5 text-[#006b2c] transition-colors hover:text-[#00873a]"
           >
             {post.action}
@@ -524,7 +399,9 @@ function Pagination() {
       <p className="order-2 text-[13px] font-normal leading-5 text-[#3e4a3d] sm:order-1">
         Showing{" "}
         <span className="font-semibold text-[#181c1b]">
-          {currentPage === 1 ? "1–6" : `${(currentPage - 1) * 6 + 1}–${currentPage * 6}`}
+          {currentPage === 1
+            ? "1–6"
+            : `${(currentPage - 1) * 6 + 1}–${currentPage * 6}`}
         </span>{" "}
         of <span className="font-semibold text-[#181c1b]">48</span> articles
       </p>
@@ -548,10 +425,11 @@ function Pagination() {
             type="button"
             aria-current={currentPage === page ? "page" : undefined}
             onClick={() => setCurrentPage(page)}
-            className={`flex h-10 w-10 items-center justify-center rounded-lg text-[14px] font-semibold leading-5 shadow-sm transition-colors ${currentPage === page
-              ? "bg-[#006b2c] text-white"
-              : "bg-white text-[#181c1b] hover:bg-[#ebefec]"
-              }`}
+            className={`flex h-10 w-10 items-center justify-center rounded-lg text-[14px] font-semibold leading-5 shadow-sm transition-colors ${
+              currentPage === page
+                ? "bg-[#006b2c] text-white"
+                : "bg-white text-[#181c1b] hover:bg-[#ebefec]"
+            }`}
           >
             {page}
           </button>
@@ -766,10 +644,12 @@ export default function ContentPage() {
 
   const filteredPosts = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
+    const posts = getContentList();
 
     return posts.filter((post) => {
       const matchesCategory =
-        activeCategory === "all" || post.category === activeCategory;
+        activeCategory === "all" ||
+        post.category === activeCategory;
 
       const matchesSearch =
         normalizedQuery.length === 0 ||
@@ -830,7 +710,9 @@ export default function ContentPage() {
                   id="postSearchInput"
                   type="search"
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) =>
+                    setSearchQuery(event.target.value)
+                  }
                   placeholder="Search posts, recipes, tips..."
                   className="h-11 w-full bg-transparent text-[15px] font-normal leading-6 text-[#181c1b] outline-none placeholder:text-[#6e7b6c]"
                 />
