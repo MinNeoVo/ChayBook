@@ -1,17 +1,11 @@
 package com.chaybook.backend.user.controller;
 
-import com.chaybook.backend.user.dto.ChangePasswordRequest;
-import com.chaybook.backend.user.dto.ChangePasswordResponse;
-import com.chaybook.backend.user.dto.UpdateProfileRequest;
-import com.chaybook.backend.user.dto.UpdateProfileResponse;
+import com.chaybook.backend.user.dto.*;
 import com.chaybook.backend.user.exception.IncorrectCurrentPasswordException;
 import com.chaybook.backend.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 

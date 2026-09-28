@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ArrowRight,
   ChevronLeft,
@@ -183,8 +184,8 @@ function PostCard({ post }) {
             {post.date}
           </span>
 
-          <a
-            href={`/content/${post.id}`}
+          <Link
+            to={`/content/${post.id}`}
             className="inline-flex items-center gap-1 text-sm font-semibold text-chaybook-primary transition-colors hover:text-chaybook-hover"
           >
             {post.action}
@@ -192,7 +193,7 @@ function PostCard({ post }) {
               size={18}
               className="transition-transform group-hover:translate-x-0.5"
             />
-          </a>
+          </Link>
         </div>
       </div>
     </article>
