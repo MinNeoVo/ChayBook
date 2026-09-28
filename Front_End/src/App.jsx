@@ -6,6 +6,7 @@ import Navbar from "./components/common/Navbar";
 import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
 import ContentPage from "./Pages/ContentPage";
+import ContentPageDetail from "./pages/ContentPageDetail";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import CommunityPage from "./pages/CommunityPage";
@@ -25,6 +26,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/content" element={<ContentPage />} />
+          <Route path="/content/:id" element={<ContentPageDetail />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
         </Routes>

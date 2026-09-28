@@ -5,6 +5,81 @@
   --color-chaybook-hover: #00873a;
   --color-chaybook-bg: #f7faf7;
   --color-chaybook-container: #f1f4f1;
+
+  --color-primary: #006b2c;
+  --color-primary-container: #00873a;
+  --color-secondary-container: #92f5a4;
+  --color-on-secondary-container: #007233;
+  --color-background: #f7faf7;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f1f4f1;
+  --color-surface-container: #ebefec;
+  --color-surface-container-highest: #e0e3e0;
+  --color-on-surface: #181c1b;
+  --color-on-surface-variant: #3e4a3d;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #f7fff2;
+  --color-tertiary-container: #5e7b6a;
+  --color-on-tertiary-container: #f6fff6;
+  --color-inverse-surface: #2d3130;
+  --color-inverse-on-surface: #eef1ee;
+  --color-error: #ba1a1a;
+  --color-outline: #6e7b6c;
+
+  --spacing-space-2xs: 0.25rem;
+  --spacing-space-xs: 0.5rem;
+  --spacing-space-sm: 0.75rem;
+  --spacing-space-md: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-space-xl: 2rem;
+  --spacing-space-2xl: 3rem;
+  --spacing-space-3xl: 4rem;
+  --spacing-margin-desktop: 3rem;
+  --spacing-gutter-lg: 2rem;
+
+  --font-display-hero: "Plus Jakarta Sans", sans-serif;
+  --font-label-sm: "Plus Jakarta Sans", sans-serif;
+  --font-label-md: "Plus Jakarta Sans", sans-serif;
+  --font-body-lg: "Plus Jakarta Sans", sans-serif;
+  --font-body-md: "Plus Jakarta Sans", sans-serif;
+  --font-body-sm: "Plus Jakarta Sans", sans-serif;
+  --font-caption: "Plus Jakarta Sans", sans-serif;
+  --font-headline-xl: "Plus Jakarta Sans", sans-serif;
+  --font-headline-lg: "Plus Jakarta Sans", sans-serif;
+  --font-headline-md: "Plus Jakarta Sans", sans-serif;
+  --font-headline-sm: "Plus Jakarta Sans", sans-serif;
+
+  --text-display-hero: 48px;
+  --text-display-hero--line-height: 56px;
+  --text-headline-xl: 36px;
+  --text-headline-xl--line-height: 44px;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 700;
+  --text-headline-lg: 28px;
+  --text-headline-lg--line-height: 36px;
+  --text-headline-lg--letter-spacing: -0.015em;
+  --text-headline-lg--font-weight: 600;
+  --text-headline-md: 22px;
+  --text-headline-md--line-height: 30px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm: 18px;
+  --text-headline-sm--line-height: 26px;
+  --text-headline-sm--font-weight: 600;
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-md: 15px;
+  --text-body-md--line-height: 24px;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 20px;
+  --text-label-md: 14px;
+  --text-label-md--line-height: 20px;
+  --text-label-md--font-weight: 600;
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--font-weight: 600;
+  --text-caption: 11px;
+  --text-caption--line-height: 14px;
 }
 
 html,

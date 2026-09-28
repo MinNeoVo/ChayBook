@@ -337,11 +337,14 @@ function HomePage() {
             HERO
         ================================================= */}
 
-        <section className="relative overflow-hidden">
-          {/* Background glow */}
-          <div className="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[350px] w-[900px] -translate-x-1/2 rounded-full bg-chaybook-secondary-container/30 blur-[110px]" />
+        <section className="relative isolate overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/home-background.png')" }}
+          />
 
-          <div className="mx-auto max-w-[1240px] px-4 pb-20 pt-12 sm:px-6 lg:px-12 lg:pb-24 lg:pt-20">
+          <div className="relative z-10 mx-auto max-w-[1240px] px-4 pb-20 pt-12 sm:px-6 lg:px-12 lg:pb-24 lg:pt-20">
             <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
               {/* LEFT */}
               <div className="flex flex-col items-start gap-6 lg:col-span-7">

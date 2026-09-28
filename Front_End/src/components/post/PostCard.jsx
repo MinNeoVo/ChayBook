@@ -27,9 +27,6 @@ function PostCard({
 }) {
   const {
     status,
-    author,
-
-    avatar,
     time,
     source,
     title,
