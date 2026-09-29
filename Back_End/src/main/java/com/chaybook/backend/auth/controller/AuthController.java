@@ -3,9 +3,14 @@ package com.chaybook.backend.auth.controller;
 
 import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.auth.service.AuthService;
-import jakarta.servlet.http.*;
+import com.chaybook.backend.auth.service.LoginResult;
+
 import jakarta.validation.Valid;
+
+import java.util.Map;
+
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -55,11 +60,46 @@ public ResponseEntity<LoginResponse> login(
         );
     }
 
-    LoginResponse response = authService.login(request);
+    LoginResult result = authService.login(request);
+
+    ResponseCookie cookie = ResponseCookie
+            .from("CHAYBOOK_TOKEN", result.token())
+            .httpOnly(true)
+            .secure(false) // localhost HTTP
+            .sameSite("Lax")
+            .path("/")
+            .maxAge(60 * 60)
+            .build();
 
     return ResponseEntity
             .ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
             .header("Cache-Control", "no-store")
-            .body(response);
+            .body(result.response());
+}
+
+@GetMapping("/me")
+public ResponseEntity<MeResponse> getCurrentUser(
+        Authentication authentication
+) {
+    return ResponseEntity.ok(
+            authService.getCurrentUser(authentication)
+    );
+}
+
+@PostMapping("/logout")
+public ResponseEntity<Map<String, String>> logout() {
+
+    ResponseCookie cookie = ResponseCookie.from("CHAYBOOK_TOKEN", "")
+            .httpOnly(true)
+            .secure(false)
+            .sameSite("Lax")
+            .path("/")
+            .maxAge(0)
+            .build();
+
+    return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, cookie.toString())
+            .body(Map.of("message", "Logout successful"));
 }
 }

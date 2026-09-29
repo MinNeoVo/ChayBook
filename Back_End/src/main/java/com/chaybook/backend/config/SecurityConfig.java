@@ -15,8 +15,11 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.chaybook.backend.security.CookieBearerTokenResolver;
+import com.chaybook.backend.security.JwtAuthenticationConverter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
@@ -42,7 +45,6 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
-
         return NimbusJwtDecoder
                 .withSecretKey(jwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
@@ -50,11 +52,20 @@ public class SecurityConfig {
     }
 
     @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        return new CookieBearerTokenResolver();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
+            HttpSecurity http,
+            BearerTokenResolver bearerTokenResolver
     ) throws Exception {
 
         http
+
+            .cors(cors -> {})
+
             .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
@@ -67,14 +78,27 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     "/api/auth/register",
-                    "/api/auth/login"
+                    "/api/auth/login",
+                    "/api/auth/logout"
                 ).permitAll()
+
+                .requestMatchers("/api/admin/**")
+                .hasRole("ADMIN")
+
+                .requestMatchers("/api/user/**")
+                .hasAnyRole("USER", "ADMIN")
 
                 .anyRequest().authenticated()
             )
 
             .oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwt -> {})
+                oauth2
+                     .bearerTokenResolver(bearerTokenResolver)
+                     .jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(
+                            new JwtAuthenticationConverter()
+                        )
+                    )
             );
 
         return http.build();
