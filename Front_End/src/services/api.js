@@ -13,9 +13,12 @@ export const apiFetch = async (endpoint, options = {}) => {
   const data = await response.json();
 
   if (!response.ok) {
-    const error = new Error(data.message || "Something went wrong");
+    const errorMessage =
+      data.message || data.detail || data.error || "Something went wrong";
 
+    const error = new Error(errorMessage);
     error.status = response.status;
+    error.data = data;
 
     throw error;
   }
