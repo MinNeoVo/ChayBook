@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.chaybook.backend.security.CookieBearerTokenResolver;
+import com.chaybook.backend.security.JwtAuthenticationConverter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
@@ -63,6 +64,8 @@ public class SecurityConfig {
 
         http
 
+            .cors(cors -> {})
+
             .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
@@ -75,16 +78,27 @@ public class SecurityConfig {
 
                 .requestMatchers(
                     "/api/auth/register",
-                    "/api/auth/login"
+                    "/api/auth/login",
+                    "/api/auth/logout"
                 ).permitAll()
+
+                .requestMatchers("/api/admin/**")
+                .hasRole("ADMIN")
+
+                .requestMatchers("/api/user/**")
+                .hasAnyRole("USER", "ADMIN")
 
                 .anyRequest().authenticated()
             )
 
             .oauth2ResourceServer(oauth2 ->
                 oauth2
-                    .bearerTokenResolver(bearerTokenResolver)
-                    .jwt(jwt -> {})
+                     .bearerTokenResolver(bearerTokenResolver)
+                     .jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(
+                            new JwtAuthenticationConverter()
+                        )
+                    )
             );
 
         return http.build();

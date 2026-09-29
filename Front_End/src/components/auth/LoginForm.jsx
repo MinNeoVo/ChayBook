@@ -70,18 +70,17 @@ function LoginForm() {
       });
 
       login(data.user);
-
-      navigate("/");
+      if (data.user.role === "ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login failed:", error);
 
-      if (error.status === 404) {
+      if (error.status === 401) {
         setError({
-          email: "No account found with this email.",
-        });
-      } else if (error.status === 401) {
-        setError({
-          password: "Incorrect email or password.",
+          general: "Incorrect email or password.",
         });
       } else if (error.status === 403) {
         setError({

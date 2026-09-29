@@ -13,3 +13,15 @@ export const loginUser = async (loginData) => {
     body: JSON.stringify(loginData),
   });
 };
+
+export const getCurrentUser = async () => {
+  return apiFetch("/auth/me", {
+    method: "GET",
+  });
+};
+
+export const logoutUser = async () => {
+  return apiFetch("/auth/logout", {
+    method: "POST",
+  });
+};

@@ -8,7 +8,7 @@ import Button from "./Button";
 
 function Navbar() {
   // const [searchQuery, setSearchQuery] = useState("");
-  const { isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, logout } = useAuth();
 
   const navItems = [
     { name: "Home", path: "/", end: true },
@@ -63,16 +63,17 @@ function Navbar() {
 
         {/* Search + Actions */}
         <div className="flex items-center gap-3.5">
-          {/* Search
-          <div className="w-48 lg:w-64">
-            <Input
-              icon={Search}
-              placeholder="Search plant-based recipes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="border-transparent bg-chaybook-container focus:bg-white"
-            />
-          </div> */}
+          {isLoggedIn && user?.role === "ADMIN" && (
+            <Link to="/admin">
+              <Button
+                type="button"
+                size="md"
+                className="h-10 whitespace-nowrap py-2"
+              >
+                Admin Dashboard
+              </Button>
+            </Link>
+          )}
 
           {/* Login / Logout */}
           {isLoggedIn ? (

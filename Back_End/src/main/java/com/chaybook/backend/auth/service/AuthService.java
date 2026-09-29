@@ -3,16 +3,21 @@ package com.chaybook.backend.auth.service;
 
 import com.chaybook.backend.auth.dto.LoginRequest;
 import com.chaybook.backend.auth.dto.LoginResponse;
+import com.chaybook.backend.auth.dto.MeResponse;
 import com.chaybook.backend.auth.dto.RegisterRequest;
 import com.chaybook.backend.auth.dto.RegisterResponse;
 import com.chaybook.backend.security.JwtService;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -135,4 +140,34 @@ return new LoginResult(response, token);
                 )
         );
     }
+
+    public MeResponse getCurrentUser(org.springframework.security.core.Authentication authentication) {
+
+    JwtAuthenticationToken jwtAuthentication =
+            (JwtAuthenticationToken) authentication;
+
+    String userIdString =
+            jwtAuthentication.getTokenAttributes()
+                    .get("sub")
+                    .toString();
+
+    Integer userId = Integer.valueOf(userIdString);
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() ->
+                    new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "User not found"
+                    )
+            );
+
+    return new MeResponse(
+            user.getUserId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getFullName(),
+            user.getAvatarUrl(),
+            user.getRole()
+    );
+}
 }
