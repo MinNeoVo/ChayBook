@@ -1,7 +1,5 @@
 import API_BASE_URL from "./app";
 
-export const DEFAULT_RECIPE_CATEGORY_ID = 1;
-
 const API_ORIGIN = new URL(API_BASE_URL).origin;
 
 async function requestJson(url, { signal } = {}) {
@@ -30,19 +28,28 @@ async function requestJson(url, { signal } = {}) {
 }
 
 export async function getRecipes(
-  categoryId = DEFAULT_RECIPE_CATEGORY_ID,
+  categoryId = null,
   keyword = "",
   { signal } = {},
 ) {
-  const query = new URLSearchParams({ categoryId: String(categoryId) });
-  const normalizedKeyword = keyword.trim();
+  const query = new URLSearchParams();
+  const normalizedCategoryId =
+    categoryId === null || categoryId === undefined
+      ? ""
+      : String(categoryId).trim();
+  const normalizedKeyword = typeof keyword === "string" ? keyword.trim() : "";
+
+  if (normalizedCategoryId) {
+    query.set("categoryId", normalizedCategoryId);
+  }
 
   if (normalizedKeyword) {
     query.set("keyword", normalizedKeyword);
   }
 
+  const queryString = query.toString();
   const recipes = await requestJson(
-    `${API_BASE_URL}/recipes?${query.toString()}`,
+    `${API_BASE_URL}/recipes${queryString ? `?${queryString}` : ""}`,
     { signal },
   );
 
@@ -51,6 +58,16 @@ export async function getRecipes(
   }
 
   return recipes;
+}
+
+export async function getRecipeCategories({ signal } = {}) {
+  const categories = await requestJson(`${API_BASE_URL}/categories`, { signal });
+
+  if (!Array.isArray(categories)) {
+    throw new Error("The category service returned an invalid response.");
+  }
+
+  return categories;
 }
 
 export function getRecipeById(recipeId, { signal } = {}) {
