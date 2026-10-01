@@ -1,38 +1,60 @@
-import { Routes, Route, useLocation } from "react-router-dom";
-
-import Footer from "./components/common/Footer";
-import Navbar from "./components/common/Navbar";
+import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
+
 import ContentPage from "./Pages/ContentPage";
 import ContentPageDetail from "./pages/ContentPageDetail";
+
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import CommunityPage from "./pages/CommunityPage";
 
+import RecipesPage from "./pages/RecipesPage";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
+
+import UserLayout from "./layouts/UserLayout";
+import AdminLayout from "./layouts/AdminLayout";
+
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+
 function App() {
-  const location = useLocation();
-
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
   return (
-    <div className="w-full min-h-screen bg-chaybook-bg flex flex-col m-0 p-0 text-left">
-      <Navbar />
+    <Routes>
+      {/* ==================== */}
+      {/* USER AREA */}
+      {/* ==================== */}
+      <Route element={<UserLayout />}>
+        <Route path="/" element={<HomePage />} />
 
-      <main className="flex-1 w-full flex flex-col">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/content" element={<ContentPage />} />
-          <Route path="/content/:id" element={<ContentPageDetail />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        <Route path="/content" element={<ContentPage />} />
+        <Route path="/content/:id" element={<ContentPageDetail />} />
+
+        <Route path="/recipes" element={<RecipesPage />} />
+        <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
+
+        {/* Protected User Routes */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
-        </Routes>
-      </main>
-      {!isAuthPage && <Footer />}
-    </div>
+        </Route>
+      </Route>
+
+      {/* ==================== */}
+      {/* ADMIN AREA */}
+      {/* ==================== */}
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+        </Route>
+      </Route>
+    </Routes>
   );
 }
 

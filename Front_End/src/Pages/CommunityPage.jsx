@@ -6,6 +6,7 @@ import CommunityToolbar from "../components/community/CommunityToolbar";
 import PostGrid from "../components/community/PostGrid";
 
 import { communityPosts } from "../data/communityPosts";
+import CreatePostModal from "../components/community/CreatePostModal";
 
 function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,8 +59,17 @@ function CommunityPage() {
     return result;
   }, [searchQuery, category, sort]);
 
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+
   const handleCreatePost = () => {
-    console.log("Open Create Post Modal");
+    setIsCreatePostOpen(true);
+  };
+
+  const handleCreatePostSubmit = (data) => {
+    console.log("Post data:", data);
+
+    // Sau này:
+    // POST /api/posts
   };
 
   return (
@@ -124,6 +134,12 @@ function CommunityPage() {
               </div>
             </div>
           )}
+
+          <CreatePostModal
+            isOpen={isCreatePostOpen}
+            onClose={() => setIsCreatePostOpen(false)}
+            onSubmit={handleCreatePostSubmit}
+          />
 
           {/* Load More */}
           <div

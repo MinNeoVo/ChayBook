@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { User, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { registerUser } from "../../services/authServices";
 
@@ -9,6 +9,8 @@ import Button from "../common/Button";
 import SocialLogin from "./SocialLogin";
 
 function RegisterForm() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -75,30 +77,72 @@ function RegisterForm() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error of current field while typing
+    if (error[name]) {
+      setError((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+
+    // Clear general error
+    if (error.general) {
+      setError((prev) => ({
+        ...prev,
+        general: "",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setIsLoading(false);
       return;
     }
+
     setIsLoading(true);
+    setError({});
 
     try {
-      const data = await registerUser({
-        fullName: formData.fullName,
-        username: formData.username,
-        email: formData.email,
+      await registerUser({
+        fullName: formData.fullName.trim(),
+        username: formData.username.trim(),
+        email: formData.email.trim(),
         password: formData.password,
       });
-      console.log("Registration successful:", data);
 
-      alert("Account created successfully!");
+      // Registration successful
+      navigate("/login", {
+        replace: true,
+        state: {
+          successMessage: "Account created successfully! Please log in.",
+        },
+      });
     } catch (error) {
       console.error("Registration failed:", error);
-      alert(error.message || "Registration failed");
+
+      const message = (
+        error.message ||
+        error.data?.message ||
+        error.data?.detail ||
+        ""
+      ).toLowerCase();
+
+      if (error.status === 409 && message.includes("username")) {
+        setError({
+          username: "This username is already taken.",
+        });
+      } else if (error.status === 409 && message.includes("email")) {
+        setError({
+          email: "This email is already registered.",
+        });
+      } else {
+        setError({
+          general: error.message || "Registration failed.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +150,14 @@ function RegisterForm() {
 
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        {/* General Error */}
+        {error.general && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error.general}
+          </div>
+        )}
+
         {/* Full Name */}
         <Input
           label="Full Name"
@@ -118,6 +169,7 @@ function RegisterForm() {
           onChange={handleChange}
           error={error.fullName}
         />
+
         {/* Username */}
         <Input
           label="Username"
@@ -129,6 +181,7 @@ function RegisterForm() {
           onChange={handleChange}
           error={error.username}
         />
+
         {/* Email */}
         <Input
           label="Email"
@@ -175,12 +228,12 @@ function RegisterForm() {
       <SocialLogin />
 
       {/* Login */}
-      <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+      <div className="mt-6 border-t border-gray-200 pt-6 text-center">
         <p className="text-sm text-gray-500">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-chaybook-primary hover:underline font-medium"
+            className="font-medium text-chaybook-primary hover:underline"
           >
             Login
           </Link>

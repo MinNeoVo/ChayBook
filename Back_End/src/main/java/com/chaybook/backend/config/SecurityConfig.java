@@ -1,5 +1,9 @@
 package com.chaybook.backend.config;
 
+import com.chaybook.backend.security.CookieBearerTokenResolver;
+import com.chaybook.backend.security.JwtAuthenticationConverter;
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,22 +12,59 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class SecurityConfig {
+    @Bean
+    public SecretKey jwtSecretKey(@Value("${jwt.secret}") String jwtSecret) {
+        return new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecretKey));
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
+        return NimbusJwtDecoder.withSecretKey(jwtSecretKey)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        var cookieResolver = new CookieBearerTokenResolver();
+        var paths = PathPatternRequestMatcher.withDefaults();
+        var login = paths.matcher(HttpMethod.POST, "/api/auth/login");
+        var register = paths.matcher(HttpMethod.POST, "/api/auth/register");
+        var logout = paths.matcher(HttpMethod.POST, "/api/auth/logout");
+        return request -> {
+            // A stale cookie must not prevent logging in again or clearing the cookie.
+            if (login.matches(request) || register.matches(request) || logout.matches(request)) {
+                return null;
+            }
+            return cookieResolver.resolve(request);
+        };
+    }
+
+    // Temporary constructor dependencies for the existing SessionAuthenticationService.
+    // The JWT filter chain and AuthController do not use these beans. Remove them
+    // together with that service when the remaining session callers are migrated.
     @Bean
     SecurityContextRepository securityContextRepository() {
         return new HttpSessionSecurityContextRepository();
@@ -35,47 +76,44 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                            SecurityContextRepository securityContextRepository) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   BearerTokenResolver bearerTokenResolver) throws Exception {
+        var unauthorized = new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
         return http
+                // Use the existing CorsConfigurationSource in CorsConfig.
                 .cors(Customizer.withDefaults())
+                // TODO: Enable CSRF protection together with frontend CSRF-token handling.
+                // Cookie-based JWT authentication still requires CSRF protection.
                 .csrf(AbstractHttpConfigurer::disable)
-                .securityContext(context -> context.securityContextRepository(securityContextRepository))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                // AuthController owns POST /api/auth/logout and returns JSON.
+                .logout(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .authenticationEntryPoint(unauthorized)
                         .accessDeniedHandler((request, response, exception) -> response.setStatus(403)))
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                                "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/articles", "/api/articles/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/articles", "/api/articles/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/articles", "/api/articles/**").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/me").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/users/{userId}",
-                                "/api/users/{userId}/password").authenticated()
-                        .anyRequest().permitAll())
-                .logout(logout -> logout
-                        .logoutRequestMatcher(PathPatternRequestMatcher.withDefaults()
-                                .matcher(HttpMethod.POST, "/api/auth/logout"))
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/articles", "/api/articles/**",
+                                "/api/categories", "/api/categories/**", "/api/recipes", "/api/recipes/**",
+                                "/api/ingredients", "/api/ingredients/**").permitAll()
+                        // Preserve the existing BMI API access policy during this migration.
+                        .requestMatchers(HttpMethod.POST, "/api/bmi").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users/{userId}/bmi",
+                                "/api/users/{userId}/bmi/latest").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(bearerTokenResolver)
+                        .authenticationEntryPoint(unauthorized)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())))
                 .build();
-    }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cors = new CorsConfiguration();
-        cors.setAllowedOrigins(List.of("http://localhost:5173"));
-        cors.setAllowCredentials(true);
-        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        cors.setAllowedHeaders(List.of("Content-Type"));
-        cors.setExposedHeaders(List.of("Location"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", cors);
-        return source;
     }
 }

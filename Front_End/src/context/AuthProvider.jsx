@@ -1,23 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import AuthContext from "./AuthContext";
+import { getCurrentUser, logoutUser } from "../services/authServices";
 
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const data = await getCurrentUser();
+
+        setUser(data);
+        // eslint-disable-next-line no-unused-vars
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const isLoggedIn = user !== null;
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
@@ -25,6 +43,7 @@ function AuthProvider({ children }) {
       value={{
         user,
         isLoggedIn,
+        loading,
         login,
         logout,
       }}
