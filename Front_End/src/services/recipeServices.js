@@ -1,31 +1,7 @@
 import API_BASE_URL from "./app";
+import { apiFetch } from "./api";
 
 const API_ORIGIN = new URL(API_BASE_URL).origin;
-
-async function requestJson(url, { signal } = {}) {
-  const response = await fetch(url, { signal });
-  let data;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const error = new Error(
-      data?.detail || data?.message || "The recipe request failed.",
-    );
-    error.status = response.status;
-    throw error;
-  }
-
-  if (data === null) {
-    throw new Error("The recipe service returned an invalid response.");
-  }
-
-  return data;
-}
 
 export async function getRecipes(
   categoryId = null,
@@ -33,10 +9,12 @@ export async function getRecipes(
   { signal } = {},
 ) {
   const query = new URLSearchParams();
+
   const normalizedCategoryId =
     categoryId === null || categoryId === undefined
       ? ""
       : String(categoryId).trim();
+
   const normalizedKeyword = typeof keyword === "string" ? keyword.trim() : "";
 
   if (normalizedCategoryId) {
@@ -48,10 +26,12 @@ export async function getRecipes(
   }
 
   const queryString = query.toString();
-  const recipes = await requestJson(
-    `${API_BASE_URL}/recipes${queryString ? `?${queryString}` : ""}`,
-    { signal },
-  );
+
+  const endpoint = `/recipes${queryString ? `?${queryString}` : ""}`;
+
+  const recipes = await apiFetch(endpoint, {
+    signal,
+  });
 
   if (!Array.isArray(recipes)) {
     throw new Error("The recipe service returned an invalid response.");
@@ -61,7 +41,9 @@ export async function getRecipes(
 }
 
 export async function getRecipeCategories({ signal } = {}) {
-  const categories = await requestJson(`${API_BASE_URL}/categories`, { signal });
+  const categories = await apiFetch("/categories", {
+    signal,
+  });
 
   if (!Array.isArray(categories)) {
     throw new Error("The category service returned an invalid response.");
@@ -71,10 +53,7 @@ export async function getRecipeCategories({ signal } = {}) {
 }
 
 export function getRecipeById(recipeId, { signal } = {}) {
-  return requestJson(
-    `${API_BASE_URL}/recipes/${encodeURIComponent(recipeId)}`,
-    { signal },
-  );
+  return apiFetch(`/recipes/${encodeURIComponent(recipeId)}`, { signal });
 }
 
 export function resolveRecipeImageUrl(imageUrl) {
