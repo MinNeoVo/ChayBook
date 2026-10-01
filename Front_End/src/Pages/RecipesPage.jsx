@@ -12,7 +12,7 @@ import {
 import RecipeImage from "../components/recipes/RecipeImage";
 import Button from "../components/common/Button";
 import {
-  DEFAULT_RECIPE_CATEGORY_ID,
+  getRecipeCategories,
   getRecipes,
 } from "../services/recipeServices";
 
@@ -143,8 +143,11 @@ function RecipeStatus({ onRetry }) {
 function RecipesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [keyword, setKeyword] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [categoryStatus, setCategoryStatus] = useState("loading");
   const [retryCount, setRetryCount] = useState(0);
-  const requestKey = `${keyword}:${retryCount}`;
+  const requestKey = `${categoryId}:${keyword}:${retryCount}`;
   const [result, setResult] = useState({
     requestKey: null,
     status: "loading",
@@ -154,7 +157,24 @@ function RecipesPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    getRecipes(DEFAULT_RECIPE_CATEGORY_ID, keyword, {
+    getRecipeCategories({ signal: controller.signal })
+      .then((data) => {
+        setCategories(data);
+        setCategoryStatus("success");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setCategoryStatus("error");
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    getRecipes(categoryId || null, keyword, {
       signal: controller.signal,
     })
       .then((data) => {
@@ -167,7 +187,7 @@ function RecipesPage() {
       });
 
     return () => controller.abort();
-  }, [keyword, requestKey]);
+  }, [categoryId, keyword, requestKey]);
 
   const isCurrentResult = result.requestKey === requestKey;
   const isLoading = !isCurrentResult;
@@ -199,31 +219,59 @@ function RecipesPage() {
             life.
           </p>
 
-          <form
-            onSubmit={handleSearch}
-            role="search"
-            className="flex w-full max-w-2xl items-center gap-2 rounded-xl border border-gray-100 bg-white p-1.5 shadow-sm focus-within:shadow-md"
-          >
-            <label className="sr-only" htmlFor="recipe-search">
-              Search recipes
-            </label>
-            <Search
-              aria-hidden="true"
-              size={19}
-              className="ml-3 shrink-0 text-gray-400"
-            />
-            <input
-              id="recipe-search"
-              type="search"
-              placeholder="Search recipes..."
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
-            />
-            <Button type="submit" className="shrink-0 px-5">
-              Search
-            </Button>
-          </form>
+          <div className="flex w-full max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
+            <form
+              onSubmit={handleSearch}
+              role="search"
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-100 bg-white p-1.5 shadow-sm focus-within:shadow-md"
+            >
+              <label className="sr-only" htmlFor="recipe-search">
+                Search recipes
+              </label>
+              <Search
+                aria-hidden="true"
+                size={19}
+                className="ml-3 shrink-0 text-gray-400"
+              />
+              <input
+                id="recipe-search"
+                type="search"
+                placeholder="Search recipes..."
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+              />
+              <Button type="submit" className="shrink-0 px-5">
+                Search
+              </Button>
+            </form>
+
+            <div className="w-full sm:w-56 sm:shrink-0">
+              <label className="sr-only" htmlFor="recipe-category">
+                Filter recipes by category
+              </label>
+              <select
+                id="recipe-category"
+                aria-label="Filter recipes by category"
+                value={categoryId}
+                disabled={categoryStatus === "loading" || categoryStatus === "error"}
+                onChange={(event) => setCategoryId(event.target.value)}
+                className="min-h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-[#3e4a3d] shadow-sm outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/20"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category.categoryId} value={category.categoryId}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              {categoryStatus === "error" && (
+                <p role="status" className="mt-2 text-left text-xs text-red-600">
+                  Categories could not be loaded.
+                </p>
+              )}
+            </div>
+          </div>
         </header>
 
         {isLoading ? (

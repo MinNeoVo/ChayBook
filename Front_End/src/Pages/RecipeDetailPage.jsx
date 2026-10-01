@@ -200,6 +200,14 @@ function RecipeDetailPage() {
               </p>
             )}
 
+            {(recipe.categoryName || recipe.servings || recipe.difficulty) && (
+              <p className="mb-5 text-sm text-[#6e7b6c]">
+                {[recipe.categoryName, recipe.servings && `${recipe.servings} servings`, recipe.difficulty]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+
             {(prepTime || cookTime || totalTime) && (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {prepTime && (
@@ -241,6 +249,30 @@ function RecipeDetailPage() {
         </section>
 
         <div className="mt-8 grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+          {(recipe.calories != null || recipe.protein != null || recipe.carbs != null || recipe.fat != null) && (
+            <section
+              aria-labelledby="nutrition-heading"
+              className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-7 lg:col-span-12"
+            >
+              <h2 id="nutrition-heading" className="mb-4 text-xl font-bold text-[#181c1b]">
+                Nutrition
+              </h2>
+              <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {[
+                  ["Calories", recipe.calories, "kcal"],
+                  ["Protein", recipe.protein, "g"],
+                  ["Carbohydrates", recipe.carbs, "g"],
+                  ["Fat", recipe.fat, "g"],
+                ].filter(([, value]) => value != null).map(([label, value, unit]) => (
+                  <div key={label} className="rounded-xl bg-[#f7faf7] p-4">
+                    <dt className="text-xs font-medium text-[#6e7b6c]">{label}</dt>
+                    <dd className="mt-1 text-base font-semibold text-[#181c1b]">{value} {unit}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
+
           <section
             aria-labelledby="ingredients-heading"
             className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-7 lg:col-span-5"
