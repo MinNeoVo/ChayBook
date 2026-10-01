@@ -1,8 +1,7 @@
 package com.chaybook.backend.community.repository;
 
 import com.chaybook.backend.community.entity.PostInteraction;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -54,4 +53,24 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
             @Param("categoryId") Integer categoryId,
             @Param("userId") Integer userId
     );
+
+    boolean existsByPost_PostIdAndUser_UserIdAndType(
+            Integer postId,
+            Integer userId,
+            String type
+    );
+
+    @Modifying
+    @Query("""
+        DELETE FROM PostInteraction i
+        WHERE i.post.postId = :postId
+          AND i.user.userId = :userId
+          AND i.type = :type
+        """)
+    int deleteInteraction(
+            @Param("postId") Integer postId,
+            @Param("userId") Integer userId,
+            @Param("type") String type
+    );
+
 }

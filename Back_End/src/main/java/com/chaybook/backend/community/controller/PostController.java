@@ -1,8 +1,6 @@
 package com.chaybook.backend.community.controller;
 
-import com.chaybook.backend.community.dto.PostCreateRequest;
-import com.chaybook.backend.community.dto.PostCreateResponse;
-import com.chaybook.backend.community.dto.PostResponse;
+import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.service.PostService;
 import jakarta.validation.Valid;
@@ -83,6 +81,66 @@ public class PostController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
+
+    @PutMapping(
+            value = "/{postId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<PostMessageResponse> updatePost(
+            @PathVariable("postId") Integer postId,
+            @Valid @RequestBody PostUpdateRequest request,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = getCurrentUserId(jwt);
+
+        PostMessageResponse response = postService.updatePost(
+                postId,
+                currentUserId,
+                request
+        );
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<PostMessageResponse> deletePost(
+            @PathVariable("postId") Integer postId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = getCurrentUserId(jwt);
+
+        PostMessageResponse response = postService.deletePost(
+                postId,
+                currentUserId
+        );
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
+
+
+    @DeleteMapping("/{postId}/interactions")
+    public ResponseEntity<PostInteractionResponse> removeInteraction(
+            @PathVariable("postId") Integer postId,
+            @RequestParam("type") String type,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = getCurrentUserId(jwt);
+
+        PostInteractionResponse response =
+                postService.removeInteraction(
+                        postId,
+                        currentUserId,
+                        type
+                );
+
+        return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(response);
     }

@@ -1,10 +1,12 @@
 package com.chaybook.backend.community.repository;
 
 import com.chaybook.backend.community.entity.Post;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
     @Query("""
@@ -18,5 +20,15 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             """)
     List<Post> findApprovedPosts(
             @Param("categoryId") Integer categoryId
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT p
+        FROM Post p
+        WHERE p.postId = :postId
+        """)
+    Optional<Post> findByIdForUpdate(
+            @Param("postId") Integer postId
     );
 }
