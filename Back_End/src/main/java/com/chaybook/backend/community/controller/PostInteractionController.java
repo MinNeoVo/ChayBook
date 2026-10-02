@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/post/{postId}/interactions")
+@RequestMapping("/api/posts/{postId}/interactions")
 @CrossOrigin(
         origins = "http://localhost:5173",
         allowCredentials = "true"
