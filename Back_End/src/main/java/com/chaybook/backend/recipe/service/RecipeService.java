@@ -91,12 +91,19 @@ public class RecipeService {
         return new RecipeDetailResponse(
                 recipe.getRecipeId(),
                 getCategoryId(recipe),
+                getCategoryName(recipe),
                 recipe.getName(),
                 recipe.getDescription(),
                 recipe.getImageUrl(),
                 recipe.getPrepTime(),
                 recipe.getCookTime(),
+                recipe.getServings(),
+                recipe.getDifficulty(),
                 recipe.getInstructions(),
+                recipe.getCalories(),
+                recipe.getProtein(),
+                recipe.getCarbs(),
+                recipe.getFat(),
                 ingredients
         );
     }
@@ -113,6 +120,12 @@ public class RecipeService {
         return recipe.getCategory() == null
                 ? null
                 : recipe.getCategory().getCategoryId();
+    }
+
+    private String getCategoryName(Recipe recipe) {
+        return recipe.getCategory() == null
+                ? null
+                : recipe.getCategory().getName();
     }
 
     private RecipeSummaryResponse toSummaryResponse(Recipe recipe) {

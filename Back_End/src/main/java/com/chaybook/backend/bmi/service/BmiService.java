@@ -8,7 +8,9 @@ import com.chaybook.backend.bmi.repository.BmiRecordRepository;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,9 +25,23 @@ public class BmiService {
     private UserRepository userRepository;
 
     // ===== API 1: Tạo BMI Record =====
-    public BmiResponse createBmiRecord(BmiCreateRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public BmiResponse createBmiRecord(
+            Integer authenticatedUserId,
+            BmiCreateRequest request
+    ) {
+        User user = userRepository.findById(authenticatedUserId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+
+        if (request.getHeight() == null || request.getHeight() <= 0
+                || request.getWeight() == null || request.getWeight() <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Height and weight must be greater than zero"
+            );
+        }
 
         double heightInMeters = request.getHeight() / 100.0;
         double bmiValue = request.getWeight() / (heightInMeters * heightInMeters);
@@ -49,7 +65,10 @@ public class BmiService {
     public BmiResponse getLatestBmi(Integer userId) {
         BmiRecord record = bmiRecordRepository
                 .findFirstByUserUserIdOrderByCalculatedAtDesc(userId)
-                .orElseThrow(() -> new RuntimeException("No BMI record found for this user"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No BMI record found for this user"
+                ));
 
         return toResponse(record);
     }

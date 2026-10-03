@@ -6,6 +6,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.sql.SQLException;
 
@@ -14,6 +15,16 @@ import java.sql.SQLException;
         basePackages = "com.chaybook.backend.recipe.controller"
 )
 public class RecipeExceptionHandler {
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleInvalidParameter(
+            MethodArgumentTypeMismatchException exception
+    ) {
+        return ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Invalid value for parameter: " + exception.getName()
+        );
+    }
+
     @ExceptionHandler(RecipeException.class)
     public ProblemDetail handleRecipeException(
             RecipeException exception

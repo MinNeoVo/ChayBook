@@ -12,6 +12,8 @@ import CommunityPage from "./pages/CommunityPage";
 
 import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
+import BmiPage from "./pages/BmiPage";
+import MealPlanPage from "./pages/MealPlanPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -38,11 +40,13 @@ function App() {
 
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
+        <Route path="/bmi" element={<BmiPage />} />
 
         {/* Protected User Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
+          <Route path="/meal-plan" element={<MealPlanPage />} />
         </Route>
       </Route>
 

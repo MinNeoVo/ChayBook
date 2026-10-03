@@ -8,6 +8,17 @@ import java.util.List;
 
 public interface RecipeIngredientRepository extends JpaRepository<RecipeIngredient, RecipeIngredientId> {
     @Query("""
+            SELECT DISTINCT ri.recipe.recipeId
+            FROM RecipeIngredient ri
+            JOIN ri.ingredient i
+            JOIN i.allergies a
+            WHERE a.allergyId IN :allergyIds
+            """)
+    List<Integer> findRecipeIdsContainingAllergies(
+            @Param("allergyIds") List<Integer> allergyIds
+    );
+
+    @Query("""
             SELECT ri
             FROM RecipeIngredient ri
             JOIN FETCH ri.ingredient i

@@ -16,6 +16,7 @@ function Navbar() {
     ...(isLoggedIn ? [{ name: "Community", path: "/community" }] : []),
     { name: "AI Assistant", path: "/ai-assistant" },
     { name: "Recipes", path: "/recipes" },
+    { name: "Meal Plan", path: "/meal-plan" },
   ];
 
   return (

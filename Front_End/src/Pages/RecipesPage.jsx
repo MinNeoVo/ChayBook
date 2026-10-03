@@ -162,8 +162,9 @@ function RecipesPage() {
         setCategories(data);
         setCategoryStatus("success");
       })
-      .catch(() => {
+      .catch((error) => {
         if (!controller.signal.aborted) {
+          console.error("Failed to load recipe categories:", error);
           setCategoryStatus("error");
         }
       });
@@ -180,8 +181,9 @@ function RecipesPage() {
       .then((data) => {
         setResult({ requestKey, status: "success", recipes: data });
       })
-      .catch(() => {
+      .catch((error) => {
         if (!controller.signal.aborted) {
+          console.error("Failed to load recipes:", error);
           setResult({ requestKey, status: "error", recipes: [] });
         }
       });

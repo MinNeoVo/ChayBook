@@ -532,7 +532,8 @@ function ContentDetailView({ post, detail }) {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setActionFeedback("Link copied to clipboard.");
-    } catch {
+    } catch (error) {
+      console.error("Failed to copy the page link:", error);
       setActionFeedback("Use your browser's share menu to share this page.");
     }
   };

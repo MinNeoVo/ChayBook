@@ -6,7 +6,6 @@ import {
   Bot,
   Calculator,
   CheckCircle,
-  ChevronRight,
   Clock3,
   Dumbbell,
   Heart,
@@ -20,6 +19,7 @@ import {
 
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
+import BmiCalculator from "../components/bmi/BmiCalculator";
 
 import { posts } from "../data/contentData";
 
@@ -118,124 +118,6 @@ function FeaturedCard({ post }) {
         </div>
       </div>
     </article>
-  );
-}
-
-/* =========================================================
-   BMI CALCULATOR
-========================================================= */
-
-function QuickBmiCalculator() {
-  const [height, setHeight] = useState(172);
-  const [weight, setWeight] = useState(65);
-
-  const [bmi, setBmi] = useState(22);
-  const [status, setStatus] = useState("Normal Weight");
-
-  const calculateBmi = () => {
-    const heightValue = Number(height);
-    const weightValue = Number(weight);
-
-    if (!heightValue || !weightValue) {
-      return;
-    }
-
-    if (heightValue <= 0 || weightValue <= 0) {
-      return;
-    }
-
-    const heightInMeter = heightValue / 100;
-
-    const result = weightValue / (heightInMeter * heightInMeter);
-
-    const roundedBmi = Number(result.toFixed(1));
-
-    setBmi(roundedBmi);
-
-    if (roundedBmi < 18.5) {
-      setStatus("Underweight");
-    } else if (roundedBmi < 25) {
-      setStatus("Normal Weight");
-    } else if (roundedBmi < 30) {
-      setStatus("Overweight");
-    } else {
-      setStatus("Obese Range");
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-5 rounded-2xl bg-white p-6 shadow-md md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chaybook-secondary-container text-chaybook-primary">
-            <Dumbbell className="h-5 w-5" />
-          </div>
-
-          <h4 className="text-lg font-bold text-gray-900">
-            Quick BMI Calculator
-          </h4>
-        </div>
-
-        <span className="text-xs text-gray-500">WHO Standard</span>
-      </div>
-
-      {/* Inputs */}
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          label="Height (cm)"
-          type="number"
-          value={height}
-          onChange={(e) => setHeight(e.target.value)}
-          min="100"
-          max="240"
-        />
-
-        <Input
-          label="Weight (kg)"
-          type="number"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          min="30"
-          max="250"
-        />
-      </div>
-
-      {/* Calculate */}
-      <Button
-        type="button"
-        onClick={calculateBmi}
-        className="flex h-11 items-center justify-center gap-2"
-      >
-        <Calculator className="h-[18px] w-[18px]" />
-        Calculate Health Status
-      </Button>
-
-      {/* Result */}
-      <div className="flex items-center justify-between rounded-xl bg-chaybook-container p-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500">Your BMI Result</span>
-
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-chaybook-primary">
-              {bmi}
-            </span>
-
-            <span className="text-sm font-semibold text-chaybook-primary">
-              {status}
-            </span>
-          </div>
-        </div>
-
-        <Link
-          to="/bmi"
-          className="flex items-center gap-1 text-xs font-semibold text-chaybook-primary hover:underline"
-        >
-          Full Analysis
-          <ChevronRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
-    </div>
   );
 }
 
@@ -742,7 +624,7 @@ function HomePage() {
               <AiQuickAssistant />
 
               {/* BMI */}
-              <QuickBmiCalculator />
+              <BmiCalculator />
             </div>
           </div>
         </section>

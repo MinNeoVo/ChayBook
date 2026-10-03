@@ -8,7 +8,8 @@ async function requestJson(url, { signal } = {}) {
 
   try {
     data = await response.json();
-  } catch {
+  } catch (error) {
+    console.error("Failed to parse the recipe service response:", error);
     data = null;
   }
 
@@ -84,7 +85,8 @@ export function resolveRecipeImageUrl(imageUrl) {
 
   try {
     return new URL(imageUrl, `${API_ORIGIN}/`).toString();
-  } catch {
+  } catch (error) {
+    console.error("Failed to resolve recipe image URL:", error);
     return "";
   }
 }
