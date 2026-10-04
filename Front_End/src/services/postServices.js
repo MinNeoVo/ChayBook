@@ -25,15 +25,24 @@ export async function getPosts(categoryId = null, { signal } = {}) {
  * Tạo bài viết mới
  * @param {object} postData - { categoryId, title, content, imageUrl }
  */
+
 export async function createPost(postData) {
+  if (!postData.categoryId || !Number.isInteger(Number(postData.categoryId))) {
+    throw new Error("Vui lòng chọn danh mục hợp lệ.");
+  }
+
+  const formData = new FormData();
+  formData.append("categoryId", String(postData.categoryId));
+  formData.append("title", postData.title.trim());
+  formData.append("content", postData.content.trim());
+
+  if (postData.image instanceof File) {
+    formData.append("image", postData.image);
+  }
+
   return apiFetch("/posts", {
     method: "POST",
-    body: JSON.stringify({
-      categoryId: postData.categoryId ? Number(postData.categoryId) : null,
-      title: postData.title?.trim(),
-      content: postData.content?.trim(),
-      imageUrl: postData.imageUrl?.trim() || null,
-    }),
+    body: formData,
   });
 }
 
@@ -55,7 +64,10 @@ export async function addPostInteraction(postId, type) {
  * @param {"LIKE"|"BOOKMARK"} type
  */
 export async function removePostInteraction(postId, type) {
-  return apiFetch(`/posts/${postId}/interactions?type=${encodeURIComponent(type)}`, {
-    method: "DELETE",
-  });
+  return apiFetch(
+    `/posts/${postId}/interactions?type=${encodeURIComponent(type)}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

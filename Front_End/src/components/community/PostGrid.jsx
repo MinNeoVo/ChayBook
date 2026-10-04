@@ -2,9 +2,8 @@ import PostCard from "../post/PostCard";
 
 function PostGrid({ posts, onLike, onBookmark }) {
   return (
-    <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <section className="columns-1 gap-6 md:columns-2">
       {posts.map((post) => {
-        // Chuẩn hóa dữ liệu tương thích giữa Backend DTO và Mock data
         const normalizedPost = {
           ...post,
           id: post.postId ?? post.id,
@@ -34,12 +33,13 @@ function PostGrid({ posts, onLike, onBookmark }) {
         };
 
         return (
-          <PostCard
-            key={normalizedPost.id}
-            post={normalizedPost}
-            onLike={() => onLike?.(normalizedPost.id)}
-            onBookmark={() => onBookmark?.(normalizedPost.id)}
-          />
+          <div key={normalizedPost.id} className="mb-6 break-inside-avoid">
+            <PostCard
+              post={normalizedPost}
+              onLike={() => onLike?.(normalizedPost.id)}
+              onBookmark={() => onBookmark?.(normalizedPost.id)}
+            />
+          </div>
         );
       })}
     </section>

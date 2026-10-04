@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { ImagePlus, X, Leaf, Send } from "lucide-react";
 
-function CreatePostModal({ isOpen, onClose, onSubmit }) {
+function CreatePostModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  categories = [],
+  categoryLoading = false,
+}) {
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -11,6 +17,7 @@ function CreatePostModal({ isOpen, onClose, onSubmit }) {
   });
 
   const [preview, setPreview] = useState(null);
+  const [imageError, setImageError] = useState("");
 
   if (!isOpen) {
     return null;
@@ -28,10 +35,30 @@ function CreatePostModal({ isOpen, onClose, onSubmit }) {
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
 
-    if (!file) {
+    if (!file) return;
+
+    // Chỉ nhận PNG, JPG và JPEG
+    const allowedTypes = ["image/png", "image/jpeg"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setImageError("Chỉ hỗ trợ ảnh PNG hoặc JPG.");
+      e.target.value = "";
       return;
     }
 
+    // Giới hạn 5 MB
+    if (file.size > 5 * 1024 * 1024) {
+      setImageError("Ảnh không được vượt quá 5 MB.");
+      e.target.value = "";
+      return;
+    }
+
+    // Xóa preview cũ nếu đang thay ảnh
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
+    setImageError("");
     setFormData((prev) => ({
       ...prev,
       image: file,
@@ -40,19 +67,44 @@ function CreatePostModal({ isOpen, onClose, onSubmit }) {
     setPreview(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    onSubmit?.(formData);
-  };
-
   const removeImage = () => {
+    if (preview) {
+      URL.revokeObjectURL(preview);
+    }
+
+    setPreview(null);
+    setImageError("");
+
     setFormData((prev) => ({
       ...prev,
       image: null,
     }));
 
-    setPreview(null);
+    const input = document.getElementById("post-image");
+    if (input) input.value = "";
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.title.trim()) {
+      return;
+    }
+
+    if (!formData.category) {
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      return;
+    }
+
+    await onSubmit?.({
+      title: formData.title.trim(),
+      categoryId: Number(formData.category),
+      content: formData.content.trim(),
+      image: formData.image,
+    });
   };
 
   return (
@@ -174,34 +226,21 @@ function CreatePostModal({ isOpen, onClose, onSubmit }) {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="
-                  w-full
-                  rounded-xl
-                  border
-                  border-gray-200
-                  bg-white
-                  px-4
-                  py-3
-                  text-sm
-                  text-gray-700
-                  outline-none
-                  transition
-                  focus:border-chaybook-primary
-                  focus:ring-2
-                  focus:ring-chaybook-primary/10
-                "
+                disabled={categoryLoading}
+                required
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/10 disabled:cursor-not-allowed disabled:bg-gray-100"
               >
-                <option value="">Select category</option>
+                <option value="">
+                  {categoryLoading
+                    ? "Loading categories..."
+                    : "Select category"}
+                </option>
 
-                <option value="recipe">Recipe</option>
-
-                <option value="stories">Stories & Journals</option>
-
-                <option value="nutrition">Nutrition & Wellness</option>
-
-                <option value="tips">Vegetarian Tips</option>
-
-                <option value="lifestyle">Vegetarian Lifestyle</option>
+                {categories.map((item) => (
+                  <option key={item.categoryId} value={item.categoryId}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -292,11 +331,17 @@ function CreatePostModal({ isOpen, onClose, onSubmit }) {
 
                   <input
                     id="post-image"
+                    name="image"
                     type="file"
-                    accept="image/png,image/jpeg,image/jpg"
+                    accept="image/png,image/jpeg"
                     onChange={handleImageChange}
                     className="hidden"
                   />
+                  {imageError && (
+                    <p className="mt-2 text-sm text-red-600" role="alert">
+                      {imageError}
+                    </p>
+                  )}
                 </label>
               ) : (
                 <div className="relative overflow-hidden rounded-xl">

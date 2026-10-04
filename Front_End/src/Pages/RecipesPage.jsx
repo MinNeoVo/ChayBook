@@ -11,10 +11,8 @@ import {
 
 import RecipeImage from "../components/recipes/RecipeImage";
 import Button from "../components/common/Button";
-import {
-  getRecipeCategories,
-  getRecipes,
-} from "../services/recipeServices";
+import { getCategories } from "../services/categoryServices";
+import { getRecipes } from "../services/recipeServices";
 
 function formatMinutes(minutes) {
   if (typeof minutes !== "number" || !Number.isFinite(minutes)) {
@@ -157,16 +155,31 @@ function RecipesPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    getRecipeCategories({ signal: controller.signal })
-      .then((data) => {
-        setCategories(data);
-        setCategoryStatus("success");
-      })
-      .catch(() => {
+    async function fetchCategories() {
+      try {
+        setCategoryStatus("loading");
+
+        const data = await getCategories("RECIPE", {
+          signal: controller.signal,
+        });
+
+        if (!Array.isArray(data)) {
+          throw new Error("Dữ liệu danh mục không hợp lệ.");
+        }
+
         if (!controller.signal.aborted) {
+          setCategories(data);
+          setCategoryStatus("success");
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          console.error("Không thể tải danh mục công thức:", err);
           setCategoryStatus("error");
         }
-      });
+      }
+    }
+
+    fetchCategories();
 
     return () => controller.abort();
   }, []);
@@ -254,7 +267,9 @@ function RecipesPage() {
                 id="recipe-category"
                 aria-label="Filter recipes by category"
                 value={categoryId}
-                disabled={categoryStatus === "loading" || categoryStatus === "error"}
+                disabled={
+                  categoryStatus === "loading" || categoryStatus === "error"
+                }
                 onChange={(event) => setCategoryId(event.target.value)}
                 className="min-h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-[#3e4a3d] shadow-sm outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/20"
               >
@@ -266,7 +281,10 @@ function RecipesPage() {
                 ))}
               </select>
               {categoryStatus === "error" && (
-                <p role="status" className="mt-2 text-left text-xs text-red-600">
+                <p
+                  role="status"
+                  className="mt-2 text-left text-xs text-red-600"
+                >
                   Categories could not be loaded.
                 </p>
               )}

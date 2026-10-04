@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import PostStatusBadge from "./PostStatusBadge";
+import API_BASE_URL from "../../services/app";
+import Avatar from "../common/Avatar";
 
 function PostCard({
   post,
@@ -42,6 +44,8 @@ function PostCard({
     bookmarkedByCurrentUser,
   } = post;
 
+  const API_ORIGIN = new URL(API_BASE_URL).origin;
+
   const isLiked = Boolean(likedByCurrentUser);
   const isBookmarked = Boolean(bookmarkedByCurrentUser);
 
@@ -60,17 +64,12 @@ function PostCard({
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {/* Avatar */}
-          {author?.avatar ? (
-            <img
-              src={author.avatar}
-              alt={author.name}
-              className="h-10 w-10 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chaybook-primary text-sm font-bold text-white">
-              {author?.initials || "CB"}
-            </div>
-          )}
+
+          <Avatar
+            src={author?.avatarUrl}
+            alt={author?.fullName || "User avatar"}
+            size="md"
+          />
 
           {/* Author information */}
           <div className="flex min-w-0 flex-col">
@@ -118,7 +117,7 @@ function PostCard({
       )}
 
       {/* ================= CONTENT ================= */}
-      <div className="space-y-1 h-33 overflow-hidden">
+      <div className="space-y-1">
         <h3
           className="
             text-[22px]
@@ -140,19 +139,27 @@ function PostCard({
       </div>
 
       {/* ================= IMAGE ================= */}
+
       {image && (
         <div className="relative h-64 w-full overflow-hidden rounded-xl md:h-80">
           <img
-            src={image}
+            src={
+              image.startsWith("http")
+                ? image
+                : `${API_ORIGIN}${image.startsWith("/") ? "" : "/"}${image}`
+            }
             alt={imageAlt || title}
             className="
-              h-full
-              w-full
-              object-cover
-              transition-transform
-              duration-500
-              hover:scale-105
-            "
+        h-full
+        w-full
+        object-cover
+        transition-transform
+        duration-500
+        hover:scale-105
+      "
+            onError={(event) => {
+              console.error("Không tải được ảnh:", event.currentTarget.src);
+            }}
           />
         </div>
       )}
@@ -190,9 +197,7 @@ function PostCard({
                 }`}
               />
 
-              <span className={isLiked ? "font-bold" : ""}>
-                {likes} likes
-              </span>
+              <span className={isLiked ? "font-bold" : ""}>{likes} likes</span>
             </button>
 
             {/* Comment */}

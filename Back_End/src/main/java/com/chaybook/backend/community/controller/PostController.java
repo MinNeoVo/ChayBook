@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -67,23 +68,31 @@ public class PostController {
         );
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PostCreateResponse> createPost(
-            @Valid @RequestBody PostCreateRequest request,
-            @AuthenticationPrincipal Jwt jwt
-    ) {
-        Integer currentUserId = getCurrentUserId(jwt);
+   
+@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<PostCreateResponse> createPost(
+        @RequestParam("categoryId") Integer categoryId,
+        @RequestParam("title") String title,
+        @RequestParam("content") String content,
+        @RequestParam(value = "image", required = false)
+        MultipartFile image,
+        @AuthenticationPrincipal Jwt jwt
+) {
+    Integer currentUserId = getCurrentUserId(jwt);
 
-        PostCreateResponse response = postService.createPost(
-                currentUserId,
-                request
-        );
+    PostCreateResponse response = postService.createPost(
+            currentUserId,
+            categoryId,
+            title,
+            content,
+            image
+    );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .cacheControl(CacheControl.noStore())
-                .body(response);
-    }
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .cacheControl(CacheControl.noStore())
+            .body(response);
+}
 
     @PutMapping(
             value = "/{postId}",

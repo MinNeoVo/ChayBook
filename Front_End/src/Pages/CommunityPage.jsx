@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -6,6 +5,8 @@ import CommunityHeader from "../components/community/CommunityHeader";
 import CommunityToolbar from "../components/community/CommunityToolbar";
 import PostGrid from "../components/community/PostGrid";
 import CreatePostModal from "../components/community/CreatePostModal";
+
+import { getCategories } from "../services/categoryServices";
 
 import {
   getPosts,
@@ -15,82 +16,127 @@ import {
 } from "../services/postServices";
 
 function CommunityPage() {
+  // Danh mục bài viết
+  const [categories, setCategories] = useState([]);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+
+  // Danh sách bài viết
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  // Tìm kiếm, danh mục và sắp xếp
   const [category, setCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState("latest");
 
+  // Modal tạo bài viết
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
-  // 1. Tải bài viết thật từ Backend API
- 
-const fetchPosts = useCallback(async (showLoading = true) => {
-  if (showLoading) {
-    setLoading(true);
-  }
+  // 1. Tải danh sách bài viết từ backend
+  const fetchPosts = useCallback(
+    async (showLoading = true) => {
+      if (showLoading) {
+        setLoading(true);
+      }
 
-  try {
-    const data = await getPosts(
-      category === "all" ? null : category
-    );
+      try {
+        const categoryId = category === "all" ? null : Number(category);
 
-    if (!Array.isArray(data)) {
-      throw new Error("Dữ liệu bài viết không hợp lệ.");
-    }
+        const data = await getPosts(categoryId);
 
-    setPosts(data);
-    setError(null);
-    return true;
-  } catch (err) {
-    console.error("Không thể tải bài viết:", err);
+        if (!Array.isArray(data)) {
+          throw new Error("Dữ liệu bài viết không hợp lệ.");
+        }
 
-    setError("Không thể kết nối đến máy chủ để tải bài viết.");
-    return false;
-  } finally {
-    if (showLoading) {
-      setLoading(false);
-    }
-  }
-}, [category]);
+        setPosts(data);
+        setError(null);
 
-  // 2. Tải lại danh sách khi danh mục thay đổi
+        return true;
+      } catch (err) {
+        console.error("Không thể tải bài viết:", err);
+
+        setError("Không thể kết nối đến máy chủ để tải bài viết.");
+
+        return false;
+      } finally {
+        if (showLoading) {
+          setLoading(false);
+        }
+      }
+    },
+    [category],
+  );
+
+  // 2. Tải danh mục từ backend
   useEffect(() => {
     let cancelled = false;
 
-    const loadPosts = async () => {
-      setLoading(true);
-      setError(null);
-
+    async function fetchCategories() {
       try {
-        const data = await getPosts(
-          category === "all" ? null : category
-        );
+        setCategoryLoading(true);
+        setCategoryError("");
+
+        const data = await getCategories("POST");
+
+        if (!Array.isArray(data)) {
+          throw new Error("Dữ liệu danh mục không hợp lệ.");
+        }
+
+        if (!cancelled) {
+          setCategories(data);
+        }
+      } catch (err) {
+        console.error("Không thể tải danh mục:", err);
+
+        if (!cancelled) {
+          setCategoryError(err.message || "Không thể tải danh mục.");
+        }
+      } finally {
+        if (!cancelled) {
+          setCategoryLoading(false);
+        }
+      }
+    }
+
+    fetchCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 3. Tự tải lại bài viết khi danh mục thay đổi
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPosts() {
+      try {
+        const categoryId = category === "all" ? null : Number(category);
+
+        const data = await getPosts(categoryId);
 
         if (cancelled) return;
 
         if (!Array.isArray(data)) {
-          throw new Error("Dữ liệu bài viết từ máy chủ không hợp lệ.");
+          throw new Error("Dữ liệu bài viết không hợp lệ.");
         }
 
         setPosts(data);
+        setError(null);
       } catch (err) {
         if (cancelled) return;
 
         console.error("Không thể tải bài viết:", err);
-        setPosts([]);
-        setError(
-          err.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại."
-        );
+        setError("Không thể kết nối đến máy chủ để tải bài viết.");
       } finally {
         if (!cancelled) {
           setLoading(false);
         }
       }
-    };
+    }
 
     loadPosts();
 
@@ -99,52 +145,59 @@ const fetchPosts = useCallback(async (showLoading = true) => {
     };
   }, [category]);
 
-  // 3. Lọc và sắp xếp bài viết
-  const filteredPosts = useMemo(() => {
-    let result = [...posts];
-    const query = searchQuery.trim().toLowerCase();
+  // Sắp xếp bài viết (cũ, mới)
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => {
+      // Ưu tiên bài mới hơn; nếu cùng thời gian thì ID lớn hơn trước
+      if (sort === "latest") {
+        const timeA = new Date(a.createdAt).getTime();
+        const timeB = new Date(b.createdAt).getTime();
 
-    if (query) {
-      result = result.filter((post) => {
-        const title = (post.title || "").toLowerCase();
-        const content = (
-          post.content || post.description || ""
-        ).toLowerCase();
-        const author = (
-          post.username || post.author?.name || ""
-        ).toLowerCase();
+        return timeB - timeA || b.postId - a.postId;
+      }
 
+      // Ưu tiên bài có nhiều lượt thích hơn
+      if (sort === "top") {
         return (
-          title.includes(query) ||
-          content.includes(query) ||
-          author.includes(query)
+          (b.likeCount ?? 0) - (a.likeCount ?? 0) ||
+          new Date(b.createdAt) - new Date(a.createdAt) ||
+          b.postId - a.postId
         );
-      });
-    }
+      }
 
-    if (sort === "top") {
-      result.sort((a, b) => {
-        const likesA = a.likeCount ?? a.stats?.likes ?? 0;
-        const likesB = b.likeCount ?? b.stats?.likes ?? 0;
+      // Ưu tiên bài có nhiều bình luận hơn
+      if (sort === "discussed") {
+        return (
+          (b.commentCount ?? 0) - (a.commentCount ?? 0) ||
+          new Date(b.createdAt) - new Date(a.createdAt) ||
+          b.postId - a.postId
+        );
+      }
 
-        return likesB - likesA;
-      });
-    }
+      return 0;
+    });
+  }, [posts, sort]);
 
-    return result;
-  }, [posts, searchQuery, sort]);
-
-  // 4. Hiển thị thông báo tạm thời
+  // 5. Hiển thị thông báo
   const showFeedback = (type, text) => {
     setFeedbackMessage({ type, text });
-
-    setTimeout(() => {
-      setFeedbackMessage(null);
-    }, 5000);
   };
 
-  // 5. Tạo bài viết mới
-  const handleCreatePostSubmit = async (formData) => {
+  // Tự xóa thông báo sau 5 giây
+  useEffect(() => {
+    if (!feedbackMessage) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setFeedbackMessage(null);
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [feedbackMessage]);
+
+  // 6. Tạo bài viết mới
+  const handleCreatePost = async (formData) => {
     try {
       await createPost(formData);
 
@@ -152,32 +205,34 @@ const fetchPosts = useCallback(async (showLoading = true) => {
 
       showFeedback(
         "success",
-        "Bài viết đã được gửi thành công và đang chờ ban quản trị duyệt!"
+        "Bài viết đã được gửi thành công và đang chờ ban quản trị duyệt!",
       );
 
-      // Tải lại bài viết sau khi tạo thành công
+      // Tải lại danh sách sau khi tạo bài viết
       await fetchPosts(false);
     } catch (err) {
       console.error("Lỗi khi tạo bài viết:", err);
 
       showFeedback(
         "error",
-        err.message || "Không thể đăng bài viết. Vui lòng thử lại."
+        err.message || "Không thể đăng bài viết. Vui lòng thử lại.",
       );
     }
   };
 
-  // 6. Like / Unlike bài viết
+  // 7. Like / Unlike bài viết
   const handleLike = async (postId) => {
     const targetPost = posts.find(
-      (post) => (post.postId ?? post.id) === postId
+      (post) => (post.postId ?? post.id) === postId,
     );
 
-    if (!targetPost) return;
+    if (!targetPost) {
+      return;
+    }
 
     const isCurrentlyLiked = targetPost.likedByCurrentUser;
-    const currentLikes =
-      targetPost.likeCount ?? targetPost.stats?.likes ?? 0;
+
+    const currentLikes = targetPost.likeCount ?? targetPost.stats?.likes ?? 0;
 
     // Cập nhật giao diện ngay lập tức
     setPosts((prevPosts) =>
@@ -199,7 +254,7 @@ const fetchPosts = useCallback(async (showLoading = true) => {
             likes: nextLikes,
           },
         };
-      })
+      }),
     );
 
     try {
@@ -213,23 +268,24 @@ const fetchPosts = useCallback(async (showLoading = true) => {
 
       showFeedback(
         "error",
-        "Không thể cập nhật lượt thích. Đang tải lại dữ liệu."
+        "Không thể cập nhật lượt thích. Đang tải lại dữ liệu.",
       );
 
       await fetchPosts(false);
     }
   };
 
-  // 7. Bookmark / Unbookmark bài viết
+  // 8. Bookmark / Unbookmark bài viết
   const handleBookmark = async (postId) => {
     const targetPost = posts.find(
-      (post) => (post.postId ?? post.id) === postId
+      (post) => (post.postId ?? post.id) === postId,
     );
 
-    if (!targetPost) return;
+    if (!targetPost) {
+      return;
+    }
 
-    const isCurrentlyBookmarked =
-      targetPost.bookmarkedByCurrentUser;
+    const isCurrentlyBookmarked = targetPost.bookmarkedByCurrentUser;
 
     // Cập nhật giao diện ngay lập tức
     setPosts((prevPosts) =>
@@ -242,7 +298,7 @@ const fetchPosts = useCallback(async (showLoading = true) => {
           ...post,
           bookmarkedByCurrentUser: !isCurrentlyBookmarked,
         };
-      })
+      }),
     );
 
     try {
@@ -256,21 +312,21 @@ const fetchPosts = useCallback(async (showLoading = true) => {
 
       showFeedback(
         "error",
-        "Không thể cập nhật bài viết đã lưu. Đang tải lại dữ liệu."
+        "Không thể cập nhật bài viết đã lưu. Đang tải lại dữ liệu.",
       );
 
       await fetchPosts(false);
     }
   };
 
+  // 9. Giao diện
   return (
     <div className="min-h-screen bg-[#f7faf7] text-on-surface">
       <main className="w-full pt-20">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-16 sm:px-6 lg:px-12">
-          {/* Header */}
           <CommunityHeader />
 
-          {/* Feedback */}
+          {/* Thông báo */}
           {feedbackMessage && (
             <div
               role="status"
@@ -284,70 +340,78 @@ const fetchPosts = useCallback(async (showLoading = true) => {
             </div>
           )}
 
-          {/* Toolbar */}
+          {/* Thanh tìm kiếm, danh mục và sắp xếp */}
           <CommunityToolbar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             category={category}
             setCategory={setCategory}
+            categories={categories}
+            categoryLoading={categoryLoading}
+            categoryError={categoryError}
             sort={sort}
             setSort={setSort}
             onCreatePost={() => setIsCreatePostOpen(true)}
           />
 
-          {/* Loading */}
-          
-{loading ? (
-  <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 rounded-2xl bg-white p-8 shadow-sm">
-    <Loader2 className="h-8 w-8 animate-spin text-chaybook-primary" />
-    <p className="text-sm font-medium text-gray-500">
-      Đang tải bài viết cộng đồng...
-    </p>
-  </div>
-) : error ? (
-  <div className="flex min-h-75 items-center justify-center rounded-2xl bg-white p-8 text-center shadow-sm">
-    <div>
-      <h2 className="text-xl font-semibold text-gray-800">
-        Không thể kết nối máy chủ
-      </h2>
-      <p className="mt-2 text-sm text-gray-500">{error}</p>
-      <button
-        type="button"
-        onClick={() => fetchPosts()}
-        className="mt-4 rounded-lg bg-chaybook-primary px-4 py-2 text-sm font-medium text-white"
-      >
-        Thử lại
-      </button>
-    </div>
-  </div>
-) : filteredPosts.length > 0 ? (
-  <PostGrid
-    posts={filteredPosts}
-    onLike={handleLike}
-    onBookmark={handleBookmark}
-  />
-) : (
-  <div className="flex min-h-75 items-center justify-center rounded-2xl bg-white p-8 text-center shadow-sm">
-    <div>
-      <h2 className="text-xl font-semibold text-gray-800">
-        {posts.length === 0
-          ? "Chưa có bài viết nào"
-          : "Không tìm thấy bài viết nào"}
-      </h2>
-      <p className="mt-2 text-sm text-gray-500">
-        {posts.length === 0
-          ? "Hãy là người đầu tiên chia sẻ với cộng đồng ChayBook!"
-          : "Hãy thử từ khóa hoặc bộ lọc khác."}
-      </p>
-    </div>
-  </div>
-)}
+          {/* Trạng thái tải bài viết */}
+          {loading ? (
+            <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 rounded-2xl bg-white p-8 shadow-sm">
+              <Loader2 className="h-8 w-8 animate-spin text-chaybook-primary" />
 
-          {/* Create Post Modal */}
+              <p className="text-sm font-medium text-gray-500">
+                Đang tải bài viết cộng đồng...
+              </p>
+            </div>
+          ) : error ? (
+            <div className="flex min-h-75 items-center justify-center rounded-2xl bg-white p-8 text-center shadow-sm">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Không thể kết nối máy chủ
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">{error}</p>
+
+                <button
+                  type="button"
+                  onClick={() => fetchPosts()}
+                  className="mt-4 rounded-lg bg-chaybook-primary px-4 py-2 text-sm font-medium text-white"
+                >
+                  Thử lại
+                </button>
+              </div>
+            </div>
+          ) : sortedPosts.length > 0 ? (
+            <PostGrid
+              posts={sortedPosts}
+              onLike={handleLike}
+              onBookmark={handleBookmark}
+            />
+          ) : (
+            <div className="flex min-h-75 items-center justify-center rounded-2xl bg-white p-8 text-center shadow-sm">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {posts.length === 0
+                    ? "Chưa có bài viết nào"
+                    : "Không tìm thấy bài viết nào"}
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  {posts.length === 0
+                    ? "Hãy là người đầu tiên chia sẻ với cộng đồng ChayBook!"
+                    : "Hãy thử từ khóa hoặc bộ lọc khác."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Modal tạo bài viết */}
           <CreatePostModal
             isOpen={isCreatePostOpen}
             onClose={() => setIsCreatePostOpen(false)}
-            onSubmit={handleCreatePostSubmit}
+            onSubmit={handleCreatePost}
+            categories={categories}
+            categoryLoading={categoryLoading}
           />
         </div>
       </main>
@@ -356,4 +420,3 @@ const fetchPosts = useCallback(async (showLoading = true) => {
 }
 
 export default CommunityPage;
-

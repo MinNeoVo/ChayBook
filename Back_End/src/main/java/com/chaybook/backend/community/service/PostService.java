@@ -14,7 +14,12 @@ import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Service
@@ -129,100 +134,110 @@ public class PostService {
         return responses;
     }
 
-    @Transactional
-    public PostCreateResponse createPost(
-            Integer currentUserId,
-            PostCreateRequest request
-    ) {
-        User currentUser = requireActiveUser(currentUserId);
-        Category category = findOptionalCategory(request.categoryId());
+   
+@Transactional
+public PostCreateResponse createPost(
+        Integer currentUserId,
+        Integer categoryId,
+        String title,
+        String content,
+        MultipartFile image
+) {
+    User currentUser = requireActiveUser(currentUserId);
 
-        Post post = new Post();
-
-        // Tác giả lấy từ tài khoản đã đăng nhập.
-        post.setUser(currentUser);
-
-        post.setCategory(category);
-        post.setTitle(request.title().strip());
-        post.setContent(request.content().strip());
-        post.setImageUrl(normalizeImageUrl(request.imageUrl()));
-
-        // Không nhận trạng thái từ frontend.
-        post.setStatus("PENDING");
-
-        // Không tự set postId hoặc createdAt.
-        Post savedPost = postRepository.saveAndFlush(post);
-
-        PostCreateResponse.PostData postData =
-                new PostCreateResponse.PostData(
-                        savedPost.getPostId(),
-                        currentUser.getUserId(),
-                        category == null ? null : category.getCategoryId(),
-                        savedPost.getTitle(),
-                        savedPost.getContent(),
-                        savedPost.getImageUrl(),
-                        savedPost.getStatus(),
-                        savedPost.getCreatedAt()
-                );
-
-        return new PostCreateResponse(
-                "Post created successfully",
-                postData
+    if (title == null || title.isBlank() || title.strip().length() > 255) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Title is required and must not exceed 255 characters"
         );
     }
 
-    private User requireActiveUser(Integer currentUserId) {
-        if (currentUserId == null || currentUserId <= 0) {
-            throw new PostException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Please log in"
-            );
-        }
-
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new PostException(
-                        HttpStatus.UNAUTHORIZED,
-                        "User no longer exists. Please log in again"
-                ));
-
-        // Kiểm tra DB để tài khoản bị khóa không tiếp tục tạo bài
-        // chỉ vì JWT cũ vẫn còn hạn.
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
-            throw new PostException(
-                    HttpStatus.FORBIDDEN,
-                    "Your account is not active"
-            );
-        }
-
-        return user;
+    if (content == null || content.isBlank()) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Content is required"
+        );
     }
 
-    private Category findOptionalCategory(Integer categoryId) {
-        if (categoryId == null) {
-            return null;
-        }
+    Category category = findOptionalCategory(categoryId);
 
-        if (categoryId <= 0) {
-            throw new PostException(
-                    HttpStatus.BAD_REQUEST,
-                    "categoryId must be greater than 0"
+    String imageUrl = savePostImage(image);
+
+    Post post = new Post();
+    post.setUser(currentUser);
+    post.setCategory(category);
+    post.setTitle(title.strip());
+    post.setContent(content.strip());
+    post.setImageUrl(imageUrl);
+    post.setStatus("PENDING");
+
+    Post savedPost = postRepository.saveAndFlush(post);
+
+    PostCreateResponse.PostData postData =
+            new PostCreateResponse.PostData(
+                    savedPost.getPostId(),
+                    currentUser.getUserId(),
+                    category == null ? null : category.getCategoryId(),
+                    savedPost.getTitle(),
+                    savedPost.getContent(),
+                    savedPost.getImageUrl(),
+                    savedPost.getStatus(),
+                    savedPost.getCreatedAt()
             );
-        }
 
-        return categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new PostException(
-                        HttpStatus.NOT_FOUND,
-                        "Category not found"
-                ));
+    return new PostCreateResponse(
+            "Post created successfully",
+            postData
+    );
+}
+
+private String savePostImage(MultipartFile image) {
+    if (image == null || image.isEmpty()) {
+        return null;
     }
 
-    private String normalizeImageUrl(String imageUrl) {
-        if (imageUrl == null || imageUrl.isBlank()) {
-            return null;
-        }
-
-        return imageUrl.strip();
+    if (image.getSize() > 5 * 1024 * 1024) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Image must not exceed 5 MB"
+        );
     }
+
+    String contentType = image.getContentType();
+
+    if (contentType == null ||
+            !(contentType.equalsIgnoreCase("image/jpeg")
+                    || contentType.equalsIgnoreCase("image/png"))) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Only JPEG and PNG images are allowed"
+        );
+    }
+
+    String extension = contentType.equalsIgnoreCase("image/png")
+            ? ".png"
+            : ".jpg";
+
+    String fileName = UUID.randomUUID() + extension;
+    Path uploadDir = Paths.get("uploads", "posts").toAbsolutePath();
+    Path destination = uploadDir.resolve(fileName).normalize();
+
+    try {
+        Files.createDirectories(uploadDir);
+        Files.copy(
+                image.getInputStream(),
+                destination,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+
+        return "/uploads/posts/" + fileName;
+    } catch (IOException exception) {
+        throw new PostException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unable to save image"
+        );
+    }
+}
 
     @Transactional
     public PostMessageResponse updatePost(
@@ -487,5 +502,70 @@ public class PostService {
                 type,
                 false
         );
+    }
+    
+    private User requireActiveUser(Integer userId) {
+        if (userId == null || userId <= 0) {
+            throw new PostException(
+                    HttpStatus.UNAUTHORIZED,
+                    "User is not authenticated"
+            );
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new PostException(
+                        HttpStatus.UNAUTHORIZED,
+                        "User not found"
+                ));
+
+        if (user.getStatus() == null
+                || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new PostException(
+                    HttpStatus.FORBIDDEN,
+                    "User account is not active"
+            );
+        }
+
+        return user;
+    }
+
+    private Category findOptionalCategory(Integer categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+
+        if (categoryId <= 0) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "categoryId must be greater than 0"
+            );
+        }
+
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new PostException(
+                        HttpStatus.BAD_REQUEST,
+                        "Category not found"
+                ));
+    }
+
+    private String normalizeImageUrl(String imageUrl) {
+        if (imageUrl == null) {
+            return null;
+        }
+
+        String normalizedUrl = imageUrl.strip();
+
+        if (normalizedUrl.isEmpty()) {
+            return null;
+        }
+
+        if (normalizedUrl.length() > 255) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Image URL must not exceed 255 characters"
+            );
+        }
+
+        return normalizedUrl;
     }
 }
