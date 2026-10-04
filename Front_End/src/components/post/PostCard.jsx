@@ -38,7 +38,12 @@ function PostCard({
 
     moderationFeedback,
     author,
+    likedByCurrentUser,
+    bookmarkedByCurrentUser,
   } = post;
+
+  const isLiked = Boolean(likedByCurrentUser);
+  const isBookmarked = Boolean(bookmarkedByCurrentUser);
 
   const likes = stats?.likes ?? 0;
   const comments = stats?.comments ?? 0;
@@ -161,19 +166,33 @@ function PostCard({
             <button
               type="button"
               onClick={() => onLike?.(post)}
-              className="
+              className={`
                 flex
+                cursor-pointer
                 items-center
-                gap-1
+                gap-1.5
                 text-sm
-                text-gray-600
-                transition-colors
-                hover:text-chaybook-primary
-              "
+                transition-all
+                ${
+                  isLiked
+                    ? "font-bold text-chaybook-primary"
+                    : "font-medium text-gray-600 hover:text-chaybook-primary"
+                }
+              `}
+              title={isLiked ? "Bỏ thích" : "Thích"}
             >
-              <ThumbsUp size={19} className="text-chaybook-primary" />
+              <ThumbsUp
+                size={19}
+                className={`transition-transform duration-200 active:scale-125 ${
+                  isLiked
+                    ? "fill-current text-chaybook-primary"
+                    : "text-gray-500 hover:text-chaybook-primary"
+                }`}
+              />
 
-              <span>{likes} likes</span>
+              <span className={isLiked ? "font-bold" : ""}>
+                {likes} likes
+              </span>
             </button>
 
             {/* Comment */}
@@ -182,6 +201,7 @@ function PostCard({
               onClick={() => onComment?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 text-sm
@@ -201,6 +221,7 @@ function PostCard({
               onClick={() => onShare?.(post)}
               className="
                 hidden
+                cursor-pointer
                 items-center
                 gap-1
                 text-sm
@@ -222,16 +243,27 @@ function PostCard({
             <button
               type="button"
               onClick={() => onBookmark?.(post)}
-              className="
+              className={`
+                cursor-pointer
                 rounded-lg
                 p-1.5
-                text-gray-500
-                transition-colors
-                hover:bg-gray-100
-              "
-              title="Bookmark"
+                transition-all
+                ${
+                  isBookmarked
+                    ? "bg-chaybook-primary/10 text-chaybook-primary font-bold"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-chaybook-primary"
+                }
+              `}
+              title={isBookmarked ? "Bỏ lưu bài viết" : "Lưu bài viết"}
             >
-              <Bookmark size={20} />
+              <Bookmark
+                size={20}
+                className={`transition-transform duration-200 active:scale-125 ${
+                  isBookmarked
+                    ? "fill-current text-chaybook-primary stroke-[2.5]"
+                    : ""
+                }`}
+              />
             </button>
 
             {/* More */}
@@ -239,6 +271,7 @@ function PostCard({
               type="button"
               onClick={() => onMore?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 p-1.5
                 text-gray-500
@@ -278,6 +311,7 @@ function PostCard({
               onClick={() => onDelete?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 px-2
@@ -297,6 +331,7 @@ function PostCard({
               onClick={() => onEdit?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 rounded-lg
@@ -348,6 +383,7 @@ function PostCard({
               type="button"
               onClick={() => onWithdraw?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 px-3
                 py-1
@@ -364,6 +400,7 @@ function PostCard({
               type="button"
               onClick={() => onEdit?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 bg-gray-100
                 px-3

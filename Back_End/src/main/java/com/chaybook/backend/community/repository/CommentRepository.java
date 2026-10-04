@@ -26,4 +26,21 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<CommentCount> findCommentCounts(
             @Param("categoryId") Integer categoryId
     );
+
+    /**
+     * Đếm comment cho tất cả bài viết của một user cụ thể.
+     * Dùng cho trang Profile.
+     */
+    @Query("""
+            SELECT p.postId AS postId,
+                   COUNT(cm) AS total
+            FROM Comment cm
+            JOIN cm.post p
+            WHERE p.user.userId = :authorId
+              AND p.status <> 'DELETED'
+            GROUP BY p.postId
+            """)
+    List<CommentCount> findCommentCountsByAuthor(
+            @Param("authorId") Integer authorId
+    );
 }

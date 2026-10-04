@@ -25,6 +25,39 @@ public class UserController {
         this.userService = userService;
     }
 
+    /**
+     * Lấy thông tin profile + danh sách bài viết của user đang đăng nhập.
+     */
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> getMyProfile(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = requireCurrentUserId(jwt);
+
+        UserProfileResponse response = userService.getProfile(currentUserId);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
+
+    private Integer requireCurrentUserId(Jwt jwt) {
+        if (jwt != null) {
+            try {
+                int userId = Integer.parseInt(jwt.getSubject());
+                if (userId > 0) {
+                    return userId;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Please log in with a valid account"
+        );
+    }
+
     @PutMapping(value = "/{userId}",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )

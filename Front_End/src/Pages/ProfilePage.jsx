@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Loader2, Search } from "lucide-react";
 
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
@@ -8,69 +8,252 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileSidebar from "../components/profile/ProfileSidebar";
 import PostCard from "../components/post/PostCard";
 
-import profilePosts from "../data/profilePosts";
+import { getMyProfile } from "../services/userServices";
+import {
+  addPostInteraction,
+  removePostInteraction,
+} from "../services/postServices";
 
 function ProfilePage() {
+  const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [activeStatus, setActiveStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // 1. Tải profile + bài viết từ Backend API
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const data = await getMyProfile();
+
+      setProfile(data);
+      setPosts(Array.isArray(data.posts) ? data.posts : []);
+      setError(null);
+    } catch (err) {
+      console.error("Không thể tải profile:", err);
+      setError("Không thể kết nối đến máy chủ để tải thông tin cá nhân.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadProfile = async () => {
+      try {
+        const data = await getMyProfile();
+
+        if (cancelled) return;
+
+        setProfile(data);
+        setPosts(Array.isArray(data.posts) ? data.posts : []);
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+
+        console.error("Không thể tải profile:", err);
+        setError("Không thể kết nối đến máy chủ để tải thông tin cá nhân.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 2. Lọc và sắp xếp bài viết
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return profilePosts.filter((post) => {
+    return posts.filter((post) => {
       const matchesStatus =
         activeStatus === "ALL" || post.status === activeStatus;
 
       const matchesSearch =
         !query ||
-        post.title.toLowerCase().includes(query) ||
-        post.content.toLowerCase().includes(query);
+        (post.title || "").toLowerCase().includes(query) ||
+        (post.content || "").toLowerCase().includes(query);
 
       return matchesStatus && matchesSearch;
     });
-  }, [activeStatus, searchQuery]);
+  }, [posts, activeStatus, searchQuery]);
 
   const statusCount = {
-    ALL: profilePosts.length,
-
-    APPROVED: profilePosts.filter((post) => post.status === "APPROVED").length,
-
-    PENDING: profilePosts.filter((post) => post.status === "PENDING").length,
-
-    DENIED: profilePosts.filter((post) => post.status === "DENIED").length,
+    ALL: posts.length,
+    APPROVED: posts.filter((p) => p.status === "APPROVED").length,
+    PENDING: posts.filter((p) => p.status === "PENDING").length,
+    DENIED: posts.filter((p) => p.status === "DENIED").length,
   };
 
-  const handleLike = (post) => {
-    console.log("Like:", post.id);
+  // 3. Chuẩn hóa post data cho PostCard
+  const normalizePost = (post) => ({
+    ...post,
+    id: post.postId ?? post.id,
+    description: post.content ?? post.description,
+    image: post.imageUrl ?? post.image,
+    time: post.createdAt
+      ? new Date(post.createdAt).toLocaleDateString("vi-VN", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : post.time || "Vừa xong",
+    author: {
+      name: post.username ?? profile?.username ?? "ChayBook User",
+      avatar: post.avatarUrl ?? profile?.avatarUrl,
+      initials: (post.username || profile?.username || "CB")
+        .slice(0, 2)
+        .toUpperCase(),
+    },
+    stats: {
+      likes: post.likeCount ?? post.stats?.likes ?? 0,
+      comments: post.commentCount ?? post.stats?.comments ?? 0,
+    },
+    likedByCurrentUser: post.likedByCurrentUser,
+    bookmarkedByCurrentUser: post.bookmarkedByCurrentUser,
+  });
+
+  // 4. Like / Unlike bài viết
+  const handleLike = async (post) => {
+    const postId = post.postId ?? post.id;
+    const isCurrentlyLiked = post.likedByCurrentUser;
+    const currentLikes = post.likeCount ?? post.stats?.likes ?? 0;
+
+    // Optimistic update
+    setPosts((prev) =>
+      prev.map((p) => {
+        if ((p.postId ?? p.id) !== postId) return p;
+
+        const nextLikes = isCurrentlyLiked
+          ? Math.max(0, currentLikes - 1)
+          : currentLikes + 1;
+
+        return {
+          ...p,
+          likedByCurrentUser: !isCurrentlyLiked,
+          likeCount: nextLikes,
+        };
+      }),
+    );
+
+    try {
+      if (isCurrentlyLiked) {
+        await removePostInteraction(postId, "LIKE");
+      } else {
+        await addPostInteraction(postId, "LIKE");
+      }
+    } catch (err) {
+      console.error("Lỗi khi Like bài viết:", err);
+      await fetchProfile(false);
+    }
+  };
+
+  // 5. Bookmark / Unbookmark bài viết
+  const handleBookmark = async (post) => {
+    const postId = post.postId ?? post.id;
+    const isCurrentlyBookmarked = post.bookmarkedByCurrentUser;
+
+    // Optimistic update
+    setPosts((prev) =>
+      prev.map((p) => {
+        if ((p.postId ?? p.id) !== postId) return p;
+
+        return {
+          ...p,
+          bookmarkedByCurrentUser: !isCurrentlyBookmarked,
+        };
+      }),
+    );
+
+    try {
+      if (isCurrentlyBookmarked) {
+        await removePostInteraction(postId, "BOOKMARK");
+      } else {
+        await addPostInteraction(postId, "BOOKMARK");
+      }
+    } catch (err) {
+      console.error("Lỗi khi Bookmark bài viết:", err);
+      await fetchProfile(false);
+    }
   };
 
   const handleComment = (post) => {
-    console.log("Comment:", post.id);
+    console.log("Comment:", post.postId ?? post.id);
   };
 
   const handleShare = (post) => {
-    console.log("Share:", post.id);
-  };
-
-  const handleBookmark = (post) => {
-    console.log("Bookmark:", post.id);
+    console.log("Share:", post.postId ?? post.id);
   };
 
   const handleMore = (post) => {
-    console.log("More:", post.id);
+    console.log("More:", post.postId ?? post.id);
   };
 
   const handleEdit = (post) => {
-    console.log("Edit:", post.id);
+    console.log("Edit:", post.postId ?? post.id);
   };
 
   const handleDelete = (post) => {
-    console.log("Delete:", post.id);
+    console.log("Delete:", post.postId ?? post.id);
   };
 
   const handleWithdraw = (post) => {
-    console.log("Withdraw:", post.id);
+    console.log("Withdraw:", post.postId ?? post.id);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
+        <main className="w-full pt-20 bg-[#f7faf7]">
+          <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 rounded-2xl p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-chaybook-primary" />
+            <p className="text-sm font-medium text-gray-500">
+              Đang tải thông tin cá nhân...
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
+        <main className="w-full pt-20 bg-[#f7faf7]">
+          <div className="flex min-h-[400px] items-center justify-center rounded-2xl p-8 text-center">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Không thể tải thông tin
+              </h2>
+              <p className="mt-2 text-sm text-gray-500">{error}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoading(true);
+                  fetchProfile();
+                }}
+                className="mt-4 rounded-lg bg-chaybook-primary px-4 py-2 text-sm font-medium text-white"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -83,7 +266,7 @@ function ProfilePage() {
     >
       <main className="w-full pt-20 bg-[#f7faf7]">
         {/* ================= PROFILE HEADER ================= */}
-        <ProfileHeader />
+        <ProfileHeader profile={profile} />
 
         {/* ================= MAIN CONTENT ================= */}
         <section
@@ -107,7 +290,7 @@ function ProfilePage() {
           "
           >
             {/* LEFT SIDEBAR */}
-            <ProfileSidebar />
+            <ProfileSidebar profile={profile} />
 
             {/* RIGHT CONTENT */}
             <section
@@ -165,7 +348,7 @@ function ProfilePage() {
                       font-bold
                     "
                     >
-                      ({profilePosts.length} posts)
+                      ({posts.length} posts)
                     </span>
                   </div>
 
@@ -222,20 +405,24 @@ function ProfilePage() {
               {/* ================= POST LIST ================= */}
               <div className="flex flex-col gap-6">
                 {filteredPosts.length > 0 ? (
-                  filteredPosts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onLike={handleLike}
-                      onComment={handleComment}
-                      onShare={handleShare}
-                      onBookmark={handleBookmark}
-                      onMore={handleMore}
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onWithdraw={handleWithdraw}
-                    />
-                  ))
+                  filteredPosts.map((post) => {
+                    const normalized = normalizePost(post);
+
+                    return (
+                      <PostCard
+                        key={normalized.id}
+                        post={normalized}
+                        onLike={() => handleLike(post)}
+                        onComment={() => handleComment(post)}
+                        onShare={() => handleShare(post)}
+                        onBookmark={() => handleBookmark(post)}
+                        onMore={() => handleMore(post)}
+                        onEdit={() => handleEdit(post)}
+                        onDelete={() => handleDelete(post)}
+                        onWithdraw={() => handleWithdraw(post)}
+                      />
+                    );
+                  })
                 ) : (
                   <div
                     className="
@@ -254,47 +441,31 @@ function ProfilePage() {
                       mb-2
                     "
                     >
-                      No posts found
+                      {posts.length === 0
+                        ? "Chưa có bài viết nào"
+                        : "Không tìm thấy bài viết nào"}
                     </h3>
 
                     <p className="text-sm text-gray-500 mb-5">
-                      Try another search keyword or status.
+                      {posts.length === 0
+                        ? "Hãy chia sẻ bài viết đầu tiên với cộng đồng ChayBook!"
+                        : "Hãy thử từ khóa hoặc bộ lọc khác."}
                     </p>
 
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery("");
-                        setActiveStatus("ALL");
-                      }}
-                    >
-                      Clear filters
-                    </Button>
+                    {posts.length > 0 && (
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setActiveStatus("ALL");
+                        }}
+                      >
+                        Xóa bộ lọc
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
-
-              {/* ================= LOAD MORE ================= */}
-              {filteredPosts.length > 0 && (
-                <div
-                  className="
-                  w-full
-                  py-3
-                  flex
-                  items-center
-                  justify-center
-                "
-                >
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="md"
-                    className="rounded-full px-6"
-                  >
-                    Load Archived Posts ↓
-                  </Button>
-                </div>
-              )}
             </section>
           </div>
         </section>

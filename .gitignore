@@ -16,3 +16,6 @@ Back_End/.env
 # OS
 .DS_Store
 Thumbs.db
+
+# AI coding instructions - local only
+ChayBook_AI_Coding_Mentor_Instructions.md
