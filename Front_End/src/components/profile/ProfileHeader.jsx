@@ -1,6 +1,7 @@
 import { CalendarDays, FileText, Heart, Plus, Edit3 } from "lucide-react";
 
 import Button from "../common/Button";
+import Avatar from "../common/Avatar";
 
 function ProfileHeader({ profile }) {
   const username = profile?.username || "ChayBook User";
@@ -22,9 +23,6 @@ function ProfileHeader({ profile }) {
         year: "numeric",
       })
     : "Chưa xác định";
-
-  // Chữ cái đầu cho avatar placeholder
-  const initials = (fullName || username || "CB").slice(0, 2).toUpperCase();
 
   // Role badge
   const roleLabel =
@@ -117,46 +115,24 @@ function ProfileHeader({ profile }) {
                 sm:flex-row sm:items-end
               "
             >
-              {/* Avatar */}
+              {/* Avatar */}{" "}
               <div className="relative shrink-0">
-                <div
-                  className="
-                    h-28 w-28
-                    overflow-hidden
-                    rounded-full
-                    bg-gradient-to-b from-[#006d30] to-[#006b2c]
-                    p-1
-                    shadow-md
-                    md:h-36 md:w-36
-                  "
-                >
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={fullName}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-full bg-chaybook-primary text-3xl font-bold text-white">
-                      {initials}
-                    </div>
-                  )}
-                </div>
-
-                {/* Online status */}
-                <span
-                  className="
-                    absolute bottom-2 right-2
-                    flex h-5 w-5 items-center justify-center
-                    rounded-full
-                    border-2 border-white
-                    bg-[#00873a]
-                  "
-                >
-                  <span className="h-2 w-2 rounded-full bg-white" />
-                </span>
+                {" "}
+                <div className=" h-28 w-28 overflow-hidden rounded-full bg-gradient-to-b from-[#006d30] to-[#006b2c] p-1 shadow-md md:h-36 md:w-36 ">
+                  {" "}
+                  <Avatar
+                    src={avatarUrl}
+                    alt={fullName}
+                    size="xl"
+                    className="h-full w-full bg-chaybook-primary"
+                  />{" "}
+                </div>{" "}
+                {/* Online status */}{" "}
+                <span className=" absolute bottom-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#00873a] ">
+                  {" "}
+                  <span className="h-2 w-2 rounded-full bg-white" />{" "}
+                </span>{" "}
               </div>
-
               {/* User information */}
               <div className="flex flex-col gap-1">
                 {/* Name + Role */}
@@ -205,10 +181,7 @@ function ProfileHeader({ profile }) {
                       text-xs text-gray-600
                     "
                   >
-                    <CalendarDays
-                      size={15}
-                      className="text-chaybook-primary"
-                    />
+                    <CalendarDays size={15} className="text-chaybook-primary" />
                     Thành viên từ {memberSince}
                   </span>
 
