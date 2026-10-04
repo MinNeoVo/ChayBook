@@ -14,6 +14,7 @@ import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import BmiPage from "./pages/BmiPage";
 import MealPlanPage from "./pages/MealPlanPage";
+import AIAssistantPage from "./pages/AIAssistantPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -41,6 +42,7 @@ function App() {
         <Route path="/recipes" element={<RecipesPage />} />
         <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
         <Route path="/bmi" element={<BmiPage />} />
+        <Route path="/ai-assistant" element={<AIAssistantPage />} />
 
         {/* Protected User Routes */}
         <Route element={<ProtectedRoute />}>
