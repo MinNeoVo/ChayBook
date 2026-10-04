@@ -7,7 +7,7 @@ import com.chaybook.backend.bmi.entity.BmiRecord;
 import com.chaybook.backend.bmi.repository.BmiRecordRepository;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class BmiService {
 
-    @Autowired
-    private BmiRecordRepository bmiRecordRepository;
+    private final BmiRecordRepository bmiRecordRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    BmiService(BmiRecordRepository bmiRecordRepository, UserRepository userRepository) {
+        this.bmiRecordRepository = bmiRecordRepository;
+        this.userRepository = userRepository;
+    }
 
     // ===== API 1: Tạo BMI Record =====
     public BmiResponse createBmiRecord(BmiCreateRequest request) {

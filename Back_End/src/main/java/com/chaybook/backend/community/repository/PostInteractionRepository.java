@@ -73,4 +73,42 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
             @Param("type") String type
     );
 
+    /**
+     * Đếm tương tác (LIKE/BOOKMARK) cho tất cả bài viết của một user cụ thể.
+     * Dùng cho trang Profile.
+     */
+    @Query("""
+            SELECT p.postId AS postId,
+                   i.type AS interactionType,
+                   COUNT(i) AS total
+            FROM PostInteraction i
+            JOIN i.post p
+            WHERE p.user.userId = :authorId
+              AND p.status <> 'DELETED'
+              AND i.type IN ('LIKE', 'BOOKMARK')
+            GROUP BY p.postId, i.type
+            """)
+    List<InteractionCount> findInteractionCountsByAuthor(
+            @Param("authorId") Integer authorId
+    );
+
+    /**
+     * Các bài viết (của một author) mà người đăng nhập đã LIKE hoặc BOOKMARK.
+     * Dùng cho trang Profile.
+     */
+    @Query("""
+            SELECT DISTINCT p.postId AS postId,
+                            i.type AS interactionType
+            FROM PostInteraction i
+            JOIN i.post p
+            WHERE p.user.userId = :authorId
+              AND p.status <> 'DELETED'
+              AND i.user.userId = :currentUserId
+              AND i.type IN ('LIKE', 'BOOKMARK')
+            """)
+    List<CurrentUserInteraction> findCurrentUserInteractionsByAuthor(
+            @Param("authorId") Integer authorId,
+            @Param("currentUserId") Integer currentUserId
+    );
+
 }

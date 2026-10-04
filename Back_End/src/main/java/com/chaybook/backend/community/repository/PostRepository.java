@@ -31,4 +31,17 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     Optional<Post> findByIdForUpdate(
             @Param("postId") Integer postId
     );
+
+    @Query("""
+            SELECT p
+            FROM Post p
+            LEFT JOIN FETCH p.user
+            LEFT JOIN FETCH p.category
+            WHERE p.user.userId = :userId
+              AND p.status <> 'DELETED'
+            ORDER BY p.createdAt DESC, p.postId DESC
+            """)
+    List<Post> findPostsByUserId(
+            @Param("userId") Integer userId
+    );
 }
