@@ -26,7 +26,7 @@ public class BmiController {
     }
 
     // API 1: POST /api/bmi
-    @PostMapping("/api/bmi")
+    @PostMapping("/bmi")
     public ResponseEntity<BmiResponse> createBmi(
             @Valid @RequestBody BmiCreateRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -39,7 +39,7 @@ public class BmiController {
     }
 
     // API 2: GET /api/users/{userId}/bmi/latest
-    @GetMapping("/api/users/{userId}/bmi/latest")
+    @GetMapping("/users/{userId}/bmi/latest")
     public ResponseEntity<BmiResponse> getLatestBmi(
             @PathVariable Integer userId,
             @AuthenticationPrincipal Jwt jwt
@@ -51,7 +51,7 @@ public class BmiController {
     }
 
     // API 3: GET /api/users/{userId}/bmi
-    @GetMapping("/api/users/{userId}/bmi")
+    @GetMapping("/users/{userId}/bmi")
     public ResponseEntity<List<BmiHistoryItem>> getBmiHistory(
             @PathVariable Integer userId,
             @AuthenticationPrincipal Jwt jwt
