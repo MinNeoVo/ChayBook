@@ -83,7 +83,8 @@ public class SecurityConfig {
                     "/api/auth/login",
                     "/api/auth/logout",
                     "/api/recipes/**",
-    "/api/categories/**"
+                    "/api/categories/**",
+                    "/api/articles/**"
                 ).permitAll()
 
                 .requestMatchers(
