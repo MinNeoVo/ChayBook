@@ -16,6 +16,7 @@ import {
   Share2,
   Sparkles,
   Timer,
+  AlertTriangle,
 } from "lucide-react";
 
 import { getArticleDetail } from "../services/articleServices";
