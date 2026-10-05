@@ -104,7 +104,9 @@ function ContentActions({
           size={20}
           className={liked ? "fill-error text-error" : "text-error"}
         />
-        <span>{liked ? `Liked (${likeCount + 1})` : `Like (${likeCount})`}</span>
+        <span>
+          {liked ? `Liked (${likeCount + 1})` : `Like (${likeCount})`}
+        </span>
       </button>
       <button
         type="button"
@@ -285,7 +287,10 @@ function CommentsSection({
         </span>
       </div>
 
-      <form onSubmit={onCommentSubmit} className="flex items-start gap-space-sm">
+      <form
+        onSubmit={onCommentSubmit}
+        className="flex items-start gap-space-sm"
+      >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">
           U
         </div>
@@ -300,7 +305,10 @@ function CommentsSection({
             value={comment}
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p aria-live="polite" className="text-caption font-caption text-on-surface-variant">
+            <p
+              aria-live="polite"
+              className="text-caption font-caption text-on-surface-variant"
+            >
               {commentFeedback}
             </p>
             <button
@@ -399,11 +407,7 @@ function RecipeSidebar({ post, detail, relatedPosts }) {
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                 <span className="truncate">{item.label}</span>
               </span>
-              <ArrowRight
-                aria-hidden="true"
-                size={16}
-                className="shrink-0"
-              />
+              <ArrowRight aria-hidden="true" size={16} className="shrink-0" />
             </a>
           ))}
         </nav>
@@ -537,11 +541,15 @@ function ContentDetailView({ post, detail }) {
   };
 
   const handleCookMode = () => {
-    setActionFeedback("Cook Mode is ready. Keep the recipe open while you cook.");
+    setActionFeedback(
+      "Cook Mode is ready. Keep the recipe open while you cook.",
+    );
   };
 
   const handleVideoFeedback = () => {
-    setActionFeedback("This is a video preview. The full tutorial is not available yet.");
+    setActionFeedback(
+      "This is a video preview. The full tutorial is not available yet.",
+    );
   };
 
   const relatedPosts = [];
@@ -559,18 +567,18 @@ function ContentDetailView({ post, detail }) {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   {post.categoryLabel}
                 </span>
-                {detail?.eyebrow && (
+                {/* {detail?.eyebrow && (
                   <span className="text-caption font-caption uppercase tracking-wider text-on-surface-variant">
                     {detail.eyebrow}
                   </span>
-                )}
+                )} */}
               </div>
               <h1 className="text-headline-xl font-headline-xl leading-tight tracking-tight text-on-surface">
                 {post.title}
               </h1>
-              <p className="text-body-lg font-body-lg leading-relaxed text-on-surface-variant">
+              {/* <p className="text-body-lg font-body-lg leading-relaxed text-on-surface-variant">
                 {post.description}
-              </p>
+              </p> */}
             </header>
 
             <section className="flex flex-wrap items-center justify-between gap-space-md rounded-2xl bg-surface-container-lowest p-space-md shadow-sm">
@@ -623,7 +631,10 @@ function ContentDetailView({ post, detail }) {
               onShare={handleShare}
               onCookMode={handleCookMode}
             />
-            <p aria-live="polite" className="-mt-space-lg text-caption font-caption text-on-surface-variant">
+            <p
+              aria-live="polite"
+              className="-mt-space-lg text-caption font-caption text-on-surface-variant"
+            >
               {actionFeedback}
             </p>
 
@@ -656,7 +667,7 @@ function ContentDetailView({ post, detail }) {
                 className="text-headline-lg font-headline-lg text-on-surface"
                 id="introduction-heading"
               >
-                {detail?.introductionHeading ?? `About ${post.categoryLabel}`}
+                Chi tiết bài viết
               </h2>
               {(detail?.introduction ?? [post.description]).map((paragraph) => (
                 <p
