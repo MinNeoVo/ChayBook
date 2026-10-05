@@ -1,6 +1,6 @@
 // import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { User } from "lucide-react";
+import Avatar from "./Avatar.jsx";
 
 import { useAuth } from "../../context/useAuth";
 
@@ -99,13 +99,18 @@ function Navbar() {
           )}
 
           {/* Profile */}
+          {/* Profile */}
           {isLoggedIn && (
             <Link
               to="/profile"
               aria-label="User Account"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chaybook-primary text-white shadow-sm transition-colors hover:bg-chaybook-hover"
+              className="flex h-10 w-10 shrink-0 rounded-full shadow-sm transition-opacity hover:opacity-80 border-spacing-x-0.5 "
             >
-              <User className="h-5 w-5" />
+              <Avatar
+                src={user?.avatarUrl}
+                alt={user?.fullName || "User avatar"}
+                size="md"
+              />
             </Link>
           )}
         </div>

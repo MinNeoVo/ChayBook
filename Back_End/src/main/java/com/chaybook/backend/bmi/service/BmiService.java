@@ -18,11 +18,14 @@ import java.util.stream.Collectors;
 @Service
 public class BmiService {
 
-    @Autowired
-    private BmiRecordRepository bmiRecordRepository;
+    private final BmiRecordRepository bmiRecordRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    BmiService(BmiRecordRepository bmiRecordRepository, UserRepository userRepository) {
+        this.bmiRecordRepository = bmiRecordRepository;
+        this.userRepository = userRepository;
+    }
 
     // ===== API 1: Tạo BMI Record =====
     public BmiResponse createBmiRecord(

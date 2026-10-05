@@ -15,11 +15,15 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+@RequestMapping("/api")
 @RestController
 public class BmiController {
 
-    @Autowired
-    private BmiService bmiService;
+    private final BmiService bmiService;
+
+    BmiController(BmiService bmiService) {
+        this.bmiService = bmiService;
+    }
 
     // API 1: POST /api/bmi
     @PostMapping("/api/bmi")

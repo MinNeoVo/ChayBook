@@ -8,6 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.http.HttpMethod;
@@ -80,7 +81,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/register",
                     "/api/auth/login",
-                    "/api/auth/logout"
+                    "/api/auth/logout",
+                    "/api/recipes/**",
+    "/api/categories/**"
                 ).permitAll()
 
                 .requestMatchers(
@@ -102,6 +105,7 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/user/**")
                 .hasAnyRole("USER", "ADMIN")
+
 
                 .anyRequest().authenticated()
             )

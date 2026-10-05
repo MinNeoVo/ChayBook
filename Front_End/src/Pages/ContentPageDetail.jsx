@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -18,8 +18,7 @@ import {
   Timer,
 } from "lucide-react";
 
-import { contentDetails } from "../data/contentDetailData";
-import { posts } from "../data/contentData";
+import { getArticleDetail } from "../services/articleServices";
 
 function ContentNotFound() {
   return (
@@ -546,7 +545,7 @@ function ContentDetailView({ post, detail }) {
     setActionFeedback("This is a video preview. The full tutorial is not available yet.");
   };
 
-  const relatedPosts = posts.filter((item) => item.id !== post.id).slice(0, 4);
+  const relatedPosts = [];
 
   return (
     <div className="w-full bg-background font-body-md text-on-surface antialiased">
@@ -708,13 +707,108 @@ function ContentDetailView({ post, detail }) {
 
 function ContentPageDetail() {
   const { id } = useParams();
-  const post = posts.find((item) => item.id === Number(id));
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!post) {
+  useEffect(() => {
+    const fetchArticleDetail = async () => {
+      if (!id) {
+        setError("Invalid article ID");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const articleId = Number(id);
+        const data = await getArticleDetail(articleId);
+        setArticle(data);
+      } catch (err) {
+        setError(err.message || "Failed to fetch article detail");
+        console.error("Error fetching article detail:", err);
+        setArticle(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticleDetail();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <section className="min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chaybook-primary mb-4"></div>
+        <p className="text-body-md font-body-md text-on-surface-variant">
+          Loading article detail...
+        </p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
+        <span aria-hidden="true" size={24}>
+          <AlertTriangle className="h-6 w-6 text-error mb-4" />
+        </span>
+        <h1 className="text-headline-xl font-headline-xl text-on-surface">
+          Error Loading Article
+        </h1>
+        <p className="mt-3 max-w-lg text-body-md font-body-md text-on-surface-variant">
+          {error}
+        </p>
+        <Link
+          to="/content"
+          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-space-md py-2.5 text-label-md font-label-md text-on-primary transition-colors hover:bg-primary-container"
+        >
+          <ArrowLeft size={18} />
+          Back to Content
+        </Link>
+      </section>
+    );
+  }
+
+  if (!article) {
     return <ContentNotFound />;
   }
 
-  return <ContentDetailView key={post.id} post={post} detail={contentDetails[post.id]} />;
+  // Convert API response to the format expected by ContentDetailView
+  // The API returns ArticleResponse, but ContentDetailView expects a post object with specific fields
+  const post = {
+    id: article.articleId,
+    categoryId: article.categoryId,
+    title: article.title || "",
+    description: article.content || "", // Using content as description
+    image: article.coverImage || "",
+    imageAlt: article.title || "Article", // Using title as alt text
+    authorId: article.createdBy, // We don't have author name from API, so we'll use ID
+    author: `User ${article.createdBy}`, // Placeholder since we don't have user info
+    authorRole: "", // Not available in API
+    initials: "", // Not available in API
+    authorColor: "", // Not available in API
+    content: article.content || "",
+    coverImage: article.coverImage || "",
+    status: article.status || "",
+    createdAt: article.createdAt || "",
+    updatedAt: article.updatedAt || "",
+    // These fields are not in API but are expected by ContentDetailView - providing empty/default values
+    likeCount: 0,
+    comments: 0,
+    views: 0,
+    // We don't have these from the article API, so we'll leave them empty/default
+    // ContentDetailView expects detail object with these fields, but we don't have them
+    // So we'll pass null for detail and handle it in ContentDetailView
+  };
+
+  // Since we don't have the detail data from the article API,
+  // we'll pass null and let ContentDetailView handle it gracefully
+  // Or we could fetch additional detail data if there's a separate endpoint
+  const detail = null; // We don't have detail data from the basic article API
+
+  return <ContentDetailView key={post.id} post={post} detail={detail} />;
 }
 
 export default ContentPageDetail;

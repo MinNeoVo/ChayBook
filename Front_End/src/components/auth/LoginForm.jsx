@@ -121,6 +121,15 @@ function LoginForm() {
           onChange={handleChange}
           error={error.password}
         />
+        {/* General Error Message */}
+        {error.general && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+          >
+            {error.general}
+          </div>
+        )}
 
         {/* Login */}
         <Button type="submit" size="md" className="w-full" disabled={isLoading}>

@@ -68,25 +68,48 @@ public class UserController {
         }
     }
 
+    /**
+     * Lấy thông tin profile + danh sách bài viết của user đang đăng nhập.
+     */
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserProfileResponse> getMyProfile(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = requireCurrentUserId(jwt);
+
+        UserProfileResponse response = userService.getProfile(currentUserId);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
+
+    private Integer requireCurrentUserId(Jwt jwt) {
+        if (jwt != null) {
+            try {
+                int userId = Integer.parseInt(jwt.getSubject());
+                if (userId > 0) {
+                    return userId;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Please log in with a valid account"
+        );
+    }
+
     @PutMapping(value = "/{userId}",
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<UpdateProfileResponse> updateProfile(
             @PathVariable("userId") Integer userId,
             @Valid @RequestBody UpdateProfileRequest request,
-            HttpServletRequest httpRequest)
+            @AuthenticationPrincipal Jwt jwt)
     {
-        HttpSession session = httpRequest.getSession(false);
-
-        Object sessionUserId = session == null? null: session.getAttribute("AUTH_USER_ID");
-
-        if (!(sessionUserId instanceof Integer authenticatedUserId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Please log in"
-            );
-        }
-
+        Integer authenticatedUserId = requireAuthenticatedUserId(jwt);
 
 
         UpdateProfileResponse response = userService.updateProfile(
@@ -95,7 +118,9 @@ public class UserController {
                 request
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
     }
 
     @PutMapping(
@@ -106,42 +131,70 @@ public class UserController {
             @PathVariable("userId") Integer userId,
             @Valid @RequestBody ChangePasswordRequest request,
 
-            HttpServletRequest httpRequest
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        HttpSession session = httpRequest.getSession(false);
-
-        Object sessionUserId = session == null
-                ? null
-                : session.getAttribute("AUTH_USER_ID");
-
-        if (!(sessionUserId instanceof Integer authenticatedUserId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Please log in"
-            );
-        }
-
+        Integer authenticatedUserId = requireAuthenticatedUserId(jwt);
 
         userService.changePassword(
                 userId,
                 authenticatedUserId,
                 request
         );
-        session.invalidate();
 
-        return ResponseEntity.ok(
-                new ChangePasswordResponse(
-                        "Password changed successfully"
+        // Chỉ xóa cookie sau khi đổi mật khẩu thành công.
+        // Các thuộc tính khớp với cookie trong AuthController.
+        ResponseCookie expiredCookie = ResponseCookie
+                .from("CHAYBOOK_TOKEN", "")
+                .httpOnly(true)
+                .secure(false) // Khớp cấu hình localhost HTTP hiện tại.
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        expiredCookie.toString()
                 )
-        );
+                .cacheControl(CacheControl.noStore())
+                .body(new ChangePasswordResponse(
+                        "Password changed successfully"
+                ));
     }
 
     @ExceptionHandler(IncorrectCurrentPasswordException.class)
     public ResponseEntity<ChangePasswordResponse> handleIncorrectCurrentPassword(
             IncorrectCurrentPasswordException exception
     ) {
-        return ResponseEntity.badRequest().body(
-                new ChangePasswordResponse(exception.getMessage())
+        return ResponseEntity.badRequest()
+                .cacheControl(CacheControl.noStore())
+                .body(new ChangePasswordResponse(
+                        exception.getMessage()
+                ));
+    }
+
+    private Integer requireAuthenticatedUserId(Jwt jwt) {
+        if (jwt == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Please log in"
+            );
+        }
+
+        try {
+            int userId = Integer.parseInt(jwt.getSubject());
+
+            if (userId > 0) {
+                return userId;
+            }
+        } catch (NumberFormatException exception) {
+            // Subject không phải userId hợp lệ.
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid authentication information"
         );
     }
 

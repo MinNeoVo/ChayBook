@@ -1,8 +1,33 @@
 import { CalendarDays, FileText, Heart, Plus, Edit3 } from "lucide-react";
 
 import Button from "../common/Button";
+import Avatar from "../common/Avatar";
 
-function ProfileHeader() {
+function ProfileHeader({ profile }) {
+  const username = profile?.username || "ChayBook User";
+  const fullName = profile?.fullName || username;
+  const avatarUrl = profile?.avatarUrl;
+  const role = profile?.role || "USER";
+  const createdAt = profile?.createdAt;
+  const postCount = Array.isArray(profile?.posts) ? profile.posts.length : 0;
+
+  // Tính tổng likes từ tất cả bài viết
+  const totalLikes = Array.isArray(profile?.posts)
+    ? profile.posts.reduce((sum, post) => sum + (post.likeCount ?? 0), 0)
+    : 0;
+
+  // Format ngày tham gia
+  const memberSince = createdAt
+    ? new Date(createdAt).toLocaleDateString("vi-VN", {
+        month: "long",
+        year: "numeric",
+      })
+    : "Chưa xác định";
+
+  // Role badge
+  const roleLabel =
+    role === "ADMIN" ? "Administrator" : "Plant-based Food Enthusiast";
+
   return (
     <section className="w-full px-4 pt-4 md:px-8 lg:px-12">
       <div className="mx-auto max-w-[1280px]">
@@ -61,7 +86,7 @@ function ProfileHeader() {
               backdrop-blur-md
             "
           >
-            🌱 Certified Holistic Plant Advocate
+            🌱 {roleLabel}
           </div>
         </div>
 
@@ -90,40 +115,24 @@ function ProfileHeader() {
                 sm:flex-row sm:items-end
               "
             >
-              {/* Avatar */}
+              {/* Avatar */}{" "}
               <div className="relative shrink-0">
-                <div
-                  className="
-                    h-28 w-28
-                    overflow-hidden
-                    rounded-full
-                    bg-gradient-to-b from-[#006d30] to-[#006b2c]
-                    p-1
-                    shadow-md
-                    md:h-36 md:w-36
-                  "
-                >
-                  <img
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7B4VeoqWKdGMOFocbs_NvYaxKVm51xCnzQFPZYnewhwNk3t2lZTXM71QvpkIErizTWsYs3Gg7pKBZk9HaZc2CqCezdfr0V4-HcFvWqUYpFdl4Af_jIm22eqHLKLkitGP_ctvnkoyN_TjRDZ_aDJxch_8M0-s0EgCj50rU8yT1WVi2JZ1FGndEh2IMn6WFSADkBFvLlt7daOiFGIBZJNf3JxhYbISw2pVepALUM3Bc1UV13omVxHG0"
-                    alt="Chay User"
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                </div>
-
-                {/* Online status */}
-                <span
-                  className="
-                    absolute bottom-2 right-2
-                    flex h-5 w-5 items-center justify-center
-                    rounded-full
-                    border-2 border-white
-                    bg-[#00873a]
-                  "
-                >
-                  <span className="h-2 w-2 rounded-full bg-white" />
-                </span>
+                {" "}
+                <div className=" h-28 w-28 overflow-hidden rounded-full bg-gradient-to-b from-[#006d30] to-[#006b2c] p-1 shadow-md md:h-36 md:w-36 ">
+                  {" "}
+                  <Avatar
+                    src={avatarUrl}
+                    alt={fullName}
+                    size="xl"
+                    className="h-full w-full bg-chaybook-primary"
+                  />{" "}
+                </div>{" "}
+                {/* Online status */}{" "}
+                <span className=" absolute bottom-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#00873a] ">
+                  {" "}
+                  <span className="h-2 w-2 rounded-full bg-white" />{" "}
+                </span>{" "}
               </div>
-
               {/* User information */}
               <div className="flex flex-col gap-1">
                 {/* Name + Role */}
@@ -134,7 +143,7 @@ function ProfileHeader() {
                       md:text-3xl
                     "
                   >
-                    Chay User
+                    {fullName}
                   </h1>
 
                   <span
@@ -146,13 +155,13 @@ function ProfileHeader() {
                       text-[#314d3e]
                     "
                   >
-                    Pro Chef Contributor
+                    {roleLabel}
                   </span>
                 </div>
 
                 {/* Username */}
                 <p className="text-sm text-gray-600">
-                  @chayuser • Plant-based Food Enthusiast & Culinary Explorer
+                  @{username} • {profile?.email || ""}
                 </p>
 
                 {/* Statistics */}
@@ -173,10 +182,10 @@ function ProfileHeader() {
                     "
                   >
                     <CalendarDays size={15} className="text-chaybook-primary" />
-                    Member since Mar 2024
+                    Thành viên từ {memberSince}
                   </span>
 
-                  {/* Published guides */}
+                  {/* Published posts */}
                   <span
                     className="
                       flex items-center gap-1
@@ -186,11 +195,11 @@ function ProfileHeader() {
                       text-xs text-gray-600
                     "
                   >
-                    <FileText size={15} className="text-chaybook-primary" />6
-                    Published Guides
+                    <FileText size={15} className="text-chaybook-primary" />
+                    {postCount} bài viết
                   </span>
 
-                  {/* Reactions */}
+                  {/* Total likes */}
                   <span
                     className="
                       flex items-center gap-1
@@ -201,7 +210,7 @@ function ProfileHeader() {
                     "
                   >
                     <Heart size={15} className="text-chaybook-primary" />
-                    148 Helpful Reactions
+                    {totalLikes} lượt thích
                   </span>
                 </div>
               </div>

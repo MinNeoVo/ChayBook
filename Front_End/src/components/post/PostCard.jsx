@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import PostStatusBadge from "./PostStatusBadge";
+import API_BASE_URL from "../../services/app";
+import Avatar from "../common/Avatar";
 
 function PostCard({
   post,
@@ -38,7 +40,14 @@ function PostCard({
 
     moderationFeedback,
     author,
+    likedByCurrentUser,
+    bookmarkedByCurrentUser,
   } = post;
+
+  const API_ORIGIN = new URL(API_BASE_URL).origin;
+
+  const isLiked = Boolean(likedByCurrentUser);
+  const isBookmarked = Boolean(bookmarkedByCurrentUser);
 
   const likes = stats?.likes ?? 0;
   const comments = stats?.comments ?? 0;
@@ -55,17 +64,12 @@ function PostCard({
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {/* Avatar */}
-          {author?.avatar ? (
-            <img
-              src={author.avatar}
-              alt={author.name}
-              className="h-10 w-10 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chaybook-primary text-sm font-bold text-white">
-              {author?.initials || "CB"}
-            </div>
-          )}
+
+          <Avatar
+            src={author?.avatarUrl}
+            alt={author?.fullName || "User avatar"}
+            size="md"
+          />
 
           {/* Author information */}
           <div className="flex min-w-0 flex-col">
@@ -113,7 +117,7 @@ function PostCard({
       )}
 
       {/* ================= CONTENT ================= */}
-      <div className="space-y-1 h-33 overflow-hidden">
+      <div className="space-y-1">
         <h3
           className="
             text-[22px]
@@ -135,19 +139,27 @@ function PostCard({
       </div>
 
       {/* ================= IMAGE ================= */}
+
       {image && (
         <div className="relative h-64 w-full overflow-hidden rounded-xl md:h-80">
           <img
-            src={image}
+            src={
+              image.startsWith("http")
+                ? image
+                : `${API_ORIGIN}${image.startsWith("/") ? "" : "/"}${image}`
+            }
             alt={imageAlt || title}
             className="
-              h-full
-              w-full
-              object-cover
-              transition-transform
-              duration-500
-              hover:scale-105
-            "
+        h-full
+        w-full
+        object-cover
+        transition-transform
+        duration-500
+        hover:scale-105
+      "
+            onError={(event) => {
+              console.error("Không tải được ảnh:", event.currentTarget.src);
+            }}
           />
         </div>
       )}
@@ -161,19 +173,31 @@ function PostCard({
             <button
               type="button"
               onClick={() => onLike?.(post)}
-              className="
+              className={`
                 flex
+                cursor-pointer
                 items-center
-                gap-1
+                gap-1.5
                 text-sm
-                text-gray-600
-                transition-colors
-                hover:text-chaybook-primary
-              "
+                transition-all
+                ${
+                  isLiked
+                    ? "font-bold text-chaybook-primary"
+                    : "font-medium text-gray-600 hover:text-chaybook-primary"
+                }
+              `}
+              title={isLiked ? "Bỏ thích" : "Thích"}
             >
-              <ThumbsUp size={19} className="text-chaybook-primary" />
+              <ThumbsUp
+                size={19}
+                className={`transition-transform duration-200 active:scale-125 ${
+                  isLiked
+                    ? "fill-current text-chaybook-primary"
+                    : "text-gray-500 hover:text-chaybook-primary"
+                }`}
+              />
 
-              <span>{likes} likes</span>
+              <span className={isLiked ? "font-bold" : ""}>{likes} likes</span>
             </button>
 
             {/* Comment */}
@@ -182,6 +206,7 @@ function PostCard({
               onClick={() => onComment?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 text-sm
@@ -201,6 +226,7 @@ function PostCard({
               onClick={() => onShare?.(post)}
               className="
                 hidden
+                cursor-pointer
                 items-center
                 gap-1
                 text-sm
@@ -222,16 +248,27 @@ function PostCard({
             <button
               type="button"
               onClick={() => onBookmark?.(post)}
-              className="
+              className={`
+                cursor-pointer
                 rounded-lg
                 p-1.5
-                text-gray-500
-                transition-colors
-                hover:bg-gray-100
-              "
-              title="Bookmark"
+                transition-all
+                ${
+                  isBookmarked
+                    ? "bg-chaybook-primary/10 text-chaybook-primary font-bold"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-chaybook-primary"
+                }
+              `}
+              title={isBookmarked ? "Bỏ lưu bài viết" : "Lưu bài viết"}
             >
-              <Bookmark size={20} />
+              <Bookmark
+                size={20}
+                className={`transition-transform duration-200 active:scale-125 ${
+                  isBookmarked
+                    ? "fill-current text-chaybook-primary stroke-[2.5]"
+                    : ""
+                }`}
+              />
             </button>
 
             {/* More */}
@@ -239,6 +276,7 @@ function PostCard({
               type="button"
               onClick={() => onMore?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 p-1.5
                 text-gray-500
@@ -278,6 +316,7 @@ function PostCard({
               onClick={() => onDelete?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 px-2
@@ -297,6 +336,7 @@ function PostCard({
               onClick={() => onEdit?.(post)}
               className="
                 flex
+                cursor-pointer
                 items-center
                 gap-1
                 rounded-lg
@@ -348,6 +388,7 @@ function PostCard({
               type="button"
               onClick={() => onWithdraw?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 px-3
                 py-1
@@ -364,6 +405,7 @@ function PostCard({
               type="button"
               onClick={() => onEdit?.(post)}
               className="
+                cursor-pointer
                 rounded-lg
                 bg-gray-100
                 px-3

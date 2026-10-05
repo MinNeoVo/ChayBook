@@ -7,6 +7,8 @@ import com.chaybook.backend.recipe.service.RecipeService;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -54,10 +56,11 @@ public class RecipeController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RecipeCreateResponse> createRecipe(
             @Valid @RequestBody RecipeWriteRequest request,
-            HttpServletRequest httpRequest
+            @AuthenticationPrincipal Jwt jwt
     ) {
+
         Integer authenticatedUserId =
-                requireAuthenticatedUserId(httpRequest);
+                requireAuthenticatedUserId(jwt);
 
         RecipeCreateResponse response = recipeService.createRecipe(
                 authenticatedUserId,
@@ -76,10 +79,10 @@ public class RecipeController {
     public ResponseEntity<RecipeUpdateResponse> updateRecipe(
             @PathVariable("recipeId") Integer recipeId,
             @Valid @RequestBody RecipeWriteRequest request,
-            HttpServletRequest httpRequest
+            @AuthenticationPrincipal Jwt jwt
     ) {
         Integer authenticatedUserId =
-                requireAuthenticatedUserId(httpRequest);
+                requireAuthenticatedUserId(jwt);
 
         return ResponseEntity.ok(
                 recipeService.updateRecipe(
@@ -93,10 +96,10 @@ public class RecipeController {
     @DeleteMapping("/{recipeId}")
     public ResponseEntity<RecipeDeleteResponse> deleteRecipe(
             @PathVariable("recipeId") Integer recipeId,
-            HttpServletRequest httpRequest
+            @AuthenticationPrincipal Jwt jwt
     ) {
         Integer authenticatedUserId =
-                requireAuthenticatedUserId(httpRequest);
+                requireAuthenticatedUserId(jwt);
 
         return ResponseEntity.ok(
                 recipeService.deleteRecipe(
@@ -106,23 +109,29 @@ public class RecipeController {
         );
     }
 
-    private Integer requireAuthenticatedUserId(
-            HttpServletRequest httpRequest
-    ) {
-        HttpSession session = httpRequest.getSession(false);
-
-        Object sessionUserId = session == null
-                ? null
-                : session.getAttribute("AUTH_USER_ID");
-
-        if (!(sessionUserId instanceof Integer authenticatedUserId)) {
+    private Integer requireAuthenticatedUserId(Jwt jwt) {
+        if (jwt == null) {
             throw new RecipeException(
                     HttpStatus.UNAUTHORIZED,
                     "Please log in"
             );
         }
 
-        return authenticatedUserId;
+        try {
+            int userId = Integer.parseInt(jwt.getSubject());
+
+            if (userId > 0) {
+                return userId;
+            }
+        } catch (NumberFormatException exception) {
+            // Subject không phải userId hợp lệ.
+        }
+
+        throw new RecipeException(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid authentication information"
+        );
     }
+
 
 }
