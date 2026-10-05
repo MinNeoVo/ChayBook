@@ -763,7 +763,7 @@ function ContentPageDetail() {
     return (
       <section className="min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
         <span aria-hidden="true" size={24}>
-          <AlertTriangle className="h-6 w-6 text-error mb-4" />
+          {/* <AlertTriangle className="h-6 w-6 text-error mb-4" /> */}
         </span>
         <h1 className="text-headline-xl font-headline-xl text-on-surface">
           Error Loading Article
