@@ -155,7 +155,7 @@ function RecipesPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    getRecipeCategories({ signal: controller.signal })
+    getCategories({ signal: controller.signal })
       .then((data) => {
         setCategories(data);
         setCategoryStatus("success");
@@ -165,8 +165,7 @@ function RecipesPage() {
           console.error("Failed to load recipe categories:", error);
           setCategoryStatus("error");
         }
-      }
-    }
+      });
 
     fetchCategories();
 
