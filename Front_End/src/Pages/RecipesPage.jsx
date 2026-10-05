@@ -155,25 +155,14 @@ function RecipesPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function fetchCategories() {
-      try {
-        setCategoryStatus("loading");
-
-        const data = await getCategories("RECIPE", {
-          signal: controller.signal,
-        });
-
-        if (!Array.isArray(data)) {
-          throw new Error("Dữ liệu danh mục không hợp lệ.");
-        }
-
+    getRecipeCategories({ signal: controller.signal })
+      .then((data) => {
+        setCategories(data);
+        setCategoryStatus("success");
+      })
+      .catch((error) => {
         if (!controller.signal.aborted) {
-          setCategories(data);
-          setCategoryStatus("success");
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          console.error("Không thể tải danh mục công thức:", err);
+          console.error("Failed to load recipe categories:", error);
           setCategoryStatus("error");
         }
       }
@@ -193,8 +182,9 @@ function RecipesPage() {
       .then((data) => {
         setResult({ requestKey, status: "success", recipes: data });
       })
-      .catch(() => {
+      .catch((error) => {
         if (!controller.signal.aborted) {
+          console.error("Failed to load recipes:", error);
           setResult({ requestKey, status: "error", recipes: [] });
         }
       });

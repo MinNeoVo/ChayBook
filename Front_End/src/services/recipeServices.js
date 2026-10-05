@@ -3,6 +3,32 @@ import { apiFetch } from "./api";
 
 const API_ORIGIN = new URL(API_BASE_URL).origin;
 
+async function requestJson(url, { signal } = {}) {
+  const response = await fetch(url, { signal });
+  let data;
+
+  try {
+    data = await response.json();
+  } catch (error) {
+    console.error("Failed to parse the recipe service response:", error);
+    data = null;
+  }
+
+  if (!response.ok) {
+    const error = new Error(
+      data?.detail || data?.message || "The recipe request failed.",
+    );
+    error.status = response.status;
+    throw error;
+  }
+
+  if (data === null) {
+    throw new Error("The recipe service returned an invalid response.");
+  }
+
+  return data;
+}
+
 export async function getRecipes(
   categoryId = null,
   keyword = "",
@@ -63,7 +89,8 @@ export function resolveRecipeImageUrl(imageUrl) {
 
   try {
     return new URL(imageUrl, `${API_ORIGIN}/`).toString();
-  } catch {
+  } catch (error) {
+    console.error("Failed to resolve recipe image URL:", error);
     return "";
   }
 }

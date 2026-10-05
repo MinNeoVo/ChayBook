@@ -120,6 +120,7 @@ function RecipeDetailPage() {
       })
       .catch((error) => {
         if (!controller.signal.aborted) {
+          console.error("Failed to load recipe details:", error);
           setResult({
             requestKey,
             status: "error",

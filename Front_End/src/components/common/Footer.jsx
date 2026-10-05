@@ -8,7 +8,7 @@ const footerSections = [
       ["Nutrition Guides", "/content"],
       ["Healthy Recipes", "/recipes"],
       ["Video Tutorials", "/content"],
-      ["Meal Plans", "/content"],
+      ["Meal Plans", "/meal-plan"],
     ],
   },
   {

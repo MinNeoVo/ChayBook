@@ -28,7 +28,7 @@ public class RecipeController {
         this.recipeService = recipeService;
     }
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public ResponseEntity<List<RecipeSummaryResponse>> getRecipes(
             @RequestParam(
                     name = "categoryId",
