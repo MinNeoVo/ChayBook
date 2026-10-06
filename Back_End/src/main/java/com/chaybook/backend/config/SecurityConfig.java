@@ -34,15 +34,13 @@ public class SecurityConfig {
     public SecretKey jwtSecretKey() {
         return new SecretKeySpec(
                 jwtSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256"
-        );
+                "HmacSHA256");
     }
 
     @Bean
     public JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
         return new NimbusJwtEncoder(
-                new ImmutableSecret<>(jwtSecretKey)
-        );
+                new ImmutableSecret<>(jwtSecretKey));
     }
 
     @Bean
@@ -61,65 +59,52 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            BearerTokenResolver bearerTokenResolver
-    ) throws Exception {
+            BearerTokenResolver bearerTokenResolver) throws Exception {
 
         http
 
-            .cors(cors -> {})
+                .cors(cors -> {
+                })
 
-            .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable())
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
-            )
+                .sessionManagement(session -> session.sessionCreationPolicy(
+                        SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                .requestMatchers(
-                    "/api/auth/register",
-                    "/api/auth/login",
-                    "/api/auth/logout",
-                    "/api/recipes/**",
-                    "/api/categories/**",
-                    "/api/articles/**"
-                ).permitAll()
+                        // Mở cửa cho Chatbot (Guest)
+                        .requestMatchers("/api/chatbot/**").permitAll()
 
-                .requestMatchers(
-                    HttpMethod.GET,
-                    "/api/recipes",
-                    "/api/recipes/",
-                    "/api/recipes/**"
-                )
-                .permitAll()
+                        // Mở cửa cho các API công khai khác
+                        .requestMatchers(
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/logout",
+                                "/api/recipes/**",
+                                "/api/categories/**",
+                                "/api/articles/**")
+                        .permitAll()
 
-                .requestMatchers(HttpMethod.GET, "/api/categories")
-                .permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/recipes",
+                                "/api/recipes/",
+                                "/api/recipes/**")
+                        .permitAll()
 
-                .requestMatchers(HttpMethod.GET, "/api/allergies")
-                .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/allergies").permitAll()
 
-                .requestMatchers("/api/admin/**")
-                .hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
 
-                .requestMatchers("/api/user/**")
-                .hasAnyRole("USER", "ADMIN")
+                        .anyRequest().authenticated())
 
-
-                .anyRequest().authenticated()
-            )
-
-            .oauth2ResourceServer(oauth2 ->
-                oauth2
-                     .bearerTokenResolver(bearerTokenResolver)
-                     .jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(
-                            new JwtAuthenticationConverter()
-                        )
-                    )
-            );
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(bearerTokenResolver)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                                new JwtAuthenticationConverter())));
 
         return http.build();
     }

@@ -24,7 +24,7 @@ public class AiConversation {
     private String title;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
@@ -34,15 +34,12 @@ public class AiConversation {
     public AiConversation() {
     }
 
-    public AiConversation(User user, String title, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.user = user;
-        this.title = title;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     public Integer getConversationId() {
         return conversationId;
+    }
+
+    public void setConversationId(Integer conversationId) {
+        this.conversationId = conversationId;
     }
 
     public User getUser() {
