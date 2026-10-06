@@ -23,6 +23,7 @@ import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
       <Route element={<AdminRoute />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
       </Route>
     </Routes>
