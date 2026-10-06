@@ -12,6 +12,7 @@ import {
 import RecipeImage from "../components/recipes/RecipeImage";
 import Button from "../components/common/Button";
 import { getRecipeById } from "../services/recipeServices";
+import { parseRecipeInstructions } from "../utils/parseRecipeInstructions";
 
 function formatMinutes(minutes) {
   if (typeof minutes !== "number" || !Number.isFinite(minutes)) {
@@ -68,7 +69,7 @@ function RecipeDetailStatus({ isNotFound, onRetry }) {
         {isNotFound ? (
           <Link
             to="/recipes"
-            className="inline-flex items-center gap-2 rounded-xl bg-chaybook-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-chaybook-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
           >
             <ArrowLeft aria-hidden="true" size={17} />
             Back to Recipes
@@ -84,7 +85,7 @@ function RecipeDetailStatus({ isNotFound, onRetry }) {
         {!isNotFound && (
           <Link
             to="/recipes"
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
           >
             <ArrowLeft aria-hidden="true" size={17} />
             Back to Recipes
@@ -168,13 +169,14 @@ function RecipeDetailPage() {
       ? formatMinutes(recipe.prepTime + recipe.cookTime)
       : null;
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+  const instructionSteps = parseRecipeInstructions(recipe.instructions);
 
   return (
     <main className="min-h-screen w-full bg-chaybook-container font-sans text-[#181c1b] antialiased">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-12 lg:py-14">
         <Link
           to="/recipes"
-          className="mb-6 inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:text-chaybook-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
+          className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
         >
           <ArrowLeft aria-hidden="true" size={18} />
           Back to Recipes
@@ -341,9 +343,21 @@ function RecipeDetailPage() {
                 Instructions
               </h2>
             </div>
-            {recipe.instructions ? (
-              <div className="whitespace-pre-line rounded-xl bg-[#f7faf7] p-4 text-sm leading-7 text-[#3e4a3d] sm:p-5">
-                {recipe.instructions}
+            {instructionSteps.length > 0 ? (
+              <div className="space-y-3">
+                {instructionSteps.map((instruction, index) => (
+                  <div
+                    key={index}
+                    className="flex min-w-0 items-start gap-3 rounded-xl bg-[#f7faf7] p-4 text-sm leading-7 text-[#3e4a3d] sm:p-5"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#e7f5e9] text-xs font-semibold text-chaybook-primary">
+                      {index + 1}
+                    </span>
+                    <p className="min-w-0 whitespace-pre-line break-words">
+                      {instruction}
+                    </p>
+                  </div>
+                ))}
               </div>
             ) : (
               <p className="rounded-xl bg-[#f7faf7] px-4 py-5 text-sm text-[#6e7b6c]">
