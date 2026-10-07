@@ -5,11 +5,15 @@ import { apiFetch } from "./api";
  * @param {number|null} categoryId - ID danh mục (nếu có)
  * @param {object} options - Options phụ (vd: signal để hủy request nếu unmount)
  */
-export async function getArticles(categoryId = null, { signal } = {}) {
+export async function getArticles(categoryId = null, { signal, status } = {}) {
   const query = new URLSearchParams();
 
   if (categoryId && categoryId !== "all") {
     query.set("categoryId", String(categoryId));
+  }
+
+  if (typeof status === "string" && status.trim()) {
+    query.set("status", status.trim());
   }
 
   const queryString = query.toString();

@@ -1,98 +1,74 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  ArrowRight,
   BadgeCheck,
   Bookmark,
   CalendarDays,
-  ChefHat,
-  ChevronRight,
-  Eye,
+  Clock3,
+  FileText,
+  FolderOpen,
   Heart,
-  Lightbulb,
-  List,
-  Play,
   Share2,
-  Sparkles,
-  Timer,
+  UserRound,
 } from "lucide-react";
 
-import { getArticleDetail } from "../services/articleServices";
+import { getArticleDetail, getArticles } from "../services/articleServices";
+import { getCategories } from "../services/categoryServices";
 
-function ContentNotFound() {
-  return (
-    <section className="mx-auto flex min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
-      <h1 className="text-headline-xl font-headline-xl text-on-surface">
-        Content Not Found
-      </h1>
-      <p className="mt-3 max-w-lg text-body-md font-body-md text-on-surface-variant">
-        The content you are looking for does not exist.
-      </p>
-      <Link
-        to="/content"
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-space-md py-2.5 text-label-md font-label-md text-on-primary transition-colors hover:bg-primary-container"
-      >
-        <ArrowLeft size={18} />
-        Back to Content
-      </Link>
-    </section>
-  );
+function formatArticleDate(value) {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-function Breadcrumb({ post }) {
-  return (
-    <div className="mb-space-lg flex flex-wrap items-center justify-between gap-space-sm">
-      <nav
-        aria-label="Breadcrumb"
-        className="flex min-w-0 flex-wrap items-center gap-space-xs text-body-sm font-body-sm text-on-surface-variant"
-      >
-        <Link className="transition-colors hover:text-primary" to="/">
-          Home
-        </Link>
-        <ChevronRight aria-hidden="true" size={14} className="text-outline" />
-        <Link className="transition-colors hover:text-primary" to="/content">
-          Content
-        </Link>
-        <ChevronRight aria-hidden="true" size={14} className="text-outline" />
-        <Link className="transition-colors hover:text-primary" to="/content">
-          {post.categoryLabel}
-        </Link>
-        <ChevronRight aria-hidden="true" size={14} className="text-outline" />
-        <span className="max-w-[200px] truncate font-semibold text-on-surface sm:max-w-none">
-          {post.title}
-        </span>
-      </nav>
+function formatArticleStatus(status) {
+  if (typeof status !== "string" || !status.trim()) {
+    return "—";
+  }
 
+  switch (status.toUpperCase()) {
+    case "PUBLISHED":
+      return "Đã xuất bản";
+    case "DRAFT":
+      return "Bản nháp";
+    default:
+      return status;
+  }
+}
+
+function BackToContent() {
+  return (
+    <div className="mb-6 flex justify-start">
       <Link
         to="/content"
-        className="group inline-flex shrink-0 items-center gap-space-xs rounded-full bg-secondary-container/40 px-space-sm py-1.5 text-label-md font-label-md text-primary transition-colors hover:bg-secondary-container"
+        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd]"
       >
-        <ArrowLeft
-          aria-hidden="true"
-          size={18}
-          className="transition-transform group-hover:-translate-x-0.5"
-        />
+        <ArrowLeft aria-hidden="true" size={17} />
         Back to Content
       </Link>
     </div>
   );
 }
 
-function ContentActions({
-  liked,
-  saved,
-  likeCount,
-  onLike,
-  onSave,
-  onShare,
-  onCookMode,
-}) {
+function ArticleActions({ liked, saved, onLike, onSave, onShare }) {
   const actionClass =
-    "inline-flex items-center gap-1.5 rounded-lg bg-surface-container-lowest px-space-md py-2.5 text-label-md font-label-md text-on-surface shadow-sm transition-colors hover:bg-secondary-container/40";
+    "inline-flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-sm font-semibold text-[#181c1b] shadow-sm transition-colors hover:bg-[#f7faf7]";
 
   return (
-    <div className="flex flex-wrap items-center gap-space-xs pb-space-xs sm:gap-space-sm">
+    <div className="flex flex-wrap items-center gap-2.5">
       <button
         type="button"
         aria-pressed={liked}
@@ -101,12 +77,10 @@ function ContentActions({
       >
         <Heart
           aria-hidden="true"
-          size={20}
-          className={liked ? "fill-error text-error" : "text-error"}
+          size={19}
+          className={liked ? "fill-red-500 text-red-500" : "text-red-500"}
         />
-        <span>
-          {liked ? `Liked (${likeCount + 1})` : `Like (${likeCount})`}
-        </span>
+        {liked ? "Liked" : "Like"}
       </button>
       <button
         type="button"
@@ -116,600 +90,248 @@ function ContentActions({
       >
         <Bookmark
           aria-hidden="true"
-          size={20}
-          className={saved ? "fill-primary text-primary" : ""}
+          size={19}
+          className={saved ? "fill-chaybook-primary text-chaybook-primary" : ""}
         />
-        <span>{saved ? "Saved" : "Save Recipe"}</span>
+        {saved ? "Đã lưu bài viết" : "Lưu bài viết"}
       </button>
       <button type="button" onClick={onShare} className={actionClass}>
-        <Share2 aria-hidden="true" size={20} />
-        <span>Share</span>
-      </button>
-      <button
-        type="button"
-        onClick={onCookMode}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-space-md py-2.5 text-label-md font-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
-      >
-        <ChefHat aria-hidden="true" size={20} />
-        <span>Cook Mode</span>
+        <Share2 aria-hidden="true" size={19} />
+        Chia sẻ
       </button>
     </div>
   );
 }
 
-function IngredientsSection({ ingredients }) {
+function ArticleInfoRow({ Icon, label, value, isPublished = false }) {
   return (
-    <section
-      aria-labelledby="ingredients-heading"
-      className="space-y-space-md"
-      id="ingredients"
-    >
-      <h2
-        className="text-headline-md font-headline-md text-on-surface"
-        id="ingredients-heading"
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-sm">
+      <dt className="flex min-w-0 items-center gap-2.5 text-[#6e7b6c]">
+        <Icon aria-hidden="true" size={17} className="shrink-0" />
+        <span>{label}</span>
+      </dt>
+      <dd
+        className={`max-w-44 text-right font-semibold ${
+          isPublished ? "text-emerald-700" : "text-[#28312b]"
+        }`}
       >
-        Fresh Ingredients
-      </h2>
-      <ul className="space-y-space-xs pt-space-xs">
-        {ingredients.map((ingredient) => (
-          <li
-            key={`${ingredient.amount}-${ingredient.name}`}
-            className="text-body-md font-body-md text-on-surface"
-          >
-            <span className="font-semibold">{ingredient.amount}</span>{" "}
-            {ingredient.name} — {ingredient.description}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function VideoTutorial({ video, title, onPlay }) {
-  return (
-    <section
-      aria-labelledby="video-heading"
-      className="space-y-space-sm rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm"
-      id="video-tutorial"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-space-sm">
-        <div>
-          <h2
-            className="text-headline-md font-headline-md text-on-surface"
-            id="video-heading"
-          >
-            Video Tutorial
-          </h2>
-          <p className="text-body-sm font-body-sm text-on-surface-variant">
-            {video.description}
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-secondary-container px-2.5 py-1 text-label-sm font-label-sm text-on-secondary-container">
-          <Timer aria-hidden="true" size={16} />
-          {video.duration}
-        </span>
-      </div>
-
-      <div className="group relative w-full overflow-hidden rounded-xl shadow-md">
-        <img
-          src={video.previewImage}
-          alt={`Video preview of ${title}`}
-          className="h-72 w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 sm:h-96"
-        />
-        <div className="absolute inset-0 flex items-center justify-center bg-inverse-surface/30 transition-colors group-hover:bg-inverse-surface/20">
-          <button
-            type="button"
-            aria-label="Play video preview"
-            onClick={onPlay}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-lowest/95 text-primary shadow-lg transition-transform group-hover:scale-110"
-          >
-            <Play aria-hidden="true" size={34} fill="currentColor" />
-          </button>
-        </div>
-        <div className="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-inverse-surface/60 px-3 py-2 text-caption font-caption text-inverse-on-surface backdrop-blur-md">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-primary" />
-            Full Culinary Walkthrough (1080p)
-          </span>
-          <span>HD · Subtitles Available</span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function InstructionsSection({ instructions }) {
-  return (
-    <section
-      aria-labelledby="instructions-heading"
-      className="space-y-space-md rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm"
-      id="instructions"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-space-xs">
-        <h2
-          className="text-headline-md font-headline-md text-on-surface"
-          id="instructions-heading"
-        >
-          Step-by-Step Instructions
-        </h2>
-        <span className="text-caption font-caption text-on-surface-variant">
-          {instructions.length} Methodical Steps
-        </span>
-      </div>
-      <ol className="space-y-space-md">
-        {instructions.map((instruction) => (
-          <li
-            key={instruction.step}
-            className="flex items-start gap-space-md rounded-xl bg-surface-container-low p-space-md"
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-label-md font-bold text-on-primary">
-              {instruction.step}
-            </span>
-            <div className="min-w-0 space-y-1">
-              <h3 className="text-headline-sm font-headline-sm text-on-surface">
-                {instruction.title}
-              </h3>
-              <p className="text-body-md font-body-md leading-relaxed text-on-surface-variant">
-                {instruction.description}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-function CommentsSection({
-  comments,
-  commentCount,
-  comment,
-  commentInputRef,
-  onCommentChange,
-  onCommentSubmit,
-  commentFeedback,
-}) {
-  return (
-    <section
-      aria-labelledby="comments-heading"
-      className="space-y-space-md rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm"
-      id="comments"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-space-xs">
-        <h2
-          className="text-headline-md font-headline-md text-on-surface"
-          id="comments-heading"
-        >
-          Comments ({commentCount})
-        </h2>
-        <span className="text-caption font-caption text-on-surface-variant">
-          Community Feedback
-        </span>
-      </div>
-
-      <form
-        onSubmit={onCommentSubmit}
-        className="flex items-start gap-space-sm"
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">
-          U
-        </div>
-        <div className="min-w-0 flex-1 space-y-space-xs">
-          <textarea
-            ref={commentInputRef}
-            aria-label="Your comment"
-            className="w-full resize-none rounded-xl bg-surface-container-low p-space-sm text-body-md font-body-md text-on-surface transition-all placeholder:text-outline focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary"
-            onChange={(event) => onCommentChange(event.target.value)}
-            placeholder="Share your cooking experience or ask a question..."
-            rows={3}
-            value={comment}
+        {isPublished && (
+          <span
+            aria-hidden="true"
+            className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-600"
           />
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p
-              aria-live="polite"
-              className="text-caption font-caption text-on-surface-variant"
-            >
-              {commentFeedback}
-            </p>
-            <button
-              type="submit"
-              className="rounded-lg bg-primary px-space-md py-2 text-label-md font-label-md text-on-primary shadow-sm transition-colors hover:bg-primary-container"
-            >
-              Post Comment
-            </button>
-          </div>
-        </div>
-      </form>
-
-      <div className="space-y-space-md pt-space-sm">
-        {comments.length > 0 ? (
-          comments.map((item) => (
-            <article
-              key={item.id}
-              className="space-y-space-xs rounded-xl bg-surface-container-low p-space-md"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-space-xs">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-caption font-bold text-on-tertiary-container">
-                    {item.initials}
-                  </div>
-                  <div>
-                    <span className="text-label-md font-label-md text-on-surface">
-                      {item.author}
-                    </span>
-                    <span className="ml-1 text-caption font-caption text-on-surface-variant">
-                      · {item.role}
-                    </span>
-                  </div>
-                </div>
-                <span className="text-caption font-caption text-on-surface-variant">
-                  {item.time}
-                </span>
-              </div>
-              <p className="pl-space-lg text-body-md font-body-md leading-relaxed text-on-surface">
-                {item.content}
-              </p>
-              <div className="flex items-center gap-space-md pl-space-lg text-body-sm font-body-sm text-on-surface-variant">
-                <span className="inline-flex items-center gap-1">
-                  <Heart aria-hidden="true" size={16} />
-                  {item.likes}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => commentInputRef.current?.focus()}
-                  className="transition-colors hover:text-primary"
-                >
-                  Reply
-                </button>
-              </div>
-            </article>
-          ))
-        ) : (
-          <p className="rounded-xl bg-surface-container-low p-space-md text-body-sm font-body-sm text-on-surface-variant">
-            No comments are available to display yet.
-          </p>
         )}
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function ArticleInformation({ article, categoryName, categoryError }) {
+  const isPublished = article.status?.toUpperCase() === "PUBLISHED";
+  const author =
+    article.createdBy != null ? `User ${article.createdBy}` : "—";
+
+  return (
+    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-5 flex items-center gap-2.5">
+        <FileText aria-hidden="true" size={20} className="text-chaybook-primary" />
+        <h2 className="text-lg font-bold text-[#181c1b]">Thông tin bài viết</h2>
       </div>
+      <dl className="space-y-4">
+        <ArticleInfoRow
+          Icon={FolderOpen}
+          label="Danh mục"
+          value={categoryError ? "Không tải được" : categoryName || "—"}
+        />
+        <ArticleInfoRow Icon={UserRound} label="Tác giả" value={author} />
+        <ArticleInfoRow
+          Icon={CalendarDays}
+          label="Ngày đăng"
+          value={formatArticleDate(article.createdAt)}
+        />
+        <ArticleInfoRow
+          Icon={BadgeCheck}
+          label="Trạng thái"
+          value={formatArticleStatus(article.status)}
+          isPublished={isPublished}
+        />
+        <ArticleInfoRow
+          Icon={Clock3}
+          label="Cập nhật gần nhất"
+          value={formatArticleDate(article.updatedAt)}
+        />
+      </dl>
     </section>
   );
 }
 
-function RecipeSidebar({ post, detail, relatedPosts }) {
-  const navigationItems = [
-    { id: "introduction", label: "Introduction" },
-    ...(detail
-      ? [
-          { id: "ingredients", label: "Fresh Ingredients" },
-          { id: "video-tutorial", label: "Video Tutorial" },
-          { id: "instructions", label: "Step-by-Step Instructions" },
-          { id: "comments", label: "User Comments" },
-        ]
-      : []),
-  ];
-
+function RelatedArticles({ articles, loading, error }) {
   return (
-    <aside className="min-w-0 space-y-space-lg lg:sticky lg:top-24 lg:col-span-4">
-      <section className="space-y-space-sm rounded-2xl bg-surface-container-lowest p-space-md shadow-sm">
-        <div className="flex items-center gap-2 text-on-surface">
-          <List aria-hidden="true" size={20} className="text-primary" />
-          <h2 className="text-headline-sm font-headline-sm">
-            {post.category === "recipes" ? "In This Recipe" : "In This Content"}
-          </h2>
-        </div>
-        <nav className="flex flex-col space-y-1 text-body-sm font-body-sm text-on-surface-variant">
-          {navigationItems.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-secondary-container/40 hover:text-primary"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <span className="truncate">{item.label}</span>
-              </span>
-              <ArrowRight aria-hidden="true" size={16} className="shrink-0" />
-            </a>
-          ))}
-        </nav>
-      </section>
+    <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-4 flex items-center gap-2.5">
+        <FileText aria-hidden="true" size={20} className="text-chaybook-primary" />
+        <h2 className="text-lg font-bold text-[#181c1b]">Bài viết liên quan</h2>
+      </div>
 
-      {detail?.chefTip && (
-        <section className="space-y-space-xs rounded-2xl bg-secondary-container/40 p-space-md text-on-surface shadow-sm">
-          <div className="flex items-center gap-2 text-headline-sm font-headline-sm text-primary">
-            <Lightbulb aria-hidden="true" size={24} />
-            <h2>Chef&apos;s Pro Tip</h2>
-          </div>
-          <p className="text-body-sm font-body-sm leading-relaxed text-on-surface-variant">
-            {detail.chefTip}
-          </p>
-        </section>
-      )}
-
-      <section className="space-y-space-md rounded-2xl bg-surface-container-lowest p-space-md shadow-sm">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-headline-sm font-headline-sm text-on-surface">
-            Related Recipes
-          </h2>
-          <Link
-            to="/content"
-            className="shrink-0 text-label-sm font-label-sm text-primary hover:underline"
-          >
-            See all
-          </Link>
-        </div>
-        <div className="space-y-space-sm">
-          {relatedPosts.map((relatedPost) => (
+      {loading ? (
+        <p className="text-sm text-[#6e7b6c]">Đang tải bài viết...</p>
+      ) : error ? (
+        <p role="status" className="text-sm text-[#6e7b6c]">
+          Không tải được bài viết liên quan.
+        </p>
+      ) : articles.length > 0 ? (
+        <div className="space-y-3">
+          {articles.map((relatedArticle) => (
             <Link
-              key={relatedPost.id}
-              to={`/content/${relatedPost.id}`}
-              className="group flex min-w-0 items-center gap-space-sm rounded-xl p-1.5 transition-colors hover:bg-surface-container-low"
+              key={relatedArticle.articleId}
+              to={`/content/${relatedArticle.articleId}`}
+              className="group flex min-w-0 items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-[#f7faf7]"
             >
-              <img
-                src={relatedPost.image}
-                alt={relatedPost.imageAlt}
-                className="h-16 w-16 shrink-0 rounded-lg object-cover"
-              />
-              <div className="min-w-0">
-                <h3 className="truncate text-label-md font-label-md text-on-surface transition-colors group-hover:text-primary">
-                  {relatedPost.title}
-                </h3>
-                <p className="mt-0.5 text-caption font-caption text-on-surface-variant">
-                  {relatedPost.duration}
-                  {relatedPost.calories ? ` · ${relatedPost.calories}` : ""}
-                </p>
-                <span className="mt-1 inline-block rounded-full bg-secondary-container/50 px-2 py-0.5 text-caption font-caption text-primary">
-                  {relatedPost.categoryLabel}
+              {relatedArticle.coverImage ? (
+                <img
+                  src={relatedArticle.coverImage}
+                  alt={relatedArticle.title || ""}
+                  loading="lazy"
+                  className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#edf4ee] text-chaybook-primary"
+                >
+                  <FileText size={21} />
                 </span>
-              </div>
+              )}
+              <span className="min-w-0">
+                <span className="line-clamp-2 text-sm font-semibold leading-5 text-[#181c1b] transition-colors group-hover:text-chaybook-primary">
+                  {relatedArticle.title}
+                </span>
+                <span className="mt-1 block text-xs text-[#6e7b6c]">
+                  {formatArticleDate(relatedArticle.createdAt)}
+                </span>
+              </span>
             </Link>
           ))}
         </div>
-      </section>
-
-      <section className="relative space-y-space-sm overflow-hidden rounded-2xl bg-primary p-space-lg text-on-primary shadow-md">
-        <div className="pointer-events-none absolute -bottom-6 -right-6 h-28 w-28 rounded-full bg-on-primary/10 blur-xl" />
-        <div className="relative flex items-center gap-2">
-          <Sparkles aria-hidden="true" size={24} />
-          <span className="text-label-md font-label-md uppercase tracking-wider">
-            AI Nutritionist
-          </span>
-        </div>
-        <h2 className="relative text-headline-sm font-headline-sm leading-snug">
-          Need tailored macro adjustments?
-        </h2>
-        <p className="relative text-body-sm font-body-sm leading-relaxed text-on-primary-container">
-          Chat with ChayBook&apos;s assistant to substitute ingredients, lower
-          carbs, or hit target plant protein.
+      ) : (
+        <p className="text-sm text-[#6e7b6c]">
+          Chưa có bài viết liên quan.
         </p>
-        <Link
-          to="/ai-assistant"
-          className="relative inline-flex w-full items-center justify-center rounded-lg bg-surface-container-lowest px-space-md py-2.5 text-label-md font-label-md text-primary shadow-sm transition-colors hover:bg-surface-container"
-        >
-          Launch AI ChatBox
-        </Link>
-      </section>
-    </aside>
+      )}
+    </section>
   );
 }
 
-function ContentDetailView({ post, detail }) {
-  const initialComments = detail?.comments ?? [];
+function ArticleDetailView({
+  article,
+  categoryName,
+  categoryError,
+  relatedArticles,
+  relatedLoading,
+  relatedError,
+}) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
-  const likeCount = detail?.likeCount ?? 0;
-  const [comment, setComment] = useState("");
-  const [comments, setComments] = useState(initialComments);
-  const [addedCommentCount, setAddedCommentCount] = useState(0);
   const [actionFeedback, setActionFeedback] = useState("");
-  const [commentFeedback, setCommentFeedback] = useState("");
-  const commentInputRef = useRef(null);
-
-  const handleCommentSubmit = (event) => {
-    event.preventDefault();
-    const content = comment.trim();
-
-    if (!content) {
-      setCommentFeedback("Please write a comment before posting.");
-      commentInputRef.current?.focus();
-      return;
-    }
-
-    setComments((currentComments) => [
-      {
-        id: Date.now(),
-        author: "You",
-        role: "Community Member",
-        initials: "U",
-        time: "Just now",
-        content,
-        likes: 0,
-      },
-      ...currentComments,
-    ]);
-    setAddedCommentCount((count) => count + 1);
-    setComment("");
-    setCommentFeedback("Your comment was added for this session.");
-  };
 
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      setActionFeedback("Link copied to clipboard.");
+      setActionFeedback("Đã sao chép liên kết bài viết.");
     } catch (error) {
-      console.error("Failed to copy the page link:", error);
-      setActionFeedback("Use your browser's share menu to share this page.");
+      console.error("Failed to copy the article link:", error);
+      setActionFeedback("Không thể sao chép liên kết trong trình duyệt này.");
     }
   };
 
-  const handleCookMode = () => {
-    setActionFeedback(
-      "Cook Mode is ready. Keep the recipe open while you cook.",
-    );
-  };
-
-  const handleVideoFeedback = () => {
-    setActionFeedback(
-      "This is a video preview. The full tutorial is not available yet.",
-    );
-  };
-
-  const relatedPosts = [];
-
   return (
-    <div className="w-full bg-background font-body-md text-on-surface antialiased">
-      <div className="mx-auto w-full max-w-[1280px] px-space-md py-space-md lg:px-margin-desktop">
-        <Breadcrumb post={post} />
+    <div className="bg-[#f3f8f4] px-4 py-6 text-[#181c1b] sm:px-6 sm:py-8 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <BackToContent />
 
-        <div className="grid grid-cols-1 items-start gap-gutter-lg lg:grid-cols-12">
-          <article className="flex min-w-0 flex-col space-y-space-xl lg:col-span-8">
-            <header className="space-y-space-sm">
-              <div className="flex flex-wrap items-center gap-space-xs">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary-container px-3 py-1 text-label-sm font-label-sm text-on-secondary-container">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  {post.categoryLabel}
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-8">
+          <article className="min-w-0 rounded-2xl bg-white p-5 shadow-sm sm:p-7 lg:col-span-8 lg:p-8">
+            <header className="mb-5 space-y-3">
+              {categoryName && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e3f5e7] px-3 py-1.5 text-xs font-semibold text-emerald-800">
+                  <span className="h-2 w-2 rounded-full bg-emerald-700" />
+                  {categoryName}
                 </span>
-                {/* {detail?.eyebrow && (
-                  <span className="text-caption font-caption uppercase tracking-wider text-on-surface-variant">
-                    {detail.eyebrow}
-                  </span>
-                )} */}
-              </div>
-              <h1 className="text-headline-xl font-headline-xl leading-tight tracking-tight text-on-surface">
-                {post.title}
+              )}
+              <h1 className="text-2xl font-bold leading-tight tracking-tight text-[#181c1b] sm:text-3xl lg:text-4xl">
+                {article.title}
               </h1>
-              {/* <p className="text-body-lg font-body-lg leading-relaxed text-on-surface-variant">
-                {post.description}
-              </p> */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#6e7b6c]">
+                <span className="inline-flex items-center gap-2 font-semibold text-[#28312b]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-chaybook-primary text-white">
+                    <UserRound aria-hidden="true" size={18} />
+                  </span>
+                  {article.createdBy != null ? `User ${article.createdBy}` : "—"}
+                </span>
+                <span className="hidden text-gray-300 sm:inline">|</span>
+                <span className="inline-flex items-center gap-2">
+                  <CalendarDays aria-hidden="true" size={17} />
+                  {formatArticleDate(article.createdAt)}
+                </span>
+              </div>
             </header>
 
-            <section className="flex flex-wrap items-center justify-between gap-space-md rounded-2xl bg-surface-container-lowest p-space-md shadow-sm">
-              <div className="flex items-center gap-space-sm">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-headline-sm font-bold text-on-primary shadow-sm">
-                  {post.initials}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-label-md font-label-md text-on-surface">
-                      {post.author}
-                    </span>
-                    {detail?.verifiedAuthor && (
-                      <BadgeCheck
-                        aria-label="Verified contributor"
-                        size={16}
-                        className="text-primary"
-                      />
-                    )}
-                  </div>
-                  <p className="text-caption font-caption text-on-surface-variant">
-                    {post.authorRole}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-space-md gap-y-1 text-body-sm font-body-sm text-on-surface-variant">
-                <span className="inline-flex items-center gap-1">
-                  <CalendarDays aria-hidden="true" size={18} />
-                  {post.date}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Timer aria-hidden="true" size={18} />
-                  {post.duration}
-                </span>
-                {detail?.views && (
-                  <span className="inline-flex items-center gap-1">
-                    <Eye aria-hidden="true" size={18} />
-                    {detail.views} views
-                  </span>
-                )}
-              </div>
-            </section>
-
-            <ContentActions
-              liked={liked}
-              saved={saved}
-              likeCount={likeCount}
-              onLike={() => setLiked((current) => !current)}
-              onSave={() => setSaved((current) => !current)}
-              onShare={handleShare}
-              onCookMode={handleCookMode}
-            />
-            <p
-              aria-live="polite"
-              className="-mt-space-lg text-caption font-caption text-on-surface-variant"
-            >
-              {actionFeedback}
-            </p>
-
-            <div className="group relative w-full overflow-hidden rounded-2xl shadow-md">
-              <img
-                src={post.image}
-                alt={post.imageAlt}
-                className="h-[380px] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.01] sm:h-[460px]"
+            <div className="mb-5">
+              <ArticleActions
+                liked={liked}
+                saved={saved}
+                onLike={() => setLiked((current) => !current)}
+                onSave={() => setSaved((current) => !current)}
+                onShare={handleShare}
               />
-              {detail && (
-                <>
-                  <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full bg-inverse-surface/85 px-3 py-1 text-caption font-caption text-inverse-on-surface backdrop-blur-sm">
-                    <Sparkles aria-hidden="true" size={14} />
-                    Culinary Studio Editorial · 100% Plant Sourced
-                  </div>
-                  <span className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full bg-surface-container-lowest/90 px-3 py-1 text-label-sm font-label-sm text-primary shadow-sm backdrop-blur-sm">
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                    Gluten-Free & Vegan
-                  </span>
-                </>
-              )}
+              <p
+                aria-live="polite"
+                className="mt-2 min-h-5 text-xs text-[#6e7b6c]"
+              >
+                {actionFeedback}
+              </p>
             </div>
 
-            <section
-              aria-labelledby="introduction-heading"
-              className="space-y-space-sm rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm"
-              id="introduction"
-            >
+            {article.coverImage ? (
+              <img
+                src={article.coverImage}
+                alt={article.title || "Article cover"}
+                className="mb-6 aspect-[16/7] w-full rounded-2xl object-cover"
+              />
+            ) : (
+              <div className="mb-6 flex aspect-[16/7] w-full items-center justify-center rounded-2xl bg-[#edf4ee] text-chaybook-primary">
+                <FileText aria-hidden="true" size={36} />
+              </div>
+            )}
+
+            <section aria-labelledby="article-content-heading" className="max-w-3xl">
               <h2
-                className="text-headline-lg font-headline-lg text-on-surface"
-                id="introduction-heading"
+                id="article-content-heading"
+                className="mb-3 text-xl font-bold text-[#181c1b]"
               >
                 Chi tiết bài viết
               </h2>
-              {(detail?.introduction ?? [post.description]).map((paragraph) => (
-                <p
-                  key={paragraph}
-                  className="text-body-md font-body-md leading-relaxed text-on-surface-variant"
-                >
-                  {paragraph}
-                </p>
-              ))}
+              {article.content ? (
+                <div className="whitespace-pre-line text-base leading-[1.8] text-[#3e4a3d]">
+                  {article.content}
+                </div>
+              ) : null}
             </section>
-
-            {detail && (
-              <>
-                <IngredientsSection ingredients={detail.ingredients} />
-                <VideoTutorial
-                  video={detail.video}
-                  title={post.title}
-                  onPlay={handleVideoFeedback}
-                />
-                <InstructionsSection instructions={detail.instructions} />
-                <CommentsSection
-                  comments={comments}
-                  commentCount={post.comments + addedCommentCount}
-                  comment={comment}
-                  commentInputRef={commentInputRef}
-                  onCommentChange={(value) => {
-                    setComment(value);
-                    setCommentFeedback("");
-                  }}
-                  onCommentSubmit={handleCommentSubmit}
-                  commentFeedback={commentFeedback}
-                />
-              </>
-            )}
           </article>
 
-          <RecipeSidebar
-            post={post}
-            detail={detail}
-            relatedPosts={relatedPosts}
-          />
+          <aside className="min-w-0 space-y-5 lg:col-span-4">
+            <RelatedArticles
+              articles={relatedArticles}
+              loading={relatedLoading}
+              error={relatedError}
+            />
+            <ArticleInformation
+              article={article}
+              categoryName={categoryName}
+              categoryError={categoryError}
+            />
+          </aside>
         </div>
       </div>
     </div>
@@ -719,63 +341,160 @@ function ContentDetailView({ post, detail }) {
 function ContentPageDetail() {
   const { id } = useParams();
   const [article, setArticle] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [relatedArticles, setRelatedArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [relatedLoading, setRelatedLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState(false);
+  const [relatedError, setRelatedError] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchArticleDetail = async () => {
-      if (!id) {
+    let cancelled = false;
+
+    async function loadArticle() {
+      let currentArticle = null;
+
+      setLoading(true);
+      setRelatedLoading(true);
+      setCategoryError(false);
+      setRelatedError(false);
+      setError(null);
+      setArticle(null);
+      setCategories([]);
+      setRelatedArticles([]);
+
+      const articleId = Number(id);
+
+      if (!Number.isInteger(articleId) || articleId <= 0) {
         setError("Invalid article ID");
         setLoading(false);
+        setRelatedLoading(false);
         return;
       }
 
-      setLoading(true);
-      setError(null);
       try {
-        const articleId = Number(id);
         const data = await getArticleDetail(articleId);
-        setArticle(data);
-      } catch (err) {
-        setError(err.message || "Failed to fetch article detail");
-        console.error("Error fetching article detail:", err);
-        setArticle(null);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchArticleDetail();
+        if (cancelled) {
+          return;
+        }
+
+        currentArticle = data;
+        setArticle(data);
+        setLoading(false);
+
+        if (!data || typeof data !== "object") {
+          setRelatedLoading(false);
+          return;
+        }
+      } catch (requestError) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("Error fetching article detail:", requestError);
+        setError(requestError.message || "Failed to fetch article detail");
+        setLoading(false);
+        setRelatedLoading(false);
+        return;
+      }
+
+      const [categoryResult, articlesResult] = await Promise.allSettled([
+        getCategories("ARTICLE"),
+        getArticles(null, { status: "PUBLISHED" }),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      if (
+        categoryResult.status === "fulfilled" &&
+        Array.isArray(categoryResult.value)
+      ) {
+        setCategories(categoryResult.value);
+      } else {
+        const categoryRequestError =
+          categoryResult.status === "rejected"
+            ? categoryResult.reason
+            : new TypeError("The category service returned an invalid response.");
+        console.error("Error fetching article categories:", categoryRequestError);
+        setCategoryError(true);
+      }
+
+      if (
+        articlesResult.status === "fulfilled" &&
+        Array.isArray(articlesResult.value)
+      ) {
+        const publishedArticles = articlesResult.value.filter(
+          (item) =>
+            item.status?.toUpperCase() === "PUBLISHED" &&
+            Number(item.articleId) !== Number(id),
+        );
+        const sameCategoryArticles = publishedArticles.filter(
+          (item) =>
+            Number(item.categoryId) === Number(currentArticle.categoryId),
+        );
+        const otherArticles = publishedArticles.filter(
+          (item) =>
+            Number(item.categoryId) !== Number(currentArticle.categoryId),
+        );
+
+        setRelatedArticles(
+          [...sameCategoryArticles, ...otherArticles].slice(0, 3),
+        );
+      } else {
+        const articlesRequestError =
+          articlesResult.status === "rejected"
+            ? articlesResult.reason
+            : new TypeError("The article service returned an invalid response.");
+        console.error("Error fetching related articles:", articlesRequestError);
+        setRelatedError(true);
+      }
+
+      setRelatedLoading(false);
+    }
+
+    loadArticle();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading) {
     return (
-      <section className="min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chaybook-primary mb-4"></div>
-        <p className="text-body-md font-body-md text-on-surface-variant">
+      <section
+        aria-label="Loading article"
+        aria-live="polite"
+        className="flex min-h-[55vh] w-full items-center justify-center px-4 py-16"
+      >
+        <div className="flex items-center gap-3 text-sm text-[#6e7b6c]">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#d8e4da] border-t-chaybook-primary" />
           Loading article detail...
-        </p>
+        </div>
       </section>
     );
   }
 
   if (error) {
     return (
-      <section className="min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-space-3xl text-center sm:px-6 lg:px-margin-desktop">
-        <span aria-hidden="true" size={24}>
-          {/* <AlertTriangle className="h-6 w-6 text-error mb-4" /> */}
-        </span>
-        <h1 className="text-headline-xl font-headline-xl text-on-surface">
+      <section
+        role="alert"
+        className="mx-auto flex min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-16 text-center"
+      >
+        <h1 className="text-2xl font-bold text-[#181c1b]">
           Error Loading Article
         </h1>
-        <p className="mt-3 max-w-lg text-body-md font-body-md text-on-surface-variant">
+        <p className="mt-3 max-w-lg text-sm leading-6 text-[#6e7b6c]">
           {error}
         </p>
         <Link
           to="/content"
-          className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-space-md py-2.5 text-label-md font-label-md text-on-primary transition-colors hover:bg-primary-container"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-chaybook-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-chaybook-hover"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft aria-hidden="true" size={17} />
           Back to Content
         </Link>
       </section>
@@ -783,43 +502,41 @@ function ContentPageDetail() {
   }
 
   if (!article) {
-    return <ContentNotFound />;
+    return (
+      <section className="mx-auto flex min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-[#181c1b]">
+          Content Not Found
+        </h1>
+        <p className="mt-3 text-sm text-[#6e7b6c]">
+          The content you are looking for does not exist.
+        </p>
+        <Link
+          to="/content"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-chaybook-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-chaybook-hover"
+        >
+          <ArrowLeft aria-hidden="true" size={17} />
+          Back to Content
+        </Link>
+      </section>
+    );
   }
 
-  // Convert API response to the format expected by ContentDetailView
-  // The API returns ArticleResponse, but ContentDetailView expects a post object with specific fields
-  const post = {
-    id: article.articleId,
-    categoryId: article.categoryId,
-    title: article.title || "",
-    description: article.content || "", // Using content as description
-    image: article.coverImage || "",
-    imageAlt: article.title || "Article", // Using title as alt text
-    authorId: article.createdBy, // We don't have author name from API, so we'll use ID
-    author: `User ${article.createdBy}`, // Placeholder since we don't have user info
-    authorRole: "", // Not available in API
-    initials: "", // Not available in API
-    authorColor: "", // Not available in API
-    content: article.content || "",
-    coverImage: article.coverImage || "",
-    status: article.status || "",
-    createdAt: article.createdAt || "",
-    updatedAt: article.updatedAt || "",
-    // These fields are not in API but are expected by ContentDetailView - providing empty/default values
-    likeCount: 0,
-    comments: 0,
-    views: 0,
-    // We don't have these from the article API, so we'll leave them empty/default
-    // ContentDetailView expects detail object with these fields, but we don't have them
-    // So we'll pass null for detail and handle it in ContentDetailView
-  };
+  const categoryName =
+    categories.find(
+      (category) => Number(category.categoryId) === Number(article.categoryId),
+    )?.name || "";
 
-  // Since we don't have the detail data from the article API,
-  // we'll pass null and let ContentDetailView handle it gracefully
-  // Or we could fetch additional detail data if there's a separate endpoint
-  const detail = null; // We don't have detail data from the basic article API
-
-  return <ContentDetailView key={post.id} post={post} detail={detail} />;
+  return (
+    <ArticleDetailView
+      key={article.articleId}
+      article={article}
+      categoryName={categoryName}
+      categoryError={categoryError}
+      relatedArticles={relatedArticles}
+      relatedLoading={relatedLoading}
+      relatedError={relatedError}
+    />
+  );
 }
 
 export default ContentPageDetail;

@@ -13,23 +13,33 @@ function ChatMessageList({
   onSelectSuggestion,
   userName = "You",
 }) {
-  const bottomRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
-  // Auto-scroll to latest message or indicator
+  // Keep auto-scroll inside the conversation container, never the page.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const chatContainer = chatContainerRef.current;
+
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
   }, [messages, isTyping, error]);
 
   if (messages.length === 0 && !isTyping) {
     return (
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-8"
+      >
         <EmptyChatState onSelectSuggestion={onSelectSuggestion} />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-6 space-y-6 scroll-smooth">
+    <div
+      ref={chatContainerRef}
+      className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-6 space-y-6 scroll-smooth"
+    >
       {messages.map((message) => {
         if (message.role === "user") {
           return (
@@ -66,8 +76,6 @@ function ChatMessageList({
         </div>
       )}
 
-      {/* Scroll anchor */}
-      <div ref={bottomRef} className="h-1" />
     </div>
   );
 }
