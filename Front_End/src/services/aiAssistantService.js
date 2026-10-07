@@ -13,7 +13,7 @@ export async function sendAIMessage(prompt) {
     // In a more complete implementation, these would be managed by state.
 
     const queryString = query.toString();
-    const endpoint = `/api/chatbot/messages${queryString ? `?${queryString}` : ""}`;
+    const endpoint = `/chatbot/messages${queryString ? `?${queryString}` : ""}`;
 
     // Send the prompt as the request body
     const response = await apiFetch(endpoint, {
