@@ -9,7 +9,7 @@ public class BCryptTest {
         BCryptPasswordEncoder encoder =
                 new BCryptPasswordEncoder();
 
-        String password = "12345678";
+        String password = "1";
 
         String hash = encoder.encode(password);
 

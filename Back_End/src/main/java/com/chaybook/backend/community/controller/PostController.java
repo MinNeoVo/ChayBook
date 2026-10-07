@@ -1,9 +1,12 @@
 package com.chaybook.backend.community.controller;
 
+import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.service.PostService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,31 +26,51 @@ import java.util.List;
 )
 public class PostController {
     private final PostService postService;
+    private static final Logger log =
+            LoggerFactory.getLogger(PostController.class);
 
     public PostController(PostService postService) {
         this.postService = postService;
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getPosts(
+    public ResponseEntity<PageResponse<PostResponse>> getPosts(
             @RequestParam(
                     name = "categoryId",
                     required = false
             ) Integer categoryId,
+
+            @RequestParam(
+                    name = "page",
+                    defaultValue = "0"
+            ) int page,
+
+            @RequestParam(
+                    name = "size",
+                    defaultValue = "10"
+            ) int size,
+
+            @RequestParam(
+                    name = "sort",
+                    defaultValue = "latest"
+            ) String sort,
+
             @AuthenticationPrincipal Jwt jwt
     ) {
         Integer currentUserId = getCurrentUserId(jwt);
 
-        List<PostResponse> responses = postService.getPosts(
+        PageResponse<PostResponse> response = postService.getPosts(
                 categoryId,
-                currentUserId
+                currentUserId,
+                page,
+                size,
+                sort
         );
 
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(responses);
+                .body(response);
     }
-
     private Integer getCurrentUserId(Jwt jwt) {
         if (jwt == null) {
             return null;
@@ -60,6 +83,10 @@ public class PostController {
                 return userId;
             }
         } catch (NumberFormatException exception) {
+            log.warn(
+                    "Cannot parse authenticated user ID for post request",
+                    exception
+            );
         }
 
         throw new PostException(

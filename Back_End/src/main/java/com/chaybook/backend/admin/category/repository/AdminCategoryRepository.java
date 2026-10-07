@@ -2,8 +2,7 @@ package com.chaybook.backend.admin.category.repository;
 
 import com.chaybook.backend.category.entity.Category;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
