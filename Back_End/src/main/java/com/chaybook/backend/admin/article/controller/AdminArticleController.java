@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.chaybook.backend.admin.article.dto.AdminArticleRequest;
+import com.chaybook.backend.admin.article.dto.AdminArticleResponse;
 import com.chaybook.backend.admin.article.service.AdminArticleIService;
-import com.chaybook.backend.admin.article.service.AdminArticleRequest;
-import com.chaybook.backend.admin.article.service.AdminArticleResponse;
 import com.chaybook.backend.common.pagination.PageResponse;
 
 import jakarta.validation.Valid;

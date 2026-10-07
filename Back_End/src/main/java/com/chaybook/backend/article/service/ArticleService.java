@@ -6,6 +6,9 @@ import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,8 +40,17 @@ public class ArticleService implements ArticleIService {
     @Override
     public List<ArticleResponse> getArticles(
             Integer categoryId,
-            String status
+            String status,
+            int page,
+            int size
     ) {
+        if (page < 0 || size < 1 || size > 10) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Page phải từ 0; size phải từ 1 đến 10"
+                );
+        }
+
         if (categoryId != null && categoryId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -48,9 +60,10 @@ public class ArticleService implements ArticleIService {
 
         String normalizedStatus = normalizeStatus(status);
 
-        Sort sort = Sort.by(
-                Sort.Direction.DESC,
-                "articleId"
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "articleId")
         );
 
         List<Article> articles;
@@ -60,16 +73,16 @@ public class ArticleService implements ArticleIService {
                     .findByCategory_CategoryIdAndStatus(
                             categoryId,
                             normalizedStatus,
-                            sort
+                            pageable
                     );
         } else if (categoryId != null) {
             articles = articleRepository
-                    .findByCategory_CategoryId(categoryId, sort);
+                    .findByCategory_CategoryId(categoryId, pageable);
         } else if (normalizedStatus != null) {
             articles = articleRepository
-                    .findByStatus(normalizedStatus, sort);
+                    .findByStatus(normalizedStatus, pageable);
         } else {
-            articles = articleRepository.findAll(sort);
+            articles = articleRepository.findAll(pageable).getContent();
         }
 
         List<ArticleResponse> responses = new ArrayList<>();

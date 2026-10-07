@@ -6,7 +6,9 @@ public interface ArticleIService {
 
     List<ArticleResponse> getArticles(
             Integer categoryId,
-            String status
+            String status,
+            int page,
+            int size
     );
 
     ArticleResponse getArticleDetail(

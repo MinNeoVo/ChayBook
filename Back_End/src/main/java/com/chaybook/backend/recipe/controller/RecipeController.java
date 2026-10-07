@@ -30,17 +30,13 @@ public class RecipeController {
 
     @GetMapping({"", "/"})
     public ResponseEntity<List<RecipeSummaryResponse>> getRecipes(
-            @RequestParam(
-                    name = "categoryId",
-                    required = false
-            ) Integer categoryId,
-            @RequestParam(
-                    name = "keyword",
-                    required = false
-            ) String keyword
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(
-                recipeService.getRecipes(categoryId, keyword)
+                recipeService.getRecipes(categoryId, keyword, page, size)
         );
     }
 

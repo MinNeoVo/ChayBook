@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.chaybook.backend.admin.category.dto.AdminCategoryRequest;
+import com.chaybook.backend.admin.category.dto.AdminCategoryResponse;
 import com.chaybook.backend.admin.category.service.AdminCategoryIService;
-import com.chaybook.backend.admin.category.service.AdminCategoryRequest;
-import com.chaybook.backend.admin.category.service.AdminCategoryResponse;
 
 import jakarta.validation.Valid;
 

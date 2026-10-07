@@ -1,4 +1,4 @@
-package com.chaybook.backend.admin.category.service;
+package com.chaybook.backend.admin.category.dto;
 
 public record AdminCategoryResponse(
         Integer categoryId,
