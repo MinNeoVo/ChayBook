@@ -1,4 +1,4 @@
-package com.chaybook.backend.admin.category.service;
+package com.chaybook.backend.admin.category.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

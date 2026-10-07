@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.chaybook.backend.admin.article.dto.AdminArticleRequest;
+import com.chaybook.backend.admin.article.dto.AdminArticleResponse;
 import com.chaybook.backend.admin.article.repository.AdminArticleRepository;
 import com.chaybook.backend.admin.category.repository.AdminCategoryRepository;
 import com.chaybook.backend.article.entity.Article;

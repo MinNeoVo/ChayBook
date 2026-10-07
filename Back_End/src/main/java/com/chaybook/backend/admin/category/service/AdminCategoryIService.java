@@ -2,6 +2,9 @@ package com.chaybook.backend.admin.category.service;
 
 import java.util.List;
 
+import com.chaybook.backend.admin.category.dto.AdminCategoryRequest;
+import com.chaybook.backend.admin.category.dto.AdminCategoryResponse;
+
 public interface AdminCategoryIService {
 
     List<AdminCategoryResponse> getCategories(

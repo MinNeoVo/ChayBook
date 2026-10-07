@@ -1,5 +1,7 @@
 package com.chaybook.backend.admin.article.service;
 
+import com.chaybook.backend.admin.article.dto.AdminArticleRequest;
+import com.chaybook.backend.admin.article.dto.AdminArticleResponse;
 import com.chaybook.backend.common.pagination.PageResponse;
 
 public interface AdminArticleIService {
