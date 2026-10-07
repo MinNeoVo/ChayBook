@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class GuestTrialLimiter {
 
-    private static final int DAILY_LIMIT = 3;
+    private static final int DAILY_LIMIT = 5;
 
     private final Map<String, AtomicInteger> usageMap = new ConcurrentHashMap<>();
 
