@@ -1,6 +1,7 @@
 package com.chaybook.backend.category.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
 
 @Entity
 @Table(name = "CATEGORY")
@@ -20,6 +21,10 @@ public class Category {
     @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
     private String description;
 
+    @Nationalized
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     public Category() {
     }
 
@@ -27,6 +32,14 @@ public class Category {
         this.name = name;
         this.type = type;
         this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Integer getCategoryId() {
