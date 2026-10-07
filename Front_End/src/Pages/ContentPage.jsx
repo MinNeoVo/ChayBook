@@ -295,6 +295,7 @@ function ContentPage() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [retryCount, setRetryCount] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const itemsPerPage = 6;
 
@@ -335,16 +336,18 @@ function ContentPage() {
     };
   }, []);
 
-  // Fetch articles when category changes or retry is requested
+  // Fetch articles when category, page, or retry changes
   useEffect(() => {
     let cancelled = false;
 
     async function loadArticles() {
       try {
-        const data = await getArticles(activeCategoryId ?? null);
+        const pageIndex = currentPage - 1; // Convert to zero-based for API
+        const data = await getArticles(activeCategoryId ?? null, pageIndex, itemsPerPage);
 
         if (!cancelled) {
-          setArticles(Array.isArray(data) ? data : []);
+          // data is PageResponse: { content, page, size, totalElements, totalPages }
+          setArticles(Array.isArray(data.content) ? data.content : []);
           setError(null);
         }
       } catch (err) {
@@ -365,7 +368,7 @@ function ContentPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategoryId, retryCount]);
+  }, [activeCategoryId, currentPage, retryCount]);
 
   // Filter articles by search and category
   const filteredPosts = useMemo(() => {
@@ -419,12 +422,10 @@ function ContentPage() {
     handleCategoryChange(null);
   };
 
-  // Current page's articles
+  // Current page's articles (already paginated by server, just filter for search)
   const paginatedPosts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-
-    return filteredPosts.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredPosts, currentPage]);
+    return filteredPosts;
+  }, [filteredPosts]);
 
   return (
     <div className="min-h-screen bg-chaybook-bg font-sans text-[#181c1b] antialiased">
@@ -552,7 +553,7 @@ function ContentPage() {
           {!loading && !error && (
             <Pagination
               currentPage={currentPage}
-              totalItems={filteredPosts.length}
+              totalItems={totalElements}
               itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
             />
