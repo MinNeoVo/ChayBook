@@ -1,14 +1,6 @@
 package com.chaybook.backend.assistant.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -26,27 +18,25 @@ public class AiMessage {
     @JoinColumn(name = "conversation_id")
     private AiConversation conversation;
 
-    @Column(name = "sender", nullable = false, length = 50)
+    @Column(name = "sender", length = 50, nullable = false)
     private String sender;
 
-    @Column(name = "message", nullable = false, columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "message", columnDefinition = "NVARCHAR(MAX)", nullable = false)
     private String message;
 
     @CreationTimestamp
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     public AiMessage() {
     }
 
-    public AiMessage(AiConversation conversation, String sender, String message, LocalDateTime createdAt) {this.conversation = conversation;
-        this.sender = sender;
-        this.message = message;
-        this.createdAt = createdAt;
-    }
-
     public Integer getMessageId() {
         return messageId;
+    }
+
+    public void setMessageId(Integer messageId) {
+        this.messageId = messageId;
     }
 
     public AiConversation getConversation() {
