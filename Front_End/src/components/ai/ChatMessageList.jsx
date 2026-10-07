@@ -61,9 +61,13 @@ function ChatMessageList({
         <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm text-red-700 shadow-2xs">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
-            <span>{error.message || "Sorry, I couldn't process your request."}</span>
+
+            <span>
+              {error.message || "Sorry, I couldn't process your request."}
+            </span>
           </div>
-          {onRetry && (
+
+          {onRetry && error.status !== 429 && (
             <button
               type="button"
               onClick={onRetry}
@@ -75,7 +79,6 @@ function ChatMessageList({
           )}
         </div>
       )}
-
     </div>
   );
 }

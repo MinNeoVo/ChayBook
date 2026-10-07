@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import CommunityHeader from "../components/community/CommunityHeader";
@@ -31,30 +31,47 @@ function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sort, setSort] = useState("latest");
 
+  // Phan trang
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isFetching, setIsFetching] = useState(false);
+  const sentinelRef = useRef(null);
+
   // Modal tạo bài viết
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
-  // 1. Tải danh sách bài viết từ backend
+  // 1. Tải danh sách bài viết từ backend với phân trang
   const fetchPosts = useCallback(
-    async (showLoading = true) => {
-      if (showLoading) {
+    async (page, showLoading = true, options = {}) => {
+      if (showLoading && page === 0) {
         setLoading(true);
+      }
+      if (page > 0) {
+        setIsFetching(true);
       }
 
       try {
         const categoryId = category === "all" ? null : Number(category);
 
-        const data = await getPosts(categoryId);
+        const response = await getPosts(categoryId, page, 10, options);
 
-        if (!Array.isArray(data)) {
+        // Assuming response is PageResponse: { items, page, size, totalElements, totalPages }
+        if (!response || !Array.isArray(response.items)) {
           throw new Error("Dữ liệu bài viết không hợp lệ.");
         }
 
-        setPosts(data);
+        if (page === 0) {
+          setPosts(response.items);
+          setTotalPages(response.totalPages);
+          setCurrentPage(page);
+        } else {
+          setPosts(prevPosts => [...prevPosts, ...response.items]);
+          setCurrentPage(page);
+        }
         setError(null);
 
-        return true;
+        return response;
       } catch (err) {
         console.error("Không thể tải bài viết:", err);
 
@@ -62,12 +79,15 @@ function CommunityPage() {
 
         return false;
       } finally {
-        if (showLoading) {
+        if (showLoading && page === 0) {
           setLoading(false);
+        }
+        if (page > 0) {
+          setIsFetching(false);
         }
       }
     },
-    [category],
+    [category, sort],
   );
 
   // 2. Tải danh mục từ backend
@@ -110,42 +130,83 @@ function CommunityPage() {
 
   // 3. Tự tải lại bài viết khi danh mục thay đổi
   useEffect(() => {
-    let cancelled = false;
+    const abortController = new AbortController();
 
     async function loadPosts() {
       try {
         const categoryId = category === "all" ? null : Number(category);
 
-        const data = await getPosts(categoryId);
+        const response = await fetchPosts(0, true, { signal: abortController.signal });
 
-        if (cancelled) return;
-
-        if (!Array.isArray(data)) {
-          throw new Error("Dữ liệu bài viết không hợp lệ.");
+        // If response is false, error was already set in fetchPosts
+        if (response === false) {
+          return;
         }
-
-        setPosts(data);
-        setError(null);
       } catch (err) {
-        if (cancelled) return;
-
+        // Ignore if aborted
+        if (err.name === "AbortError") {
+          return;
+        }
         console.error("Không thể tải bài viết:", err);
         setError("Không thể kết nối đến máy chủ để tải bài viết.");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
       }
     }
 
     loadPosts();
 
     return () => {
-      cancelled = true;
+      abortController.abort();
     };
   }, [category]);
 
-  // Sắp xếp bài viết (cũ, mới)
+  // Lọc bài viết theo từ khóa tìm kiếm (trên tiêu đề và nội dung)
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery) return posts;
+    const lowerQuery = searchQuery.toLowerCase();
+    return posts.filter(post => {
+      const title = (post.title || '').toLowerCase();
+      const content = (post.content || '').toLowerCase();
+      return title.includes(lowerQuery) || content.includes(lowerQuery);
+    });
+  }, [posts, searchQuery]);
+
+  // 5. Hiển thị thông báo
+  const showFeedback = (type, text) => {
+    setFeedbackMessage({ type, text });
+  };
+
+  // Tự xóa thông báo sau 5 giây
+  useEffect(() => {
+    if (!feedbackMessage) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setFeedbackMessage(null);
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [feedbackMessage]);
+
+  // 4. Lấy thêm bài viết khi cuộn gần cuối trang (infinite scroll)
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetching && currentPage + 1 < totalPages) {
+          fetchPosts(currentPage + 1, false); // showLoading false for infinite scroll
+        }
+      },
+      {
+        rootMargin: "200px", // start loading before reaching the end
+      }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [currentPage, isFetching, totalPages, fetchPosts]);
+
+  // 5. Sắp xếp bài viết (cũ, mới)
   const sortedPosts = useMemo(() => {
     return [...posts].sort((a, b) => {
       // Ưu tiên bài mới hơn; nếu cùng thời gian thì ID lớn hơn trước
@@ -178,24 +239,6 @@ function CommunityPage() {
     });
   }, [posts, sort]);
 
-  // 5. Hiển thị thông báo
-  const showFeedback = (type, text) => {
-    setFeedbackMessage({ type, text });
-  };
-
-  // Tự xóa thông báo sau 5 giây
-  useEffect(() => {
-    if (!feedbackMessage) {
-      return undefined;
-    }
-
-    const timeoutId = setTimeout(() => {
-      setFeedbackMessage(null);
-    }, 5000);
-
-    return () => clearTimeout(timeoutId);
-  }, [feedbackMessage]);
-
   // 6. Tạo bài viết mới
   const handleCreatePost = async (formData) => {
     try {
@@ -209,7 +252,7 @@ function CommunityPage() {
       );
 
       // Tải lại danh sách sau khi tạo bài viết
-      await fetchPosts(false);
+      await fetchPosts(0, false);
     } catch (err) {
       console.error("Lỗi khi tạo bài viết:", err);
 
@@ -374,7 +417,7 @@ function CommunityPage() {
 
                 <button
                   type="button"
-                  onClick={() => fetchPosts()}
+                  onClick={() => fetchPosts(0, false)}
                   className="mt-4 rounded-lg bg-chaybook-primary px-4 py-2 text-sm font-medium text-white"
                 >
                   Thử lại
@@ -382,22 +425,25 @@ function CommunityPage() {
               </div>
             </div>
           ) : sortedPosts.length > 0 ? (
-            <PostGrid
-              posts={sortedPosts}
-              onLike={handleLike}
-              onBookmark={handleBookmark}
-            />
+            <>
+              <PostGrid
+                posts={sortedPosts}
+                onLike={handleLike}
+                onBookmark={handleBookmark}
+              />
+              <div ref={sentinelRef} />
+            </>
           ) : (
             <div className="flex min-h-75 items-center justify-center rounded-2xl bg-white p-8 text-center shadow-sm">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">
-                  {posts.length === 0
+                  {sortedPosts.length === 0
                     ? "Chưa có bài viết nào"
                     : "Không tìm thấy bài viết nào"}
                 </h2>
 
                 <p className="mt-2 text-sm text-gray-500">
-                  {posts.length === 0
+                  {sortedPosts.length === 0
                     ? "Hãy là người đầu tiên chia sẻ với cộng đồng ChayBook!"
                     : "Hãy thử từ khóa hoặc bộ lọc khác."}
                 </p>

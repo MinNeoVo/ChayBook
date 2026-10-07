@@ -11,7 +11,8 @@ import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,10 @@ public class ChatbotService {
             // 1. Kiểm tra giới hạn dùng thử nếu là Guest
             if (userId == null) {
                 if (!trialLimiter.isAllowed(guestId)) {
-                    throw new RuntimeException("Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục.");
+                    throw new ResponseStatusException(
+    HttpStatus.TOO_MANY_REQUESTS,
+    "Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục."
+);
                 }
             }
 
@@ -92,12 +96,19 @@ public class ChatbotService {
 
             return aiReply;
 
-        } catch (Exception e) {
-            System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
-            e.printStackTrace();
-            System.err.println("=============================================");
-            throw new RuntimeException(e.getMessage());
-        }
+        } catch (ResponseStatusException e) {
+    throw e;
+
+} catch (Exception e) {
+    System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
+    e.printStackTrace();
+    System.err.println("=============================================");
+
+    throw new RuntimeException(
+        "Có lỗi xảy ra khi xử lý chatbot.",
+        e
+    );
+}
     }
 
     private String findRelevantContext(String userMessage) {

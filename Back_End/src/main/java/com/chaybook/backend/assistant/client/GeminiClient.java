@@ -2,6 +2,7 @@ package com.chaybook.backend.assistant.client;
 
 import com.chaybook.backend.assistant.dto.GeminiRequest;
 import com.chaybook.backend.assistant.dto.GeminiResponse;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,31 +25,108 @@ public class GeminiClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String generateContent(String promptText) {
+
         try {
-            GeminiRequest.Part part = new GeminiRequest.Part(promptText);
-            GeminiRequest.Content content = new GeminiRequest.Content(Collections.singletonList(part));
-            GeminiRequest request = new GeminiRequest(Collections.singletonList(content));
+
+            // ==========================================
+            // 1. Tạo request body
+            // ==========================================
+
+            GeminiRequest.Part part =
+                    new GeminiRequest.Part(promptText);
+
+            GeminiRequest.Content content =
+                    new GeminiRequest.Content(
+                            Collections.singletonList(part)
+                    );
+
+            GeminiRequest request =
+                    new GeminiRequest(
+                            Collections.singletonList(content)
+                    );
+
+            // ==========================================
+            // 2. Tạo HTTP headers
+            // ==========================================
 
             HttpHeaders headers = new HttpHeaders();
+
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
-            String urlWithKey = apiUrl + "?key=" + apiKey;
+            // Google AI Studio dùng header này
+            headers.set("X-goog-api-key", apiKey);
 
-            GeminiResponse response = restTemplate.postForObject(urlWithKey, entity, GeminiResponse.class);
+            // ==========================================
+            // 3. Tạo HTTP request
+            // ==========================================
 
-            if (response == null || response.getCandidates() == null || response.getCandidates().isEmpty()) {
-                throw new RuntimeException("Lỗi: Không nhận được phản hồi từ Gemini API.");
+            HttpEntity<GeminiRequest> entity =
+                    new HttpEntity<>(request, headers);
+
+            // ==========================================
+            // 4. Gọi Gemini API
+            // ==========================================
+
+            GeminiResponse response =
+                    restTemplate.postForObject(
+                            apiUrl,
+                            entity,
+                            GeminiResponse.class
+                    );
+
+            // ==========================================
+            // 5. Kiểm tra response
+            // ==========================================
+
+            if (response == null
+                    || response.getCandidates() == null
+                    || response.getCandidates().isEmpty()) {
+
+                throw new RuntimeException(
+                        "Gemini không trả về candidate."
+                );
             }
 
-            List<GeminiRequest.Part> parts = response.getCandidates().get(0).getContent().getParts();
-            return parts.get(0).getText();
+            List<GeminiRequest.Part> parts =
+                    response.getCandidates()
+                            .get(0)
+                            .getContent()
+                            .getParts();
+
+            if (parts == null || parts.isEmpty()) {
+
+                throw new RuntimeException(
+                        "Gemini không trả về nội dung."
+                );
+            }
+
+            String text = parts.get(0).getText();
+
+            if (text == null || text.isBlank()) {
+
+                throw new RuntimeException(
+                        "Gemini trả về nội dung rỗng."
+                );
+            }
+
+            return text;
 
         } catch (Exception e) {
-            System.err.println("========== LỖI TẠI GEMINI CLIENT ==========");
+
+            System.err.println(
+                    "========== LỖI TẠI GEMINI CLIENT =========="
+            );
+
             e.printStackTrace();
-            System.err.println("===========================================");
-            throw new RuntimeException("Lỗi khi gọi Gemini API: " + e.getMessage());
+
+            System.err.println(
+                    "==========================================="
+            );
+
+            throw new RuntimeException(
+                    "Lỗi khi gọi Gemini API: " + e.getMessage(),
+                    e
+            );
         }
     }
 }

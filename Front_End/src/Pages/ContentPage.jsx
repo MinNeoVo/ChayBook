@@ -343,11 +343,31 @@ function ContentPage() {
     async function loadArticles() {
       try {
         const pageIndex = currentPage - 1; // Convert to zero-based for API
-        const data = await getArticles(activeCategoryId ?? null, pageIndex, itemsPerPage);
+        const data = await getArticles(
+          activeCategoryId ?? null,
+          pageIndex,
+          itemsPerPage,
+        );
 
         if (!cancelled) {
-          // data is PageResponse: { content, page, size, totalElements, totalPages }
-          setArticles(Array.isArray(data.content) ? data.content : []);
+          // Backend may return:
+          // 1. A direct array: [...]
+          // 2. { items: [...] }
+          // 3. A Spring PageResponse: { content: [...], totalElements: ... }
+          const articleList = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.items)
+              ? data.items
+              : Array.isArray(data?.content)
+                ? data.content
+                : [];
+
+          setArticles(articleList);
+
+          // Keep pagination working when backend provides totalElements.
+          // If it does not, fall back to the number of returned articles.
+          setTotalElements(data?.totalElements ?? articleList.length);
+
           setError(null);
         }
       } catch (err) {
@@ -355,6 +375,7 @@ function ContentPage() {
           console.error("Error fetching articles:", err);
           setError(err.message || "Failed to fetch articles");
           setArticles([]);
+          setTotalElements(0);
         }
       } finally {
         if (!cancelled) {
@@ -374,7 +395,11 @@ function ContentPage() {
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return articles.filter((article) => {
+    // Safety guard: the API response must never be allowed to make
+    // articles undefined and crash the page.
+    const safeArticles = Array.isArray(articles) ? articles : [];
+
+    return safeArticles.filter((article) => {
       const categoryName = categoriesMap.get(Number(article.categoryId)) || "";
 
       const matchesCategory =

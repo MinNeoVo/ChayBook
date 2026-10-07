@@ -1,16 +1,21 @@
 import { apiFetch } from "./api";
 
 /**
- * Lấy danh sách bài viết đã duyệt
+ * Lấy danh sách bài viết đã duyệt với phân trang
  * @param {number|string|null} categoryId - ID danh mục (nếu có)
+ * @param {number} page - Số trang (mặc định: 0)
+ * @param {number} size - Kích thước trang (mặc định: 10)
  * @param {object} options - Options phụ (vd: signal để hủy request nếu unmount)
  */
-export async function getPosts(categoryId = null, { signal } = {}) {
+export async function getPosts(categoryId = null, page = 0, size = 10, { signal } = {}) {
   const query = new URLSearchParams();
 
   if (categoryId && categoryId !== "all") {
     query.set("categoryId", String(categoryId));
   }
+
+  query.set("page", String(page));
+  query.set("size", String(size));
 
   const queryString = query.toString();
   const endpoint = `/posts${queryString ? `?${queryString}` : ""}`;

@@ -1,15 +1,16 @@
 package com.chaybook.backend.article.service;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface ArticleIService {
 
-    List<ArticleResponse> getArticles(
-            Integer categoryId,
-            String status,
-            int page,
-            int size
-    );
+    Page<ArticleResponse> getArticles(
+        Integer categoryId,
+        String status,
+        int page,
+        int size
+);
 
     ArticleResponse getArticleDetail(
             Integer articleId
