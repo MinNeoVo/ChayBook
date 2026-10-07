@@ -34,18 +34,13 @@ public class ArticleController {
 
     @GetMapping
     public ResponseEntity<List<ArticleResponse>> getArticles(
-            @RequestParam(
-                    name = "categoryId",
-                    required = false
-            ) Integer categoryId,
-
-            @RequestParam(
-                    name = "status",
-                    required = false
-            ) String status
+            @RequestParam(name = "categoryId", required = false) Integer categoryId,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(
-                articleService.getArticles(categoryId, status)
+                articleService.getArticles(categoryId, status, page, size)
         );
     }
 

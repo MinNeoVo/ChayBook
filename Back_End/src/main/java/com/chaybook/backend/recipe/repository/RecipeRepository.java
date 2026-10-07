@@ -2,6 +2,8 @@ package com.chaybook.backend.recipe.repository;
 
 import com.chaybook.backend.recipe.entity.Recipe;
 import jakarta.persistence.LockModeType;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
@@ -22,7 +24,8 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
             """)
     List<Recipe> searchRecipes(
             @Param("categoryId") Integer categoryId,
-            @Param("keyword") String keyword
+            @Param("keyword") String keyword,
+            Pageable pageable
     );
 
     @Query("""

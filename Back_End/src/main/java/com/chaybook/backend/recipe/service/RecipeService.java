@@ -11,6 +11,9 @@ import com.chaybook.backend.recipe.exception.RecipeException;
 import com.chaybook.backend.recipe.repository.*;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,8 +50,17 @@ public class RecipeService {
 
     public List<RecipeSummaryResponse> getRecipes(
             Integer categoryId,
-            String keyword
+            String keyword,
+            int page,
+            int size
     ) {
+        if (page < 0 || size < 1 || size > 10) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Page phải từ 0; size phải từ 1 đến 10"
+                );
+        }
+
         if (categoryId != null && categoryId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -58,9 +70,12 @@ public class RecipeService {
 
         String normalizedKeyword = normalizeKeyword(keyword);
 
+        Pageable pageable = PageRequest.of(page, size);
+
         return recipeRepository.searchRecipes(
                         categoryId,
-                        normalizedKeyword
+                        normalizedKeyword,
+                        pageable
                 )
                 .stream()
                 .map(this::toSummaryResponse)

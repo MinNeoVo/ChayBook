@@ -165,10 +165,10 @@ public class AdminArticleService implements AdminArticleIService {
     ) {
         requireAdmin(authenticatedUserId);
 
-        if (page < 0 || size < 1 || size > 100) {
+        if (page < 0 || size < 1 || size > 10) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Page phải từ 0; size phải từ 1 đến 100"
+                    "Page phải từ 0; size phải từ 1 đến 10"
             );
         }
 
