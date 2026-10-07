@@ -4,6 +4,7 @@ import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -70,6 +71,10 @@ public class Recipe {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Nationalized
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     public Recipe() {
     }
 
@@ -90,6 +95,15 @@ public class Recipe {
         this.fat = fat;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Integer getRecipeId() {
