@@ -1,8 +1,6 @@
 package com.chaybook.backend.admin.category.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public record AdminCategoryRequest(
         @NotBlank(message = "Tên Category không được để trống")

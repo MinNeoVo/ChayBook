@@ -43,4 +43,15 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<CommentCount> findCommentCountsByAuthor(
             @Param("authorId") Integer authorId
     );
+
+    @Query("""
+        SELECT cm.post.postId AS postId,
+               COUNT(cm) AS total
+        FROM Comment cm
+        WHERE cm.post.postId IN (:postIds)
+        GROUP BY cm.post.postId
+        """)
+    List<CommentCount> findCommentCountsByPostIds(
+            @Param("postIds") List<Integer> postIds
+    );
 }

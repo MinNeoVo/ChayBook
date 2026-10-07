@@ -1,15 +1,10 @@
 package com.chaybook.backend.admin.user.controller;
 
-import com.chaybook.backend.admin.user.dto.AdminUserResponse;
-import com.chaybook.backend.admin.user.dto.UpdateUserStatusRequest;
-import com.chaybook.backend.admin.user.dto.UpdateUserStatusResponse;
-import com.chaybook.backend.admin.user.dto.UserStatisticsResponse;
+import com.chaybook.backend.admin.user.dto.*;
 import com.chaybook.backend.admin.user.service.AdminUserService;
 import com.chaybook.backend.common.pagination.PageResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.CacheControl;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -111,4 +111,30 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
             @Param("currentUserId") Integer currentUserId
     );
 
+
+    @Query("""
+        SELECT i.post.postId AS postId,
+               i.type AS interactionType,
+               COUNT(i) AS total
+        FROM PostInteraction i
+        WHERE i.post.postId IN (:postIds)
+          AND i.type IN ('LIKE', 'BOOKMARK')
+        GROUP BY i.post.postId, i.type
+        """)
+    List<InteractionCount> findInteractionCountsByPostIds(
+            @Param("postIds") List<Integer> postIds
+    );
+
+    @Query("""
+        SELECT DISTINCT i.post.postId AS postId,
+                        i.type AS interactionType
+        FROM PostInteraction i
+        WHERE i.post.postId IN (:postIds)
+          AND i.user.userId = :userId
+          AND i.type IN ('LIKE', 'BOOKMARK')
+        """)
+    List<CurrentUserInteraction> findCurrentUserInteractionsByPostIds(
+            @Param("postIds") List<Integer> postIds,
+            @Param("userId") Integer userId
+    );
 }

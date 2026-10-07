@@ -2,24 +2,20 @@ package com.chaybook.backend.community.service;
 
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.category.repository.CategoryRepository;
+import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.community.dto.*;
-import com.chaybook.backend.community.entity.Post;
-import com.chaybook.backend.community.entity.PostInteraction;
+import com.chaybook.backend.community.entity.*;
 import com.chaybook.backend.community.exception.PostException;
-import com.chaybook.backend.community.repository.CommentRepository;
-import com.chaybook.backend.community.repository.PostInteractionRepository;
-import com.chaybook.backend.community.repository.PostRepository;
+import com.chaybook.backend.community.repository.*;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
 
 @Service
@@ -45,10 +41,15 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getPosts(
+    public PageResponse<PostResponse> getPosts(
             Integer categoryId,
-            Integer currentUserId
+            Integer currentUserId,
+            int page,
+            int size,
+            String sort
     ) {
+        requireActiveUser(currentUserId);
+
         if (categoryId != null && categoryId <= 0) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
@@ -56,19 +57,69 @@ public class PostService {
             );
         }
 
-        List<Post> posts = postRepository.findApprovedPosts(categoryId);
-
-        if (posts.isEmpty()) {
-            return List.of();
+        if (page < 0) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page must be greater than or equal to zero"
+            );
         }
+
+        if (size < 1 || size > 100) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Size must be between 1 and 100"
+            );
+        }
+
+        if ((long) page * size > Integer.MAX_VALUE) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Requested page is too large"
+            );
+        }
+
+        String sortMode = sort == null
+                ? "latest"
+                : sort.strip().toLowerCase(Locale.ROOT);
+
+        if (!Set.of("latest", "top", "discussed").contains(sortMode)) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Sort must be latest, top or discussed"
+            );
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> postPage = postRepository.findApprovedPosts(
+                categoryId,
+                sortMode,
+                pageable
+        );
+
+        if (postPage.isEmpty()) {
+            return new PageResponse<>(
+                    List.of(),
+                    postPage.getNumber(),
+                    postPage.getSize(),
+                    postPage.getTotalElements(),
+                    postPage.getTotalPages()
+            );
+        }
+
+        List<Integer> postIds = postPage.getContent()
+                .stream()
+                .map(Post::getPostId)
+                .toList();
 
         Map<Integer, Long> likeCounts = new HashMap<>();
         Map<Integer, Long> bookmarkCounts = new HashMap<>();
         Map<Integer, Long> commentCounts = new HashMap<>();
 
-        // Lấy tổng tương tác cho toàn bộ danh sách bằng một truy vấn.
         for (PostInteractionRepository.InteractionCount count
-                : postInteractionRepository.findInteractionCounts(categoryId)) {
+                : postInteractionRepository.findInteractionCountsByPostIds(
+                postIds
+        )) {
 
             if ("LIKE".equals(count.getInteractionType())) {
                 likeCounts.put(count.getPostId(), count.getTotal());
@@ -78,7 +129,7 @@ public class PostService {
         }
 
         for (CommentRepository.CommentCount count
-                : commentRepository.findCommentCounts(categoryId)) {
+                : commentRepository.findCommentCountsByPostIds(postIds)) {
 
             commentCounts.put(count.getPostId(), count.getTotal());
         }
@@ -86,32 +137,28 @@ public class PostService {
         Set<Integer> likedPostIds = new HashSet<>();
         Set<Integer> bookmarkedPostIds = new HashSet<>();
 
-        if (currentUserId != null) {
-            List<PostInteractionRepository.CurrentUserInteraction> interactions =
-                    postInteractionRepository.findCurrentUserInteractions(
-                            categoryId,
-                            currentUserId
-                    );
+        List<PostInteractionRepository.CurrentUserInteraction> interactions =
+                postInteractionRepository.findCurrentUserInteractionsByPostIds(
+                        postIds,
+                        currentUserId
+                );
 
-            for (PostInteractionRepository.CurrentUserInteraction interaction
-                    : interactions) {
+        for (PostInteractionRepository.CurrentUserInteraction interaction
+                : interactions) {
 
-                if ("LIKE".equals(interaction.getInteractionType())) {
-                    likedPostIds.add(interaction.getPostId());
-                } else if ("BOOKMARK".equals(interaction.getInteractionType())) {
-                    bookmarkedPostIds.add(interaction.getPostId());
-                }
+            if ("LIKE".equals(interaction.getInteractionType())) {
+                likedPostIds.add(interaction.getPostId());
+            } else if ("BOOKMARK".equals(interaction.getInteractionType())) {
+                bookmarkedPostIds.add(interaction.getPostId());
             }
         }
 
-        List<PostResponse> responses = new ArrayList<>(posts.size());
-
-        for (Post post : posts) {
+        Page<PostResponse> responsePage = postPage.map(post -> {
             Integer postId = post.getPostId();
             User author = post.getUser();
             Category category = post.getCategory();
 
-            responses.add(new PostResponse(
+            return new PostResponse(
                     postId,
                     author == null ? null : author.getUserId(),
                     author == null ? null : author.getUsername(),
@@ -128,10 +175,10 @@ public class PostService {
                     commentCounts.getOrDefault(postId, 0L),
                     likedPostIds.contains(postId),
                     bookmarkedPostIds.contains(postId)
-            ));
-        }
+            );
+        });
 
-        return responses;
+        return PageResponse.from(responsePage);
     }
 
    
