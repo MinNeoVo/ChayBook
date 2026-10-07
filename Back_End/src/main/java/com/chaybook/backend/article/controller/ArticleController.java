@@ -4,6 +4,8 @@ import com.chaybook.backend.article.service.ArticleIService;
 import com.chaybook.backend.article.service.ArticleRequest;
 import com.chaybook.backend.article.service.ArticleResponse;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,16 +35,16 @@ public class ArticleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ArticleResponse>> getArticles(
-            @RequestParam(name = "categoryId", required = false) Integer categoryId,
-            @RequestParam(name = "status", required = false) String status,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(
-                articleService.getArticles(categoryId, status, page, size)
-        );
-    }
+public ResponseEntity<Page<ArticleResponse>> getArticles(
+        @RequestParam(name = "categoryId", required = false) Integer categoryId,
+        @RequestParam(name = "status", required = false) String status,
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size
+) {
+    return ResponseEntity.ok(
+            articleService.getArticles(categoryId, status, page, size)
+    );
+}
 
     @GetMapping("/{articleId}")
     public ResponseEntity<ArticleResponse> getArticleDetail(

@@ -7,9 +7,9 @@ export const apiFetch = async (endpoint, options = {}) => {
     ...(customHeaders || {}),
   };
 
-  // Chỉ đặt Content-Type là JSON khi body không phải FormData
   if (!(body instanceof FormData) && body !== undefined) {
-    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+    headers["Content-Type"] =
+      headers["Content-Type"] || "application/json";
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -24,26 +24,31 @@ export const apiFetch = async (endpoint, options = {}) => {
           : undefined,
   });
 
-  // Tránh lỗi nếu server không trả về JSON
   const responseText = await response.text();
+
   let data;
 
   try {
-    data = responseText ? JSON.parse(responseText) : null;
+    data = responseText
+      ? JSON.parse(responseText)
+      : null;
   } catch {
-    data = { message: responseText || "Server returned an invalid response" };
+    // Server trả plain text → giữ nguyên string
+    data = responseText;
   }
 
   if (!response.ok) {
     const errorMessage =
-      data?.message ||
-      data?.detail ||
-      data?.error ||
+      (typeof data === "object" && data?.message) ||
+      (typeof data === "object" && data?.detail) ||
+      (typeof data === "object" && data?.error) ||
+      (typeof data === "string" && data) ||
       `Request failed with status ${response.status}`;
 
     const error = new Error(errorMessage);
     error.status = response.status;
     error.data = data;
+
     throw error;
   }
 

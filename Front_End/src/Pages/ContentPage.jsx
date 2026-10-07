@@ -295,6 +295,7 @@ function ContentPage() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [retryCount, setRetryCount] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const itemsPerPage = 6;
 
@@ -335,16 +336,38 @@ function ContentPage() {
     };
   }, []);
 
-  // Fetch articles when category changes or retry is requested
+  // Fetch articles when category, page, or retry changes
   useEffect(() => {
     let cancelled = false;
 
     async function loadArticles() {
       try {
-        const data = await getArticles(activeCategoryId ?? null);
+        const pageIndex = currentPage - 1; // Convert to zero-based for API
+        const data = await getArticles(
+          activeCategoryId ?? null,
+          pageIndex,
+          itemsPerPage,
+        );
 
         if (!cancelled) {
-          setArticles(Array.isArray(data) ? data : []);
+          // Backend may return:
+          // 1. A direct array: [...]
+          // 2. { items: [...] }
+          // 3. A Spring PageResponse: { content: [...], totalElements: ... }
+          const articleList = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.items)
+              ? data.items
+              : Array.isArray(data?.content)
+                ? data.content
+                : [];
+
+          setArticles(articleList);
+
+          // Keep pagination working when backend provides totalElements.
+          // If it does not, fall back to the number of returned articles.
+          setTotalElements(data?.totalElements ?? articleList.length);
+
           setError(null);
         }
       } catch (err) {
@@ -352,6 +375,7 @@ function ContentPage() {
           console.error("Error fetching articles:", err);
           setError(err.message || "Failed to fetch articles");
           setArticles([]);
+          setTotalElements(0);
         }
       } finally {
         if (!cancelled) {
@@ -365,13 +389,17 @@ function ContentPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategoryId, retryCount]);
+  }, [activeCategoryId, currentPage, retryCount]);
 
   // Filter articles by search and category
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return articles.filter((article) => {
+    // Safety guard: the API response must never be allowed to make
+    // articles undefined and crash the page.
+    const safeArticles = Array.isArray(articles) ? articles : [];
+
+    return safeArticles.filter((article) => {
       const categoryName = categoriesMap.get(Number(article.categoryId)) || "";
 
       const matchesCategory =
@@ -419,12 +447,10 @@ function ContentPage() {
     handleCategoryChange(null);
   };
 
-  // Current page's articles
+  // Current page's articles (already paginated by server, just filter for search)
   const paginatedPosts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-
-    return filteredPosts.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredPosts, currentPage]);
+    return filteredPosts;
+  }, [filteredPosts]);
 
   return (
     <div className="min-h-screen bg-chaybook-bg font-sans text-[#181c1b] antialiased">
@@ -552,7 +578,7 @@ function ContentPage() {
           {!loading && !error && (
             <Pagination
               currentPage={currentPage}
-              totalItems={filteredPosts.length}
+              totalItems={totalElements}
               itemsPerPage={itemsPerPage}
               onPageChange={setCurrentPage}
             />

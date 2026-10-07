@@ -7,6 +7,7 @@ import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,62 +38,69 @@ public class ArticleService implements ArticleIService {
         this.userRepository = userRepository;
     }
 
-    @Override
-    public List<ArticleResponse> getArticles(
-            Integer categoryId,
-            String status,
-            int page,
-            int size
-    ) {
-        if (page < 0 || size < 1 || size > 10) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Page phải từ 0; size phải từ 1 đến 10"
-                );
-        }
-
-        if (categoryId != null && categoryId <= 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Category ID must be greater than 0"
-            );
-        }
-
-        String normalizedStatus = normalizeStatus(status);
-
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by(Sort.Direction.DESC, "articleId")
+   @Override
+public Page<ArticleResponse> getArticles(
+        Integer categoryId,
+        String status,
+        int page,
+        int size
+) {
+    if (page < 0 || size < 1 || size > 10) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Page phải từ 0; size phải từ 1 đến 10"
         );
-
-        List<Article> articles;
-
-        if (categoryId != null && normalizedStatus != null) {
-            articles = articleRepository
-                    .findByCategory_CategoryIdAndStatus(
-                            categoryId,
-                            normalizedStatus,
-                            pageable
-                    );
-        } else if (categoryId != null) {
-            articles = articleRepository
-                    .findByCategory_CategoryId(categoryId, pageable);
-        } else if (normalizedStatus != null) {
-            articles = articleRepository
-                    .findByStatus(normalizedStatus, pageable);
-        } else {
-            articles = articleRepository.findAll(pageable).getContent();
-        }
-
-        List<ArticleResponse> responses = new ArrayList<>();
-
-        for (Article article : articles) {
-            responses.add(toResponse(article));
-        }
-
-        return responses;
     }
+
+    if (categoryId != null && categoryId <= 0) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Category ID must be greater than 0"
+        );
+    }
+
+    String normalizedStatus = normalizeStatus(status);
+
+    Pageable pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "articleId")
+    );
+
+    Page<Article> articles;
+
+    if (categoryId != null && normalizedStatus != null) {
+
+        articles = articleRepository
+                .findByCategory_CategoryIdAndStatus(
+                        categoryId,
+                        normalizedStatus,
+                        pageable
+                );
+
+    } else if (categoryId != null) {
+
+        articles = articleRepository
+                .findByCategory_CategoryId(
+                        categoryId,
+                        pageable
+                );
+
+    } else if (normalizedStatus != null) {
+
+        articles = articleRepository
+                .findByStatus(
+                        normalizedStatus,
+                        pageable
+                );
+
+    } else {
+
+        articles = articleRepository.findAll(pageable);
+    }
+
+    return articles.map(this::toResponse);
+}
 
     @Override
     public ArticleResponse getArticleDetail(
