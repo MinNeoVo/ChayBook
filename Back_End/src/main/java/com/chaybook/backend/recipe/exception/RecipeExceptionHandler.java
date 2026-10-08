@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.exception;
 
 
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,11 +13,16 @@ import java.sql.SQLException;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(
-        basePackages = "com.chaybook.backend.recipe.controller"
+
+
+        basePackages ={"com.chaybook.backend.recipe.controller",
+        "com.chaybook.backend.admin.recipe.controller"}
+
 )
 public class RecipeExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleInvalidParameter(
+
             MethodArgumentTypeMismatchException exception
     ) {
         return ProblemDetail.forStatusAndDetail(
@@ -24,6 +30,7 @@ public class RecipeExceptionHandler {
                 "Invalid value for parameter: " + exception.getName()
         );
     }
+
 
     @ExceptionHandler(RecipeException.class)
     public ProblemDetail handleRecipeException(
@@ -45,7 +52,6 @@ public class RecipeExceptionHandler {
             if (cause instanceof SQLException sqlException) {
                 int code = sqlException.getErrorCode();
 
-                //vi phạm khóa ngoại hoặc CHECK constraint.
                 if (code == 547) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
@@ -53,7 +59,6 @@ public class RecipeExceptionHandler {
                     );
                 }
 
-                //trùng khóa chính hoặc UNIQUE constraint.
                 if (code == 2601 || code == 2627) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
