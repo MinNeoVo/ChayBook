@@ -57,6 +57,10 @@ public class PostService {
             );
         }
 
+        if (categoryId != null) {
+            findOptionalCategory(categoryId);
+        }
+
         if (page < 0) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
@@ -588,13 +592,28 @@ private String savePostImage(MultipartFile image) {
             );
         }
 
-        return categoryRepository.findById(categoryId)
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new PostException(
                         HttpStatus.BAD_REQUEST,
                         "Category not found"
                 ));
-    }
 
+        if (!"ACTIVE".equals(category.getStatus())) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot select a deleted category"
+            );
+        }
+
+        if (!"POST".equals(category.getType())) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Category must have type POST"
+            );
+        }
+
+        return category;
+    }
     private String normalizeImageUrl(String imageUrl) {
         if (imageUrl == null) {
             return null;

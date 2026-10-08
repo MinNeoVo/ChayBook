@@ -81,17 +81,23 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/logout",
-                                "/api/recipes/**",
-                                "/api/categories/**",
-                                "/api/articles/**")
+                                "/api/categories/**"
+                                )
                         .permitAll()
 
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/recipes",
                                 "/api/recipes/",
-                                "/api/recipes/**")
+                                "/api/recipes/**",
+                                "/api/articles",
+                                "/api/articles/**")
                         .permitAll()
+
+                        .requestMatchers(
+                                "/api/articles",
+                                "/api/articles/**"
+                        ).denyAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/allergies").permitAll()

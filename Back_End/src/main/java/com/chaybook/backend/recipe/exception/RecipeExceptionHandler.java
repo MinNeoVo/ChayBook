@@ -1,6 +1,9 @@
 package com.chaybook.backend.recipe.exception;
 
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,11 +15,19 @@ import java.sql.SQLException;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(
-        basePackages = "com.chaybook.backend.recipe.controller"
+
+
+        basePackages ={"com.chaybook.backend.recipe.controller",
+        "com.chaybook.backend.admin.recipe.controller"}
+
 )
 public class RecipeExceptionHandler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(RecipeExceptionHandler.class);
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleInvalidParameter(
+
             MethodArgumentTypeMismatchException exception
     ) {
         return ProblemDetail.forStatusAndDetail(
@@ -25,13 +36,16 @@ public class RecipeExceptionHandler {
         );
     }
 
+
     @ExceptionHandler(RecipeException.class)
     public ProblemDetail handleRecipeException(
             RecipeException exception
+
     ) {
         return ProblemDetail.forStatusAndDetail(
                 exception.getStatus(),
                 exception.getMessage()
+
         );
     }
 
@@ -45,7 +59,6 @@ public class RecipeExceptionHandler {
             if (cause instanceof SQLException sqlException) {
                 int code = sqlException.getErrorCode();
 
-                //vi phạm khóa ngoại hoặc CHECK constraint.
                 if (code == 547) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
@@ -53,7 +66,6 @@ public class RecipeExceptionHandler {
                     );
                 }
 
-                //trùng khóa chính hoặc UNIQUE constraint.
                 if (code == 2601 || code == 2627) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,

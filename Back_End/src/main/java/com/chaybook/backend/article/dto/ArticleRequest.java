@@ -1,4 +1,4 @@
-package com.chaybook.backend.article.service;
+package com.chaybook.backend.article.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
