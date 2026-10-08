@@ -85,10 +85,53 @@ function normalizePage(response, label) {
     throw new TypeError("The " + label + " API returned an invalid page.");
   }
 
+  const count = normalizeCount(response.totalElements, label);
+  const items = response.items
+    .map((post) => {
+      if (!post || typeof post !== "object") return null;
+
+      const postId = Number(post.postId);
+      const status =
+        typeof post.status === "string" ? post.status.trim().toUpperCase() : "";
+
+      if (!Number.isSafeInteger(postId) || postId <= 0 || status !== "APPROVED") {
+        return null;
+      }
+
+      return {
+        postId,
+        status,
+        username: typeof post.username === "string" ? post.username : "",
+        avatarUrl: typeof post.avatarUrl === "string" ? post.avatarUrl : null,
+        categoryName:
+          typeof post.categoryName === "string" ? post.categoryName : "",
+        title: typeof post.title === "string" ? post.title : "",
+        content: typeof post.content === "string" ? post.content : "",
+        imageUrl: typeof post.imageUrl === "string" ? post.imageUrl : null,
+        createdAt: typeof post.createdAt === "string" ? post.createdAt : null,
+        likeCount: post.likeCount,
+        commentCount: post.commentCount,
+        bookmarkCount: post.bookmarkCount,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => {
+      const leftCreatedAt = Date.parse(left.createdAt || "");
+      const rightCreatedAt = Date.parse(right.createdAt || "");
+      const leftTime = Number.isFinite(leftCreatedAt)
+        ? leftCreatedAt
+        : Number.NEGATIVE_INFINITY;
+      const rightTime = Number.isFinite(rightCreatedAt)
+        ? rightCreatedAt
+        : Number.NEGATIVE_INFINITY;
+
+      return rightTime - leftTime || right.postId - left.postId;
+    });
+
   return {
-    count: normalizeCount(response.totalElements, label),
-    items: response.items,
-    empty: Number(response.totalElements) === 0,
+    count,
+    items,
+    empty: count === 0,
   };
 }
 
@@ -536,6 +579,7 @@ function LatestPosts({ resource, onRetry }) {
             <PostSkeleton />
             <PostSkeleton />
             <PostSkeleton />
+            <PostSkeleton />
           </>
         )}
         {resource.status === "error" && (
@@ -566,13 +610,19 @@ function LatestPosts({ resource, onRetry }) {
         {resource.status === "success" && resource.data.items.length === 0 && (
           <SectionMessage
             Icon={MessageSquareText}
-            title="No approved posts yet"
+            title={
+              resource.data.count === 0
+                ? "No approved posts yet"
+                : "No posts could be displayed"
+            }
           >
-            The API returned no posts to show.
+            {resource.data.count === 0
+              ? "The API returned no approved posts to show."
+              : "The API reports approved posts, but returned no displayable post records."}
           </SectionMessage>
         )}
         {resource.status === "success" &&
-          resource.data.items.slice(0, 3).map((post) => (
+          resource.data.items.slice(0, 4).map((post) => (
             <PostRow key={post.postId} post={post} />
           ))}
       </div>
@@ -1076,7 +1126,8 @@ function AdminDashboardPage() {
 
     load(
       "posts",
-      (requestSignal) => getPosts(null, 0, 4, { signal: requestSignal }),
+      (requestSignal) =>
+        getPosts(null, 0, 4, { signal: requestSignal, sort: "latest" }),
       (response) => normalizePage(response, "posts"),
     );
 

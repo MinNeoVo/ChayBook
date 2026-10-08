@@ -7,7 +7,12 @@ import { apiFetch } from "./api";
  * @param {number} size - Kích thước trang (mặc định: 10)
  * @param {object} options - Options phụ (vd: signal để hủy request nếu unmount)
  */
-export async function getPosts(categoryId = null, page = 0, size = 10, { signal } = {}) {
+export async function getPosts(
+  categoryId = null,
+  page = 0,
+  size = 10,
+  { signal, sort = "latest" } = {},
+) {
   const query = new URLSearchParams();
 
   if (categoryId && categoryId !== "all") {
@@ -16,6 +21,7 @@ export async function getPosts(categoryId = null, page = 0, size = 10, { signal 
 
   query.set("page", String(page));
   query.set("size", String(size));
+  query.set("sort", sort);
 
   const queryString = query.toString();
   const endpoint = `/posts${queryString ? `?${queryString}` : ""}`;
