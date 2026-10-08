@@ -1,4 +1,4 @@
-package com.chaybook.backend.article.service;
+package com.chaybook.backend.article.dto;
 
 import java.time.LocalDateTime;
 

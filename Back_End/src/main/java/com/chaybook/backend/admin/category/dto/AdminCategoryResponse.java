@@ -4,6 +4,7 @@ public record AdminCategoryResponse(
         Integer categoryId,
         String name,
         String type,
-        String description
+        String description,
+        String status
 ) {
 }

@@ -1,6 +1,8 @@
 package com.chaybook.backend.admin.recipe.controller;
 
+import com.chaybook.backend.admin.recipe.dto.AdminRecipeResponse;
 import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
+import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.exception.RecipeException;
 import jakarta.validation.Valid;
@@ -26,6 +28,54 @@ public class AdminRecipeController {
         this.adminRecipeService = adminRecipeService;
     }
 
+    @GetMapping
+    public ResponseEntity<PageResponse<AdminRecipeResponse.Summary>> getRecipes(
+            @RequestParam(name = "categoryId", required = false)
+            Integer categoryId,
+
+            @RequestParam(name = "keyword", required = false)
+            String keyword,
+
+            @RequestParam(name = "status", required = false)
+            String status,
+
+            @RequestParam(name = "page", defaultValue = "0")
+            int page,
+
+            @RequestParam(name = "size", defaultValue = "10")
+            int size,
+
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer userId = requireAuthenticatedUserId(jwt);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(adminRecipeService.getRecipes(
+                        userId,
+                        categoryId,
+                        keyword,
+                        status,
+                        page,
+                        size
+                ));
+    }
+
+    @GetMapping("/{recipeId}")
+    public ResponseEntity<AdminRecipeResponse> getRecipeDetail(
+            @PathVariable("recipeId") Integer recipeId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer userId = requireAuthenticatedUserId(jwt);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(adminRecipeService.getRecipeDetail(
+                        userId,
+                        recipeId
+                ));
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RecipeCreateResponse> createRecipe(
             @Valid @RequestBody RecipeWriteRequest request,
@@ -40,7 +90,7 @@ public class AdminRecipeController {
                 );
 
         return ResponseEntity
-                .created(URI.create("/api/recipes/" + response.recipeId()))
+                .created(URI.create("/api/admin/recipes/" + response.recipeId()))
                 .cacheControl(CacheControl.noStore())
                 .body(response);
     }

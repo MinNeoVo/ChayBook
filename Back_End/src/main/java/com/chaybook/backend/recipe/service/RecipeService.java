@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.service;
 
 
+import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
@@ -21,16 +22,19 @@ import java.util.*;
 public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
+    private final CategoryRepository categoryRepository;
 
 
     public RecipeService(
             RecipeRepository recipeRepository,
-            RecipeIngredientRepository recipeIngredientRepository
+            RecipeIngredientRepository recipeIngredientRepository,
+            CategoryRepository categoryRepository
 
     ) {
 
         this.recipeRepository = recipeRepository;
         this.recipeIngredientRepository = recipeIngredientRepository;
+        this.categoryRepository = categoryRepository;
 
     }
 
@@ -51,6 +55,18 @@ public class RecipeService {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Category ID must be greater than 0"
+            );
+        }
+
+        if (categoryId != null
+                && !categoryRepository.existsByCategoryIdAndStatusAndType(
+                categoryId,
+                "ACTIVE",
+                "RECIPE"
+        )) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Category must be ACTIVE and have type RECIPE"
             );
         }
 

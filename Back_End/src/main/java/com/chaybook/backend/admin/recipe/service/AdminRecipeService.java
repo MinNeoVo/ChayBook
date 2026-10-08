@@ -1,7 +1,9 @@
 package com.chaybook.backend.admin.recipe.service;
 
+import com.chaybook.backend.admin.recipe.dto.AdminRecipeResponse;
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.category.repository.CategoryRepository;
+import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.ingredient.repository.IngredientRepository;
 import com.chaybook.backend.mealplan.repository.MealPlanItemRepository;
@@ -11,6 +13,8 @@ import com.chaybook.backend.recipe.exception.RecipeException;
 import com.chaybook.backend.recipe.repository.*;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,22 +30,145 @@ public class AdminRecipeService {
     private final CategoryRepository categoryRepository;
     private final IngredientRepository ingredientRepository;
     private final UserRepository userRepository;
-    private final MealPlanItemRepository mealPlanItemRepository;
 
     public AdminRecipeService(
             RecipeRepository recipeRepository,
             RecipeIngredientRepository recipeIngredientRepository,
             CategoryRepository categoryRepository,
             IngredientRepository ingredientRepository,
-            UserRepository userRepository,
-            MealPlanItemRepository mealPlanItemRepository
+            UserRepository userRepository
     ) {
         this.recipeRepository = recipeRepository;
         this.recipeIngredientRepository = recipeIngredientRepository;
         this.categoryRepository = categoryRepository;
         this.ingredientRepository = ingredientRepository;
         this.userRepository = userRepository;
-        this.mealPlanItemRepository = mealPlanItemRepository;
+    }
+
+
+    //Admin được xem các recipe đã xóa, vẫn có thể lọc theo category đã xóa
+    public PageResponse<AdminRecipeResponse.Summary> getRecipes(
+            Integer authenticatedUserId,
+            Integer categoryId,
+            String keyword,
+            String status,
+            int page,
+            int size
+    ) {
+        requireAdmin(authenticatedUserId);
+
+        if (page < 0 || size < 1 || size > 10
+                || (long) page * size > Integer.MAX_VALUE) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid pagination: page must be >= 0 and size from 1 to 10"
+            );
+        }
+
+        if (categoryId != null && categoryId <= 0) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Category ID must be greater than 0"
+            );
+        }
+
+        String normalizedKeyword = keyword == null || keyword.isBlank()
+                ? null
+                : keyword.strip();
+
+        String normalizedStatus = normalizeOptionalStatus(status);
+
+        Page<Recipe> result = recipeRepository.searchForAdmin(
+                categoryId,
+                normalizedKeyword,
+                normalizedStatus,
+                PageRequest.of(page, size)
+        );
+
+        return PageResponse.from(result.map(this::toAdminSummary));
+    }
+
+    public AdminRecipeResponse getRecipeDetail(
+            Integer authenticatedUserId,
+            Integer recipeId
+    ) {
+        requireAdmin(authenticatedUserId);
+
+        if (recipeId == null || recipeId <= 0) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Recipe ID must be greater than 0"
+            );
+        }
+
+        Recipe recipe = recipeRepository.findAdminDetailById(recipeId)
+                .orElseThrow(() -> new RecipeException(
+                        HttpStatus.NOT_FOUND,
+                        "Recipe not found"
+                ));
+
+        List<RecipeIngredientResponse> ingredients =
+                recipeIngredientRepository.findIngredientsByRecipeId(recipeId)
+                        .stream()
+                        .map(this::toIngredientResponse)
+                        .toList();
+
+        Category category = recipe.getCategory();
+
+        return new AdminRecipeResponse(
+                recipe.getRecipeId(),
+                category == null ? null : category.getCategoryId(),
+                category == null ? null : category.getName(),
+                recipe.getCreatedBy() == null
+                        ? null
+                        : recipe.getCreatedBy().getUserId(),
+                recipe.getName(),
+                recipe.getDescription(),
+                recipe.getImageUrl(),
+                recipe.getPrepTime(),
+                recipe.getCookTime(),
+                recipe.getServings(),
+                recipe.getDifficulty(),
+                recipe.getInstructions(),
+                recipe.getCalories(),
+                recipe.getProtein(),
+                recipe.getCarbs(),
+                recipe.getFat(),
+                recipe.getStatus(),
+                recipe.getCreatedAt(),
+                recipe.getUpdatedAt(),
+                ingredients
+        );
+    }
+
+    private AdminRecipeResponse.Summary toAdminSummary(Recipe recipe) {
+        Category category = recipe.getCategory();
+
+        return new AdminRecipeResponse.Summary(
+                recipe.getRecipeId(),
+                category == null ? null : category.getCategoryId(),
+                category == null ? null : category.getName(),
+                recipe.getName(),
+                recipe.getImageUrl(),
+                recipe.getStatus()
+        );
+    }
+
+    private String normalizeOptionalStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+
+        String normalized = status.strip().toUpperCase(Locale.ROOT);
+
+        if (!Set.of("ACTIVE", "DELETED").contains(normalized)) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Status must be ACTIVE or DELETED"
+            );
+        }
+
+        return normalized;
     }
 
     @Transactional
@@ -92,7 +219,24 @@ public class AdminRecipeService {
         requireAdmin(authenticatedUserId);
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
-        Category category = requireCategory(request.categoryId());
+
+        if (!"ACTIVE".equals(recipe.getStatus())) {
+            throw new RecipeException(
+                    HttpStatus.CONFLICT,
+                    "Cannot update a deleted recipe"
+            );
+        }
+
+        Category currentCategory = recipe.getCategory();
+
+        Category category =
+                currentCategory != null
+                        && Objects.equals(
+                        currentCategory.getCategoryId(),
+                        request.categoryId()
+                )
+                        ? currentCategory
+                        : requireCategory(request.categoryId());
 
         Map<Integer, Ingredient> ingredientsById =
                 validateAndLoadIngredients(request.ingredients());
@@ -121,26 +265,10 @@ public class AdminRecipeService {
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
 
-        // Giữ nguyên quy tắc hiện tại.
-        // Sẽ thay đổi ở bước triển khai xóa mềm.
-        if (mealPlanItemRepository.existsByRecipe_RecipeId(recipeId)) {
-            throw new RecipeException(
-                    HttpStatus.CONFLICT,
-                    "Cannot delete a recipe that is used in a meal plan"
-            );
+        if (!"DELETED".equals(recipe.getStatus())) {
+            recipe.setStatus("DELETED");
+            recipeRepository.saveAndFlush(recipe);
         }
-
-        List<RecipeIngredient> recipeIngredients =
-                recipeIngredientRepository.findIngredientsByRecipeId(
-                        recipeId
-                );
-
-        // HIỆN VẪN LÀ XÓA CỨNG, CHƯA ÁP DỤNG XÓA MỀM.
-        recipeIngredientRepository.deleteAll(recipeIngredients);
-        recipeIngredientRepository.flush();
-
-        recipeRepository.delete(recipe);
-        recipeRepository.flush();
 
         return new RecipeDeleteResponse(
                 "Recipe deleted successfully"
@@ -179,11 +307,34 @@ public class AdminRecipeService {
     }
 
     private Category requireCategory(Integer categoryId) {
-        return categoryRepository.findById(categoryId)
+        if (categoryId == null || categoryId <= 0) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Category ID must be greater than 0"
+            );
+        }
+
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RecipeException(
                         HttpStatus.NOT_FOUND,
                         "Category not found"
                 ));
+
+        if (!"ACTIVE".equals(category.getStatus())) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot select a deleted category"
+            );
+        }
+
+        if (!"RECIPE".equals(category.getType())) {
+            throw new RecipeException(
+                    HttpStatus.BAD_REQUEST,
+                    "Category must have type RECIPE"
+            );
+        }
+
+        return category;
     }
 
     private Recipe requireRecipeForUpdate(Integer recipeId) {

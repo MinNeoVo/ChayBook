@@ -1,6 +1,8 @@
 package com.chaybook.backend.admin.category.repository;
 
 import com.chaybook.backend.category.entity.Category;
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +53,35 @@ public interface AdminCategoryRepository
         THEN 1 ELSE 0 END
         """, nativeQuery = true)
     int findUsageFlag(@Param("id") Integer categoryId);
+
+
+
+    @Query("""
+        SELECT c
+        FROM Category c
+        WHERE (:type IS NULL OR c.type = :type)
+          AND (:status IS NULL OR c.status = :status)
+          AND (
+              :keyword IS NULL
+              OR LOCATE(LOWER(:keyword), LOWER(c.name)) > 0
+          )
+        ORDER BY c.categoryId ASC
+        """)
+    List<Category> searchForAdmin(
+            @Param("type") String type,
+            @Param("status") String status,
+            @Param("keyword") String keyword
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT c
+        FROM Category c
+        WHERE c.categoryId = :categoryId
+        """)
+    Optional<Category> findByIdForUpdate(
+            @Param("categoryId") Integer categoryId
+    );
+
+
 }

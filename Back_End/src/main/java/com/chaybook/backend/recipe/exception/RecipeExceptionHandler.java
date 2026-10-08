@@ -2,6 +2,8 @@ package com.chaybook.backend.recipe.exception;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,6 +22,9 @@ import java.sql.SQLException;
 
 )
 public class RecipeExceptionHandler {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(RecipeExceptionHandler.class);
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleInvalidParameter(
 
@@ -35,10 +40,12 @@ public class RecipeExceptionHandler {
     @ExceptionHandler(RecipeException.class)
     public ProblemDetail handleRecipeException(
             RecipeException exception
+
     ) {
         return ProblemDetail.forStatusAndDetail(
                 exception.getStatus(),
                 exception.getMessage()
+
         );
     }
 
