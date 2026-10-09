@@ -28,7 +28,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
               )
             ORDER BY r.recipeId ASC
             """)
-    List<Recipe> searchRecipes(
+    Page<Recipe> searchRecipes(
             @Param("categoryId") Integer categoryId,
             @Param("keyword") String keyword,
             Pageable pageable
