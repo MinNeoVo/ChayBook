@@ -1,6 +1,8 @@
 package com.chaybook.backend.assistant.service;
 
 import com.chaybook.backend.assistant.client.GeminiClient;
+import com.chaybook.backend.assistant.dto.ChatMessageRequest;
+import com.chaybook.backend.assistant.dto.ChatMessageResponse;
 import com.chaybook.backend.assistant.entity.AiConversation;
 import com.chaybook.backend.assistant.entity.AiMessage;
 import com.chaybook.backend.assistant.repository.AiConversationRepository;
@@ -37,24 +39,43 @@ public class ChatbotService {
     @Autowired
     private UserRepository userRepository;
 
-    public String sendMessage(Integer userId, String guestId, Integer conversationId, String userMessage) {
+    // Đổi chữ ký hàm ở đầu ChatbotService
+    public ChatMessageResponse sendMessage(Integer userId, String guestId, ChatMessageRequest request) {
         try {
+            Integer conversationId = request.getConversationId();
+            String userMessage = request.getMessage();
+
             // 1. Kiểm tra giới hạn dùng thử nếu là Guest
             if (userId == null) {
                 if (!trialLimiter.isAllowed(guestId)) {
-                    throw new ResponseStatusException(
-    HttpStatus.TOO_MANY_REQUESTS,
-    "Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục."
-);
+                    throw new RuntimeException("Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục.");
                 }
             }
 
-            // 2. Lấy hoặc tạo Conversation
+            // 2. Lấy hoặc tạo Conversation VÀ CHẶN IDOR
             AiConversation conversation;
             if (conversationId != null) {
                 conversation = conversationRepository.findById(conversationId)
                         .orElseThrow(() -> new RuntimeException(
                                 "Không tìm thấy hội thoại (Conversation ID: " + conversationId + ")"));
+
+                // --- KIỂM TRA IDOR (BẢO MẬT) ---
+                Integer ownerId = conversation.getUser() != null ? conversation.getUser().getUserId() : null;
+
+                if (userId != null) {
+                    // User đã đăng nhập không được truy cập hội thoại của người khác hoặc hội thoại
+                    // của guest
+                    if (ownerId == null || !ownerId.equals(userId)) {
+                        throw new RuntimeException("Lỗi bảo mật (IDOR): Bạn không có quyền truy cập hội thoại này.");
+                    }
+                } else {
+                    // Guest không được truy cập hội thoại của người dùng đã đăng nhập
+                    if (ownerId != null) {
+                        throw new RuntimeException("Lỗi bảo mật: Khách không thể truy cập hội thoại của người dùng.");
+                    }
+                }
+                // ---------------------------------
+
             } else {
                 conversation = new AiConversation();
                 if (userId != null) {
@@ -87,28 +108,25 @@ public class ChatbotService {
             aiMsg.setConversation(conversation);
             aiMsg.setSender("AI");
             aiMsg.setMessage(aiReply);
-            messageRepository.save(aiMsg);
+            aiMsg = messageRepository.save(aiMsg); // Gán lại để lấy được messageId vừa sinh ra
 
             // 8. Tăng số đếm nếu là Guest
             if (userId == null) {
                 trialLimiter.increment(guestId);
             }
 
-            return aiReply;
+            // Trả về JSON DTO hoàn chỉnh cho Frontend
+            return new ChatMessageResponse(
+                    conversation.getConversationId(),
+                    aiMsg.getMessageId(),
+                    aiReply);
 
-        } catch (ResponseStatusException e) {
-    throw e;
-
-} catch (Exception e) {
-    System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
-    e.printStackTrace();
-    System.err.println("=============================================");
-
-    throw new RuntimeException(
-        "Có lỗi xảy ra khi xử lý chatbot.",
-        e
-    );
-}
+        } catch (Exception e) {
+            System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
+            e.printStackTrace();
+            System.err.println("=============================================");
+            throw new RuntimeException(e);
+        }
     }
 
     private String findRelevantContext(String userMessage) {
