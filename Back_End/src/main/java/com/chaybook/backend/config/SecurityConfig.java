@@ -105,6 +105,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
 
+                        .requestMatchers(
+                                "/api/posts",
+                                "/api/posts/**"
+                        ).hasAnyRole("USER", "ADMIN")
+
                         .anyRequest().authenticated())
 
                 .oauth2ResourceServer(oauth2 -> oauth2

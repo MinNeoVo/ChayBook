@@ -8,12 +8,16 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.chaybook.backend.community.controller.PostController;
+import com.chaybook.backend.community.controller.PostInteractionController;
+
 import java.sql.SQLException;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(
-        basePackages = "com.chaybook.backend.community.controller"
-)
+@RestControllerAdvice(assignableTypes = {
+        PostController.class,
+        PostInteractionController.class
+})
 public class PostExceptionHandler {
     @ExceptionHandler(PostException.class)
     public ProblemDetail handlePostException(PostException exception) {
