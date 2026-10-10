@@ -1,13 +1,9 @@
 package com.chaybook.backend.category.controller;
 
 import com.chaybook.backend.category.dto.CategoryResponse;
-import com.chaybook.backend.category.service.CategoryService;
+import com.chaybook.backend.category.service.impl.CategoryServiceImpl;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,9 +14,9 @@ import java.util.List;
         allowCredentials = "true"
 )
 public class CategoryController {
-    private final CategoryService categoryService;
+    private final CategoryServiceImpl categoryService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryServiceImpl categoryService) {
         this.categoryService = categoryService;
     }
 
@@ -30,4 +26,13 @@ public ResponseEntity<List<CategoryResponse>> getCategories(
 ) {
     return ResponseEntity.ok(categoryService.getCategories(type));
 }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryResponse> getCategoryDetail(
+            @PathVariable("categoryId") Integer categoryId
+    ) {
+        return ResponseEntity.ok(
+                categoryService.getCategoryDetail(categoryId)
+        );
+    }
 }

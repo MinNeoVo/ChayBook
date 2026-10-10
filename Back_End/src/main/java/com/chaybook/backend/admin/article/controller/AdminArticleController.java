@@ -18,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.chaybook.backend.admin.article.dto.AdminArticleRequest;
 import com.chaybook.backend.admin.article.dto.AdminArticleResponse;
-import com.chaybook.backend.admin.article.service.AdminArticleIService;
+import com.chaybook.backend.admin.article.service.AdminArticleService;
 import com.chaybook.backend.common.pagination.PageResponse;
 
 import jakarta.validation.Valid;
@@ -27,10 +27,10 @@ import jakarta.validation.Valid;
 @RequestMapping ("/api/admin/articles")
 public class AdminArticleController {
 
-    private final AdminArticleIService articleService;
+    private final AdminArticleService articleService;
 
     public AdminArticleController(
-            AdminArticleIService articleService
+            AdminArticleService articleService
     ) {
         this.articleService = articleService;
     }

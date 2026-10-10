@@ -13,4 +13,21 @@ public interface CategoryRepository
             String type,
             Sort sort
     );
+
+    List<Category> findByStatus(
+            String status,
+            Sort sort
+    );
+
+    List<Category> findByTypeAndStatus(
+            String type,
+            String status,
+            Sort sort
+    );
+
+    boolean existsByCategoryIdAndStatusAndType(
+            Integer categoryId,
+            String status,
+            String type
+    );
 }

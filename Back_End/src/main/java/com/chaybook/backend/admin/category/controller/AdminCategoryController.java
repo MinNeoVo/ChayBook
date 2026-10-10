@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.chaybook.backend.admin.category.dto.AdminCategoryRequest;
 import com.chaybook.backend.admin.category.dto.AdminCategoryResponse;
-import com.chaybook.backend.admin.category.service.AdminCategoryIService;
+import com.chaybook.backend.admin.category.service.AdminCategoryService;
 
 import jakarta.validation.Valid;
 
@@ -27,10 +27,10 @@ import jakarta.validation.Valid;
 @RequestMapping ("/api/admin/categories")
 public class AdminCategoryController {
 
-    private final AdminCategoryIService categoryService;
+    private final AdminCategoryService categoryService;
 
     public AdminCategoryController(
-            AdminCategoryIService categoryService
+            AdminCategoryService categoryService
     ) {
         this.categoryService = categoryService;
     }
@@ -67,12 +67,19 @@ public class AdminCategoryController {
     public ResponseEntity<List<AdminCategoryResponse>> getCategories(
             @RequestParam(name = "type", required = false) String type,
             @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "status", required = false) String status,
             Authentication authentication
     ) {
         Integer userId = requireAuthenticatedUserId(authentication);
 
         return ResponseEntity.ok(
-                categoryService.getCategories(userId, type, q)
+                categoryService.getCategories(
+                        userId,
+                        type,
+                        q,
+                        status
+                )
+
         );
     }
 
