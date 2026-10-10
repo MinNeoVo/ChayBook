@@ -10,6 +10,22 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "[COMMENT]")
 public class Comment {
+    public static final String ACTIVE = "ACTIVE";
+    public static final String DELETED = "DELETED";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private Comment parentComment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_comment_id")
+    private Comment replyToComment;
+
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = ACTIVE;
+
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +40,8 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "content", nullable = false, columnDefinition = "VARCHAR(MAX)")
+    @org.hibernate.annotations.Nationalized
+    @Column(name = "content", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @CreationTimestamp
@@ -89,5 +106,52 @@ public class Comment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public boolean isDeleted() {
+        return DELETED.equals(status);
+    }
+
+    public Comment getParentComment() {
+        return parentComment;
+    }
+
+    public Comment getReplyToComment() {
+        return replyToComment;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getEditedAt() {
+        return editedAt;
+    }
+    
+    public void editContent(String content) {
+        this.content = content;
+        this.editedAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        this.status = DELETED;
+        this.content = "";
+    }
+
+    public static Comment create(
+        Post post,
+        User author,
+        String content,
+        Comment parentComment,
+        Comment replyToComment
+    ) {
+        Comment comment = new Comment();
+        comment.post = post;
+        comment.user = author;
+        comment.content = content;
+        comment.parentComment = parentComment;
+        comment.replyToComment = replyToComment;
+        comment.status = ACTIVE;
+        return comment;
     }
 }
