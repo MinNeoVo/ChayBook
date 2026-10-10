@@ -24,6 +24,11 @@ import AdminLayout from "./layouts/AdminLayout";
 
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminArticleManagement, {
+  AdminArticleCreatePage,
+  AdminArticleDetailPage,
+  AdminArticleListPage,
+} from "./pages/admin/AdminArticleManagement";
 
 function App() {
   return (
@@ -60,6 +65,11 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="articles" element={<AdminArticleManagement />}>
+            <Route index element={<AdminArticleListPage />} />
+            <Route path="new" element={<AdminArticleCreatePage />} />
+            <Route path=":articleId" element={<AdminArticleDetailPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>
