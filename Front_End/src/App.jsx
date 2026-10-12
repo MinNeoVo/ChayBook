@@ -24,6 +24,7 @@ import AdminLayout from "./layouts/AdminLayout";
 
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPostVideoPage from "./Pages/admin/AdminPostVideoPage";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="posts-videos" element={<AdminPostVideoPage />} />
         </Route>
       </Route>
     </Routes>
