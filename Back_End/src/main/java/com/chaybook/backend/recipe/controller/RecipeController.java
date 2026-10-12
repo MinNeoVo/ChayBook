@@ -6,6 +6,8 @@ import com.chaybook.backend.recipe.exception.RecipeException;
 import com.chaybook.backend.recipe.service.RecipeService;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -29,7 +31,7 @@ public class RecipeController {
     }
 
     @GetMapping({"", "/"})
-    public ResponseEntity<List<RecipeSummaryResponse>> getRecipes(
+    public ResponseEntity<Page<RecipeSummaryResponse>> getRecipes(
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "page", defaultValue = "0") int page,

@@ -34,6 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
                             SELECT COUNT(cm)
                             FROM Comment cm
                             WHERE cm.post.postId = p.postId
+                            AND cm.status = 'ACTIVE'
                         )
                     ELSE 0 END DESC,
 

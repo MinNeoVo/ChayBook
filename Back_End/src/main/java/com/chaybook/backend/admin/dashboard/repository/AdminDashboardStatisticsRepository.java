@@ -57,6 +57,7 @@ public interface AdminDashboardStatisticsRepository
                         SELECT 1
                         FROM [COMMENT] cm
                         WHERE cm.post_id = p.post_id
+                        AND cm.status = 'ACTIVE'
                     )
                     THEN CONVERT(BIGINT, 1)
                     ELSE CONVERT(BIGINT, 0)
@@ -112,6 +113,7 @@ public interface AdminDashboardStatisticsRepository
                 FROM [COMMENT] cm
                 INNER JOIN POST p ON p.post_id = cm.post_id
                 WHERE p.status = 'APPROVED'
+                  AND cm.status = 'ACTIVE'
                   AND cm.created_at >= :fromInclusive
                   AND cm.created_at < :toExclusive
                 GROUP BY CAST(cm.created_at AS DATE)
