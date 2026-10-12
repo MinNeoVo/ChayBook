@@ -127,31 +127,22 @@ public class Comment {
     public LocalDateTime getEditedAt() {
         return editedAt;
     }
+
     
-    public void editContent(String content) {
-        this.content = content;
-        this.editedAt = LocalDateTime.now();
+
+    public void setParentComment(Comment parentComment) {
+        this.parentComment = parentComment;
     }
 
-    public void softDelete() {
-        this.status = DELETED;
-        this.content = "";
+    public void setReplyToComment(Comment replyToComment) {
+        this.replyToComment = replyToComment;
     }
 
-    public static Comment create(
-        Post post,
-        User author,
-        String content,
-        Comment parentComment,
-        Comment replyToComment
-    ) {
-        Comment comment = new Comment();
-        comment.post = post;
-        comment.user = author;
-        comment.content = content;
-        comment.parentComment = parentComment;
-        comment.replyToComment = replyToComment;
-        comment.status = ACTIVE;
-        return comment;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setEditedAt(LocalDateTime editedAt) {
+        this.editedAt = editedAt;
     }
 }

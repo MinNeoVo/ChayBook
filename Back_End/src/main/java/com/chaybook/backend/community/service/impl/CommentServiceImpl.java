@@ -1,4 +1,4 @@
-package com.chaybook.backend.community.service;
+package com.chaybook.backend.community.service.impl;
 
 import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.Comment;
@@ -6,6 +6,7 @@ import com.chaybook.backend.community.entity.Post;
 import com.chaybook.backend.community.exception.CommentException;
 import com.chaybook.backend.community.repository.CommentRepository;
 import com.chaybook.backend.community.repository.PostRepository;
+import com.chaybook.backend.community.service.CommentService;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +23,7 @@ import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
-public class CommentIService implements CommentService {
+public class CommentServiceImpl implements CommentService {
 
     private static final int MAX_PAGE_SIZE = 50;
 
@@ -29,7 +31,7 @@ public class CommentIService implements CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    public CommentIService(
+    public CommentServiceImpl(
             CommentRepository commentRepository,
             PostRepository postRepository,
             UserRepository userRepository
@@ -124,13 +126,13 @@ public class CommentIService implements CommentService {
             }
         }
 
-        Comment comment = Comment.create(
-                post,
-                author,
-                request.content().strip(),
-                root,
-                target
-        );
+        Comment comment = new Comment();
+        comment.setPost(post);
+        comment.setUser(author);
+        comment.setContent(request.content().strip());
+        comment.setParentComment(root);
+        comment.setReplyToComment(target);
+        comment.setStatus(Comment.ACTIVE);
 
         Comment saved = commentRepository.saveAndFlush(comment);
 
@@ -168,7 +170,8 @@ public class CommentIService implements CommentService {
         String content = request.content().strip();
 
         if (!content.equals(comment.getContent())) {
-            comment.editContent(content);
+            comment.setContent(content);
+            comment.setEditedAt(LocalDateTime.now());
             commentRepository.saveAndFlush(comment);
         }
 
@@ -196,7 +199,8 @@ public class CommentIService implements CommentService {
 
         // Gửi lại cùng yêu cầu DELETE vẫn cho kết quả ổn định.
         if (!comment.isDeleted()) {
-            comment.softDelete();
+            comment.setStatus(Comment.DELETED);
+            comment.setContent("");
             commentRepository.saveAndFlush(comment);
         }
 
