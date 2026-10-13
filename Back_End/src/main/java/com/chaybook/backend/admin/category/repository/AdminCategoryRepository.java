@@ -42,13 +42,13 @@ public interface AdminCategoryRepository
                 SELECT 1 FROM ARTICLE WHERE category_id = :id
             )
             OR EXISTS (
-                SELECT 1 FROM RECIPE WHERE category_id = :id
+                SELECT 1 FROM recipe WHERE category_id = :id
             )
             OR EXISTS (
-                SELECT 1 FROM POST WHERE category_id = :id
+                SELECT 1 FROM post WHERE category_id = :id
             )
             OR EXISTS (
-                SELECT 1 FROM VIDEO WHERE category_id = :id
+                SELECT 1 FROM video WHERE category_id = :id
             )
         THEN 1 ELSE 0 END
         """, nativeQuery = true)

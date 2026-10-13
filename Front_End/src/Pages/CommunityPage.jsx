@@ -5,6 +5,7 @@ import CommunityHeader from "../components/community/CommunityHeader";
 import CommunityToolbar from "../components/community/CommunityToolbar";
 import PostGrid from "../components/community/PostGrid";
 import CreatePostModal from "../components/community/CreatePostModal";
+import PostCommentModal from "../components/community/PostCommentModal";
 
 import { getCategories } from "../services/categoryServices";
 
@@ -41,6 +42,9 @@ function CommunityPage() {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
+  // Popup xem chi tiết & bình luận bài viết
+  const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+
   // 1. Tải danh sách bài viết từ backend với phân trang
   const fetchPosts = useCallback(
     async (page, showLoading = true, options = {}) => {
@@ -66,7 +70,7 @@ function CommunityPage() {
           setTotalPages(response.totalPages);
           setCurrentPage(page);
         } else {
-          setPosts(prevPosts => [...prevPosts, ...response.items]);
+          setPosts((prevPosts) => [...prevPosts, ...response.items]);
           setCurrentPage(page);
         }
         setError(null);
@@ -134,9 +138,9 @@ function CommunityPage() {
 
     async function loadPosts() {
       try {
-        const categoryId = category === "all" ? null : Number(category);
-
-        const response = await fetchPosts(0, true, { signal: abortController.signal });
+        const response = await fetchPosts(0, true, {
+          signal: abortController.signal,
+        });
 
         // If response is false, error was already set in fetchPosts
         if (response === false) {
@@ -160,15 +164,15 @@ function CommunityPage() {
   }, [category]);
 
   // Lọc bài viết theo từ khóa tìm kiếm (trên tiêu đề và nội dung)
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery) return posts;
-    const lowerQuery = searchQuery.toLowerCase();
-    return posts.filter(post => {
-      const title = (post.title || '').toLowerCase();
-      const content = (post.content || '').toLowerCase();
-      return title.includes(lowerQuery) || content.includes(lowerQuery);
-    });
-  }, [posts, searchQuery]);
+  // const filteredPosts = useMemo(() => {
+  //   if (!searchQuery) return posts;
+  //   const lowerQuery = searchQuery.toLowerCase();
+  //   return posts.filter((post) => {
+  //     const title = (post.title || "").toLowerCase();
+  //     const content = (post.content || "").toLowerCase();
+  //     return title.includes(lowerQuery) || content.includes(lowerQuery);
+  //   });
+  // }, [posts, searchQuery]);
 
   // 5. Hiển thị thông báo
   const showFeedback = (type, text) => {
@@ -193,13 +197,17 @@ function CommunityPage() {
     if (!sentinelRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isFetching && currentPage + 1 < totalPages) {
+        if (
+          entries[0].isIntersecting &&
+          !isFetching &&
+          currentPage + 1 < totalPages
+        ) {
           fetchPosts(currentPage + 1, false); // showLoading false for infinite scroll
         }
       },
       {
         rootMargin: "200px", // start loading before reaching the end
-      }
+      },
     );
 
     observer.observe(sentinelRef.current);
@@ -208,8 +216,18 @@ function CommunityPage() {
 
   // 5. Sắp xếp bài viết (cũ, mới)
   const sortedPosts = useMemo(() => {
-    return [...posts].sort((a, b) => {
-      // Ưu tiên bài mới hơn; nếu cùng thời gian thì ID lớn hơn trước
+    const lowerQuery = searchQuery.trim().toLowerCase();
+
+    const filteredPosts = posts.filter((post) => {
+      if (!lowerQuery) return true;
+
+      const title = (post.title || "").toLowerCase();
+      const content = (post.content || "").toLowerCase();
+
+      return title.includes(lowerQuery) || content.includes(lowerQuery);
+    });
+
+    return [...filteredPosts].sort((a, b) => {
       if (sort === "latest") {
         const timeA = new Date(a.createdAt).getTime();
         const timeB = new Date(b.createdAt).getTime();
@@ -217,7 +235,6 @@ function CommunityPage() {
         return timeB - timeA || b.postId - a.postId;
       }
 
-      // Ưu tiên bài có nhiều lượt thích hơn
       if (sort === "top") {
         return (
           (b.likeCount ?? 0) - (a.likeCount ?? 0) ||
@@ -226,7 +243,6 @@ function CommunityPage() {
         );
       }
 
-      // Ưu tiên bài có nhiều bình luận hơn
       if (sort === "discussed") {
         return (
           (b.commentCount ?? 0) - (a.commentCount ?? 0) ||
@@ -237,8 +253,7 @@ function CommunityPage() {
 
       return 0;
     });
-  }, [posts, sort]);
-
+  }, [posts, searchQuery, sort]);
   // 6. Tạo bài viết mới
   const handleCreatePost = async (formData) => {
     try {
@@ -300,6 +315,24 @@ function CommunityPage() {
       }),
     );
 
+    setSelectedPostForComments((prev) => {
+      if (prev && (prev.postId ?? prev.id) === postId) {
+        const nextLikes = isCurrentlyLiked
+          ? Math.max(0, currentLikes - 1)
+          : currentLikes + 1;
+        return {
+          ...prev,
+          likedByCurrentUser: !isCurrentlyLiked,
+          likeCount: nextLikes,
+          stats: {
+            ...(prev.stats || {}),
+            likes: nextLikes,
+          },
+        };
+      }
+      return prev;
+    });
+
     try {
       if (isCurrentlyLiked) {
         await removePostInteraction(postId, "LIKE");
@@ -344,6 +377,16 @@ function CommunityPage() {
       }),
     );
 
+    setSelectedPostForComments((prev) => {
+      if (prev && (prev.postId ?? prev.id) === postId) {
+        return {
+          ...prev,
+          bookmarkedByCurrentUser: !isCurrentlyBookmarked,
+        };
+      }
+      return prev;
+    });
+
     try {
       if (isCurrentlyBookmarked) {
         await removePostInteraction(postId, "BOOKMARK");
@@ -361,6 +404,39 @@ function CommunityPage() {
       await fetchPosts(false);
     }
   };
+
+  // 9. Cập nhật số lượng bình luận khi thêm/xóa bình luận trong modal
+  const handleCommentCountChange = useCallback((targetPostId, newTotalCount) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((p) => {
+        if ((p.postId ?? p.id) === targetPostId) {
+          return {
+            ...p,
+            commentCount: newTotalCount,
+            stats: {
+              ...(p.stats || {}),
+              comments: newTotalCount,
+            },
+          };
+        }
+        return p;
+      }),
+    );
+
+    setSelectedPostForComments((prev) => {
+      if (prev && (prev.postId ?? prev.id) === targetPostId) {
+        return {
+          ...prev,
+          commentCount: newTotalCount,
+          stats: {
+            ...(prev.stats || {}),
+            comments: newTotalCount,
+          },
+        };
+      }
+      return prev;
+    });
+  }, []);
 
   // 9. Giao diện
   return (
@@ -430,6 +506,7 @@ function CommunityPage() {
                 posts={sortedPosts}
                 onLike={handleLike}
                 onBookmark={handleBookmark}
+                onComment={(post) => setSelectedPostForComments(post)}
               />
               <div ref={sentinelRef} />
             </>
@@ -458,6 +535,16 @@ function CommunityPage() {
             onSubmit={handleCreatePost}
             categories={categories}
             categoryLoading={categoryLoading}
+          />
+
+          {/* Popup xem chi tiết bài viết & Bình luận */}
+          <PostCommentModal
+            isOpen={Boolean(selectedPostForComments)}
+            post={selectedPostForComments}
+            onClose={() => setSelectedPostForComments(null)}
+            onLike={(p) => handleLike(p.postId ?? p.id)}
+            onBookmark={(p) => handleBookmark(p.postId ?? p.id)}
+            onCommentCountChange={handleCommentCountChange}
           />
         </div>
       </main>

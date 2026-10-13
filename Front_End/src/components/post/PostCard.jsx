@@ -117,7 +117,10 @@ function PostCard({
       )}
 
       {/* ================= CONTENT ================= */}
-      <div className="space-y-1">
+      <div
+        className="space-y-1 cursor-pointer group/content"
+        onClick={() => onComment?.(post)}
+      >
         <h3
           className="
             text-[22px]
@@ -125,14 +128,14 @@ function PostCard({
             leading-7
             text-gray-900
             transition-colors
-            hover:text-chaybook-primary
+            group-hover/content:text-chaybook-primary
           "
         >
           {title}
         </h3>
 
         {postDescription && (
-          <p className="text-[15px] leading-6 text-gray-600">
+          <p className="text-[15px] leading-6 text-gray-600 line-clamp-4">
             {postDescription}
           </p>
         )}
@@ -141,7 +144,10 @@ function PostCard({
       {/* ================= IMAGE ================= */}
 
       {image && (
-        <div className="relative h-64 w-full overflow-hidden rounded-xl md:h-80">
+        <div
+          className="relative h-64 w-full overflow-hidden rounded-xl md:h-80 cursor-pointer"
+          onClick={() => onComment?.(post)}
+        >
           <img
             src={
               image.startsWith("http")
