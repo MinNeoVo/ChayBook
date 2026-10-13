@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ChefHat,
@@ -48,7 +48,7 @@ function RecipeDetailLoading() {
   );
 }
 
-function RecipeDetailStatus({ isNotFound, onRetry }) {
+function RecipeDetailStatus({ isNotFound, onRetry, backTo, backState, backLabel }) {
   return (
     <section
       role="alert"
@@ -68,11 +68,12 @@ function RecipeDetailStatus({ isNotFound, onRetry }) {
       <div className="flex flex-wrap items-center justify-center gap-3">
         {isNotFound ? (
           <Link
-            to="/recipes"
+            to={backTo}
+            state={backState}
             className="inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
           >
             <ArrowLeft aria-hidden="true" size={17} />
-            Back to Recipes
+            {backLabel}
           </Link>
         ) : (
           <Button type="button" onClick={onRetry}>
@@ -84,11 +85,12 @@ function RecipeDetailStatus({ isNotFound, onRetry }) {
         )}
         {!isNotFound && (
           <Link
-            to="/recipes"
+            to={backTo}
+            state={backState}
             className="inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
           >
             <ArrowLeft aria-hidden="true" size={17} />
-            Back to Recipes
+            {backLabel}
           </Link>
         )}
       </div>
@@ -98,6 +100,17 @@ function RecipeDetailStatus({ isNotFound, onRetry }) {
 
 function RecipeDetailPage() {
   const { recipeId } = useParams();
+  const location = useLocation();
+  const fromMealPlan = location.state?.from === "/meal-plan";
+  const backTo = fromMealPlan ? "/meal-plan" : "/recipes";
+  const backLabel = fromMealPlan ? "Back to Meal Plan" : "Back to Recipes";
+  const backState = fromMealPlan
+    ? {
+        mealPlanId: location.state.mealPlanId,
+        mealPlanPage: location.state.mealPlanPage,
+        scrollToMealPlan: true,
+      }
+    : undefined;
   const [retryCount, setRetryCount] = useState(0);
   const requestKey = `${recipeId}:${retryCount}`;
   const [result, setResult] = useState({
@@ -156,6 +169,9 @@ function RecipeDetailPage() {
           <RecipeDetailStatus
             isNotFound={errorStatus === 404}
             onRetry={() => setRetryCount((count) => count + 1)}
+            backTo={backTo}
+            backState={backState}
+            backLabel={backLabel}
           />
         </div>
       </main>
@@ -175,11 +191,12 @@ function RecipeDetailPage() {
     <main className="min-h-screen w-full bg-chaybook-container font-sans text-[#181c1b] antialiased">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-12 lg:py-14">
         <Link
-          to="/recipes"
+          to={backTo}
+          state={backState}
           className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
         >
           <ArrowLeft aria-hidden="true" size={18} />
-          Back to Recipes
+          {backLabel}
         </Link>
 
         <section className="grid grid-cols-1 gap-7 overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-9 md:p-8">
