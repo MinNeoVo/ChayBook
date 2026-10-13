@@ -4,17 +4,17 @@ import LoginPage from "./Pages/LoginPage";
 import RegisterPage from "./Pages/RegisterPage";
 
 import ContentPage from "./Pages/ContentPage";
-import ContentPageDetail from "./pages/ContentPageDetail";
+import ContentPageDetail from "./Pages/ContentPageDetail";
 
-import HomePage from "./pages/HomePage";
-import ProfilePage from "./pages/ProfilePage";
-import CommunityPage from "./pages/CommunityPage";
+import HomePage from "./Pages/HomePage";
+import ProfilePage from "./Pages/ProfilePage";
+import CommunityPage from "./Pages/CommunityPage";
 
-import RecipesPage from "./pages/RecipesPage";
-import RecipeDetailPage from "./pages/RecipeDetailPage";
-import BmiPage from "./pages/BmiPage";
-import MealPlanPage from "./pages/MealPlanPage";
-import AIAssistantPage from "./pages/AIAssistantPage";
+import RecipesPage from "./Pages/RecipesPage";
+import RecipeDetailPage from "./Pages/RecipeDetailPage";
+import BmiPage from "./Pages/BmiPage";
+import MealPlanPage from "./Pages/MealPlanPage";
+import AIAssistantPage from "./Pages/AIAssistantPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -22,8 +22,14 @@ import AdminRoute from "./routes/AdminRoute";
 import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import AdminUsers from "./pages/admin/AdminUsers";
+import AdminDashboardPage from "./Pages/admin/AdminDashboardPage";
+import AdminUsers from "./Pages/admin/AdminUsers";
+import AdminPostVideoPage from "./Pages/admin/AdminPostVideoPage";
+import AdminArticleManagement, {
+  AdminArticleCreatePage,
+  AdminArticleDetailPage,
+  AdminArticleListPage,
+} from "./Pages/admin/AdminArticleManagement";
 
 function App() {
   return (
@@ -60,6 +66,12 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="posts-videos" element={<AdminPostVideoPage />} />
+          <Route path="articles" element={<AdminArticleManagement />}>
+            <Route index element={<AdminArticleListPage />} />
+            <Route path="new" element={<AdminArticleCreatePage />} />
+            <Route path=":articleId" element={<AdminArticleDetailPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

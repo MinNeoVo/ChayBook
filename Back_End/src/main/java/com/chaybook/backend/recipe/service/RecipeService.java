@@ -7,9 +7,10 @@ import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
 import com.chaybook.backend.recipe.repository.*;
 
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,7 @@ public class RecipeService {
 
     }
 
-    public List<RecipeSummaryResponse> getRecipes(
+    public Page<RecipeSummaryResponse> getRecipes(
             Integer categoryId,
             String keyword,
             int page,
@@ -72,16 +73,21 @@ public class RecipeService {
 
         String normalizedKeyword = normalizeKeyword(keyword);
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "recipeId")
+        );
 
-        return recipeRepository.searchRecipes(
-                        categoryId,
-                        normalizedKeyword,
-                        pageable
-                )
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
+        Page<Recipe> recipes;
+
+        recipes = recipeRepository.searchRecipes(
+                categoryId,
+                normalizedKeyword,
+                pageable
+        );
+
+        return recipes.map(this::toSummaryResponse);
     }
 
     public RecipeDetailResponse getRecipeDetail(Integer recipeId) {
