@@ -3,38 +3,14 @@ import { apiFetch } from "./api";
 
 const API_ORIGIN = new URL(API_BASE_URL).origin;
 
-async function requestJson(url, { signal } = {}) {
-  const response = await fetch(url, { signal });
-  let data;
-
-  try {
-    data = await response.json();
-  } catch (error) {
-    console.error("Failed to parse the recipe service response:", error);
-    data = null;
-  }
-
-  if (!response.ok) {
-    const error = new Error(
-      data?.detail || data?.message || "The recipe request failed.",
-    );
-    error.status = response.status;
-    throw error;
-  }
-
-  if (data === null) {
-    throw new Error("The recipe service returned an invalid response.");
-  }
-
-  return data;
-}
-
 export async function getRecipes(
   categoryId = null,
   keyword = "",
-  { signal } = {},
+  { signal, page = 0, size = 10 } = {},
 ) {
   const query = new URLSearchParams();
+  query.set("page", String(page));
+  query.set("size", String(size));
 
   const normalizedCategoryId =
     categoryId === null || categoryId === undefined
@@ -55,15 +31,21 @@ export async function getRecipes(
 
   const endpoint = `/recipes${queryString ? `?${queryString}` : ""}`;
 
-  const recipes = await apiFetch(endpoint, {
+  const data = await apiFetch(endpoint, {
     signal,
   });
 
-  if (!Array.isArray(recipes)) {
+  if (
+    !Array.isArray(data?.content) ||
+    !Number.isInteger(data.number) || data.number < 0 ||
+    !Number.isInteger(data.size) || data.size < 1 ||
+    !Number.isInteger(data.totalPages) || data.totalPages < 0 ||
+    !Number.isInteger(data.totalElements) || data.totalElements < 0
+  ) {
     throw new Error("The recipe service returned an invalid response.");
   }
 
-  return recipes;
+  return data;
 }
 
 export async function getRecipeCategories({ signal } = {}) {
