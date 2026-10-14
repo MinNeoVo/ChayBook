@@ -11,6 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import com.chaybook.backend.assistant.dto.ChatConversationResponse;
+import com.chaybook.backend.assistant.dto.ChatHistoryMessageResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/chatbot")
@@ -18,6 +24,39 @@ public class ChatbotController {
 
     @Autowired
     private ChatbotService chatbotService;
+
+    @GetMapping("/conversations")
+    public ResponseEntity<List<ChatConversationResponse>> getConversations(
+            @AuthenticationPrincipal Jwt jwt) {
+        Integer userId = requireUserId(jwt);
+        return ResponseEntity.ok(
+                chatbotService.getUserConversations(userId));
+    }
+
+    @GetMapping("/conversations/{conversationId}/messages")
+    public ResponseEntity<List<ChatHistoryMessageResponse>> getConversationMessages(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Integer conversationId) {
+        Integer userId = requireUserId(jwt);
+        return ResponseEntity.ok(
+                chatbotService.getConversationMessages(userId, conversationId));
+    }
+
+    private Integer requireUserId(Jwt jwt) {
+        if (jwt == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Vui lòng đăng nhập để xem lịch sử hội thoại.");
+        }
+
+        try {
+            return Integer.valueOf(jwt.getSubject());
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "JWT không chứa user ID hợp lệ.");
+        }
+    }
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatMessageResponse> sendMessage(

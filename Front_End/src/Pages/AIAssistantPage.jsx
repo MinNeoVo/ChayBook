@@ -9,19 +9,70 @@ import { useAuth } from "../context/useAuth";
 
 import { X, Check } from "lucide-react";
 
-import { sendAIMessage } from "../services/aiAssistantService";
+import {
+  sendAIMessage,
+  getAIConversations,
+  getAIConversationMessages,
+} from "../services/aiAssistantService";
 
 function AIAssistantPage() {
   const { user } = useAuth();
 
+  // Lưu ID của cuộc hội thoại hiện đang mở
+  const [conversationId, setConversationId] = useState(null);
+
   // Không còn tin nhắn mẫu
   const [messages, setMessages] = useState([]);
-
+  const [conversations, setConversations] = useState([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState("");
+  const [loadingConversationId, setLoadingConversationId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
   const [lastUserPrompt, setLastUserPrompt] = useState("");
 
   const [activeModal, setActiveModal] = useState(null);
+
+  const handleOpenHistory = async () => {
+    setActiveModal("sessions");
+    setHistoryError("");
+    setConversations([]);
+
+    if (!user) {
+      setHistoryError("Bạn cần đăng nhập để xem lịch sử hội thoại.");
+      return;
+    }
+
+    setIsHistoryLoading(true);
+
+    try {
+      const history = await getAIConversations();
+      setConversations(history);
+    } catch (err) {
+      setHistoryError(err.message || "Không tải được lịch sử hội thoại.");
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  };
+
+  const handleSelectConversation = async (conversation) => {
+    const id = conversation.conversationId;
+    setLoadingConversationId(id);
+    setHistoryError("");
+
+    try {
+      const historyMessages = await getAIConversationMessages(id);
+
+      setMessages(historyMessages);
+      setConversationId(id);
+      setActiveModal(null);
+      setError(null);
+    } catch (err) {
+      setHistoryError(err.message || "Không tải được tin nhắn của hội thoại.");
+    } finally {
+      setLoadingConversationId(null);
+    }
+  };
 
   const handleSendMessage = async (text) => {
     if (!text || !text.trim()) {
@@ -49,7 +100,13 @@ function AIAssistantPage() {
     setIsTyping(true);
 
     try {
-      const aiMessage = await sendAIMessage(text);
+      // Gửi ID hiện tại; nếu là chat mới thì conversationId đang là null
+      const aiMessage = await sendAIMessage(text, conversationId);
+
+      // Lưu ID backend trả về để những tin nhắn sau tiếp tục cùng hội thoại
+      if (aiMessage.conversationId != null) {
+        setConversationId(aiMessage.conversationId);
+      }
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
@@ -91,17 +148,21 @@ function AIAssistantPage() {
   };
 
   const handleReset = () => {
-    // Reset về chat trống
+    // Bắt đầu hội thoại mới
     setMessages([]);
+    setConversationId(null);
     setError(null);
     setIsTyping(false);
     setLastUserPrompt("");
   };
 
   const handleClearAll = () => {
+    // Xóa nội dung trên giao diện và bắt đầu hội thoại mới khi gửi tiếp
     setMessages([]);
+    setConversationId(null);
     setError(null);
     setIsTyping(false);
+    setLastUserPrompt("");
   };
 
   return (
@@ -110,7 +171,7 @@ function AIAssistantPage() {
         {/* AI Header */}
         <AIHeader
           onReset={handleReset}
-          onOpenHistory={() => setActiveModal("sessions")}
+          onOpenHistory={handleOpenHistory}
           onOpenPreferences={() => setActiveModal("preferences")}
         />
 
@@ -157,9 +218,9 @@ function AIAssistantPage() {
           HISTORY MODAL
           ========================= */}
       {activeModal === "sessions" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 p-5 pb-3">
               <h3 className="text-base font-bold text-gray-900">
                 Recent Sessions (UI Preview)
               </h3>
@@ -173,34 +234,56 @@ function AIAssistantPage() {
               </button>
             </div>
 
-            <div className="space-y-2 py-4">
-              <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
-                <p className="text-sm font-semibold text-gray-800">
-                  3-Day Vegetarian Meal Plan
+            <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-5 py-4">
+              {isHistoryLoading && (
+                <p className="py-6 text-center text-sm text-gray-500">
+                  Đang tải lịch sử hội thoại...
                 </p>
+              )}
 
-                <span className="text-xs text-gray-500">
-                  Today, 10:42 AM • Active
-                </span>
-              </div>
-
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 opacity-60">
-                <p className="text-sm font-semibold text-gray-800">
-                  High-Protein Plant Alternatives
+              {!isHistoryLoading && historyError && (
+                <p className="py-6 text-center text-sm text-red-600">
+                  {historyError}
                 </p>
+              )}
 
-                <span className="text-xs text-gray-500">
-                  Yesterday • 14 messages
-                </span>
-              </div>
+              {!isHistoryLoading &&
+                !historyError &&
+                conversations.length === 0 && (
+                  <p className="py-6 text-center text-sm text-gray-500">
+                    Bạn chưa có hội thoại nào.
+                  </p>
+                )}
+
+              {!isHistoryLoading &&
+                !historyError &&
+                conversations.map((conversation) => (
+                  <button
+                    key={conversation.conversationId}
+                    type="button"
+                    onClick={() => handleSelectConversation(conversation)}
+                    disabled={loadingConversationId !== null}
+                    className="w-full rounded-xl border border-gray-100 bg-gray-50 p-3 text-left transition-colors hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <p className="text-sm font-semibold text-gray-800">
+                      {conversation.title ||
+                        `Hội thoại #${conversation.conversationId}`}
+                    </p>
+
+                    <span className="text-xs text-gray-500">
+                      {loadingConversationId === conversation.conversationId
+                        ? "Đang tải tin nhắn..."
+                        : conversation.updatedAt
+                          ? new Date(
+                            conversation.updatedAt,
+                          ).toLocaleString()
+                          : ""}
+                    </span>
+                  </button>
+                ))}
             </div>
 
-            <p className="text-center text-xs text-gray-400">
-              Session persistence will be integrated with backend API in a later
-              phase.
-            </p>
-
-            <div className="mt-4 flex justify-end">
+            <div className="flex shrink-0 justify-end border-t border-gray-100 p-5 pt-3">
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
