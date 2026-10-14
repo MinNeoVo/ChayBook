@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.Nationalized;
 
 @Entity
-@Table(name = "category")
+@Table(name = "CATEGORY")
 public class Category {
 
     @Id
