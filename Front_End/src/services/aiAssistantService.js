@@ -7,27 +7,18 @@ import { apiFetch } from "./api";
  */
 export async function sendAIMessage(prompt) {
   try {
-    const query = new URLSearchParams();
-    // Note: We're not sending userId or conversationId for now,
-    // which will make each message start a new conversation.
-    // In a more complete implementation, these would be managed by state.
-
-    const queryString = query.toString();
-    const endpoint = `/chatbot/messages${queryString ? `?${queryString}` : ""}`;
-
-    // Send the prompt as the request body
-    const response = await apiFetch(endpoint, {
+    const response = await apiFetch("/chatbot/messages", {
       method: "POST",
-      body: prompt,
+      body: {
+        message: prompt,
+        conversationId: null,
+      },
     });
 
-    // The backend returns a plain string (the AI response)
-    const aiResponseContent = response;
-
     return {
-      id: `assistant-${Date.now()}`,
+      id: response.messageId ?? `assistant-${Date.now()}`,
       role: "assistant",
-      content: aiResponseContent,
+      content: response.content,
       createdAt: "Just now",
     };
   } catch (err) {
@@ -36,4 +27,3 @@ export async function sendAIMessage(prompt) {
     throw err;
   }
 }
-
