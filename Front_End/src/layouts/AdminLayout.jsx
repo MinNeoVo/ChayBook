@@ -7,7 +7,6 @@ import {
   FileText,
   ChefHat,
   Video,
-  MessageSquare,
   ArrowLeft,
   LogOut,
   Leaf,
@@ -45,14 +44,9 @@ function AdminLayout() {
       icon: ChefHat,
     },
     {
-      name: "Videos",
-      path: "/admin/videos",
+      name: "Post & Video",
+      path: "/admin/posts-videos",
       icon: Video,
-    },
-    {
-      name: "Posts",
-      path: "/admin/posts",
-      icon: MessageSquare,
     },
   ];
 

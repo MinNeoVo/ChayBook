@@ -26,7 +26,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
                   :keyword IS NULL
                   OR LOCATE(LOWER(:keyword), LOWER(r.name)) > 0
               )
-            ORDER BY r.recipeId ASC
             """)
     Page<Recipe> searchRecipes(
             @Param("categoryId") Integer categoryId,

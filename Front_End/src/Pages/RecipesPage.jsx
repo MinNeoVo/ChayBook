@@ -10,9 +10,12 @@ import {
 } from "lucide-react";
 
 import RecipeImage from "../components/recipes/RecipeImage";
+import RecipePagination from "../components/recipes/RecipePagination";
 import Button from "../components/common/Button";
 import { getCategories } from "../services/categoryServices";
 import { getRecipes } from "../services/recipeServices";
+
+const PAGE_SIZE = 10;
 
 function formatMinutes(minutes) {
   if (typeof minutes !== "number" || !Number.isFinite(minutes)) {
@@ -142,14 +145,15 @@ function RecipesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [page, setPage] = useState(0);
   const [categories, setCategories] = useState([]);
   const [categoryStatus, setCategoryStatus] = useState("loading");
   const [retryCount, setRetryCount] = useState(0);
-  const requestKey = `${categoryId}:${keyword}:${retryCount}`;
+  const requestKey = JSON.stringify([categoryId, keyword, page, retryCount]);
   const [result, setResult] = useState({
     requestKey: null,
     status: "loading",
-    recipes: [],
+    data: null,
   });
 
   useEffect(() => {
@@ -157,6 +161,7 @@ function RecipesPage() {
 
     getCategories("RECIPE", { signal: controller.signal })
       .then((data) => {
+        if (controller.signal.aborted) return;
         setCategories(data);
         setCategoryStatus("success");
       })
@@ -175,28 +180,38 @@ function RecipesPage() {
 
     getRecipes(categoryId || null, keyword, {
       signal: controller.signal,
+      page,
+      size: PAGE_SIZE,
     })
       .then((data) => {
-        setResult({ requestKey, status: "success", recipes: data });
+        if (controller.signal.aborted) return;
+        setResult({ requestKey, status: "success", data });
       })
       .catch((error) => {
         if (!controller.signal.aborted) {
           console.error("Failed to load recipes:", error);
-          setResult({ requestKey, status: "error", recipes: [] });
+          setResult({ requestKey, status: "error", data: null });
         }
       });
 
     return () => controller.abort();
-  }, [categoryId, keyword, requestKey]);
+  }, [categoryId, keyword, page, requestKey]);
 
   const isCurrentResult = result.requestKey === requestKey;
   const isLoading = !isCurrentResult;
   const hasError = isCurrentResult && result.status === "error";
-  const recipes = isCurrentResult ? result.recipes : [];
+  const data = isCurrentResult ? result.data : null;
+  const recipes = data?.content || [];
 
   const handleSearch = (event) => {
     event.preventDefault();
     setKeyword(searchInput.trim());
+    setPage(0);
+  };
+
+  const handleCategoryChange = (event) => {
+    setCategoryId(event.target.value);
+    setPage(0);
   };
 
   const handleRetry = () => {
@@ -257,7 +272,7 @@ function RecipesPage() {
                 disabled={
                   categoryStatus === "loading" || categoryStatus === "error"
                 }
-                onChange={(event) => setCategoryId(event.target.value)}
+                onChange={handleCategoryChange}
                 className="min-h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-[#3e4a3d] shadow-sm outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/20"
               >
                 <option value="">All Categories</option>
@@ -299,14 +314,23 @@ function RecipesPage() {
             </p>
           </section>
         ) : (
-          <section
-            aria-label="Recipes"
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {recipes.map((recipe) => (
-              <RecipeCard key={recipe.recipeId} recipe={recipe} />
-            ))}
-          </section>
+          <>
+            <section
+              aria-label="Recipes"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            >
+              {recipes.map((recipe) => (
+                <RecipeCard key={recipe.recipeId} recipe={recipe} />
+              ))}
+            </section>
+            <RecipePagination
+              page={data.number}
+              size={data.size}
+              totalPages={data.totalPages}
+              totalElements={data.totalElements}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
     </main>
