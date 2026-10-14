@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.chaybook.backend.assistant.dto.ChatConversationResponse;
+import com.chaybook.backend.assistant.dto.ChatHistoryMessageResponse;
 
 @Service
 public class ChatbotService {
@@ -127,6 +129,39 @@ public class ChatbotService {
             System.err.println("=============================================");
             throw new RuntimeException(e);
         }
+    }
+
+    public List<ChatConversationResponse> getUserConversations(Integer userId) {
+        return conversationRepository
+                .findByUserUserIdOrderByUpdatedAtDesc(userId)
+                .stream()
+                .map(conversation -> new ChatConversationResponse(
+                        conversation.getConversationId(),
+                        conversation.getTitle(),
+                        conversation.getCreatedAt(),
+                        conversation.getUpdatedAt()))
+                .toList();
+    }
+
+    public List<ChatHistoryMessageResponse> getConversationMessages(
+            Integer userId,
+            Integer conversationId) {
+        AiConversation conversation = conversationRepository
+                .findByConversationIdAndUserUserId(conversationId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy hội thoại."));
+
+        return messageRepository
+                .findByConversationConversationIdOrderByCreatedAtAsc(
+                        conversation.getConversationId())
+                .stream()
+                .map(message -> new ChatHistoryMessageResponse(
+                        message.getMessageId(),
+                        message.getSender(),
+                        message.getMessage(),
+                        message.getCreatedAt()))
+                .toList();
     }
 
     private String findRelevantContext(String userMessage) {
