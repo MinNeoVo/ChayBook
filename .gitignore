@@ -19,3 +19,9 @@ Thumbs.db
 
 # AI coding instructions - local only
 ChayBook_AI_Coding_Mentor_Instructions.md
+
+node_modules/
+dist/
+.env
+.env.*
+!.env.example

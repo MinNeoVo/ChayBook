@@ -62,7 +62,7 @@ public interface AdminDashboardStatisticsRepository
                     THEN CONVERT(BIGINT, 1)
                     ELSE CONVERT(BIGINT, 0)
                 END AS hasInteraction
-                FROM POST p
+                FROM post p
                 WHERE p.status = 'APPROVED'
             ) approved
             """, nativeQuery = true)
@@ -81,7 +81,7 @@ public interface AdminDashboardStatisticsRepository
                     CONVERT(BIGINT, 0) AS bookmark_count,
                     CONVERT(BIGINT, 0) AS comment_count
                 FROM POST_INTERACTION pi
-                INNER JOIN POST p ON p.post_id = pi.post_id
+                INNER JOIN post p ON p.post_id = pi.post_id
                 WHERE p.status = 'APPROVED'
                   AND pi.type = 'LIKE'
                   AND pi.created_at >= :fromInclusive
@@ -96,7 +96,7 @@ public interface AdminDashboardStatisticsRepository
                     COUNT_BIG(*) AS bookmark_count,
                     CONVERT(BIGINT, 0) AS comment_count
                 FROM POST_INTERACTION pi
-                INNER JOIN POST p ON p.post_id = pi.post_id
+                INNER JOIN post p ON p.post_id = pi.post_id
                 WHERE p.status = 'APPROVED'
                   AND pi.type = 'BOOKMARK'
                   AND pi.created_at >= :fromInclusive
@@ -111,7 +111,7 @@ public interface AdminDashboardStatisticsRepository
                     CONVERT(BIGINT, 0) AS bookmark_count,
                     COUNT_BIG(*) AS comment_count
                 FROM [COMMENT] cm
-                INNER JOIN POST p ON p.post_id = cm.post_id
+                INNER JOIN post p ON p.post_id = cm.post_id
                 WHERE p.status = 'APPROVED'
                   AND cm.status = 'ACTIVE'
                   AND cm.created_at >= :fromInclusive
@@ -136,7 +136,7 @@ public interface AdminDashboardStatisticsRepository
                 u.avatar_url AS avatarUrl,
                 COUNT_BIG(p.post_id) AS contributionCount
             FROM [USER] u
-            INNER JOIN POST p ON p.user_id = u.user_id
+            INNER JOIN post p ON p.user_id = u.user_id
             WHERE u.role = 'USER'
               AND u.status = 'ACTIVE'
               AND p.status = 'APPROVED'
