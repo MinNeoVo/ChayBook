@@ -356,6 +356,7 @@ public class CommentServiceImpl implements CommentService {
 
         return new CommentResponse.Author(
                 user.getUserId(),
+                user.getUsername(),
                 displayName,
                 user.getAvatarUrl()
         );
