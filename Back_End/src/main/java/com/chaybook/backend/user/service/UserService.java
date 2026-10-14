@@ -14,9 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.*;
 
 @Service
@@ -198,7 +201,11 @@ public class UserService {
 
         user.setUsername(request.username());
         user.setFullName(request.fullName());
-        user.setAvatarUrl(request.avatarUrl());
+        // Chỉ cập nhật avatarUrl khi request có giá trị rõ ràng.
+        // Nếu null (không gửi hoặc gửi null), giữ nguyên avatarUrl trong DB.
+        if (request.avatarUrl() != null) {
+            user.setAvatarUrl(request.avatarUrl());
+        }
 
         User savedUser = userRepository.saveAndFlush(user);
 
@@ -288,4 +295,81 @@ public class UserService {
     }
 
 
+    /**
+     * Upload ảnh avatar cho user, lưu vào thư mục uploads/avatars/.
+     * Trả về URL tương đối của ảnh đã lưu.
+     */
+    @Transactional
+    public UploadAvatarResponse uploadAvatar(
+            Integer authenticatedUserId,
+            MultipartFile file
+    ) {
+        if (authenticatedUserId == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Please log in"
+            );
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Avatar image must not be empty"
+            );
+        }
+
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Avatar image must not exceed 5 MB"
+            );
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                !(contentType.equalsIgnoreCase("image/jpeg")
+                        || contentType.equalsIgnoreCase("image/png")
+                        || contentType.equalsIgnoreCase("image/webp"))) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only JPEG, PNG, or WebP images are allowed"
+            );
+        }
+
+        String extension = switch (contentType.toLowerCase()) {
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> ".jpg";
+        };
+
+        String fileName = UUID.randomUUID() + extension;
+        Path uploadDir = Paths.get("uploads", "avatars").toAbsolutePath();
+        Path destination = uploadDir.resolve(fileName).normalize();
+
+        try {
+            Files.createDirectories(uploadDir);
+            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to save avatar image"
+            );
+        }
+
+        String avatarUrl = "/uploads/avatars/" + fileName;
+
+        // Cập nhật avatarUrl cho user trong DB
+        User user = userRepository.findById(authenticatedUserId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+        user.setAvatarUrl(avatarUrl);
+        userRepository.saveAndFlush(user);
+
+        return new UploadAvatarResponse(
+                "Avatar uploaded successfully",
+                avatarUrl
+        );
+    }
 }

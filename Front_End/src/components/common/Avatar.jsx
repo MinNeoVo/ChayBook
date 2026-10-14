@@ -1,4 +1,20 @@
 import { UserRound } from "lucide-react";
+import API_BASE_URL from "../../services/app";
+
+// Lấy origin từ API base URL (vd: "http://localhost:8080")
+const API_ORIGIN = new URL(API_BASE_URL).origin;
+
+/**
+ * Resolve avatar URL:
+ *  - Nếu là relative path ("/uploads/...") → prepend API origin
+ *  - Nếu đã là absolute URL (http/https) → giữ nguyên
+ *  - Nếu null/undefined → trả về null (hiện icon mặc định)
+ */
+function resolveAvatarSrc(src) {
+  if (!src) return null;
+  if (src.startsWith("http://") || src.startsWith("https://")) return src;
+  return `${API_ORIGIN}${src.startsWith("/") ? "" : "/"}${src}`;
+}
 
 function Avatar({ src, alt = "Avatar", size = "md", className = "" }) {
   const sizes = {
@@ -8,15 +24,17 @@ function Avatar({ src, alt = "Avatar", size = "md", className = "" }) {
     xl: "h-24 w-24",
   };
 
+  const resolvedSrc = resolveAvatarSrc(src);
+
   return (
     <div
       className={`${
         sizes[size] || sizes.md
       } shrink-0 overflow-hidden rounded-full bg-gray-100 flex items-center justify-center ${className}`}
     >
-      {src ? (
+      {resolvedSrc ? (
         <img
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           className="h-full w-full object-cover"
           onError={(e) => {

@@ -5,8 +5,9 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 
 import ProfileHeader from "../components/profile/ProfileHeader";
-import ProfileSidebar from "../components/profile/ProfileSidebar";
+
 import PostCard from "../components/post/PostCard";
+import PostCommentModal from "../components/community/PostCommentModal";
 
 import { getMyProfile } from "../services/userServices";
 import {
@@ -19,6 +20,39 @@ function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+
+  const handleCommentCountChange = useCallback(
+    (targetPostId, newTotalCount) => {
+      setPosts((prevPosts) =>
+        prevPosts.map((p) =>
+          (p.postId ?? p.id) === targetPostId
+            ? {
+                ...p,
+                commentCount: newTotalCount,
+                stats: { ...(p.stats || {}), comments: newTotalCount },
+              }
+            : p,
+        ),
+      );
+
+      setSelectedPostForComments((prev) => {
+        if (!prev || (prev.postId ?? prev.id) !== targetPostId) return prev;
+        if (
+          (prev.commentCount ?? prev.stats?.comments ?? 0) === newTotalCount
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          commentCount: newTotalCount,
+          stats: { ...(prev.stats || {}), comments: newTotalCount },
+        };
+      });
+    },
+    [],
+  );
 
   const [activeStatus, setActiveStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +72,15 @@ function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Callback nhận dữ liệu user mới sau khi chỉnh sửa profile thành công.
+  // Merge vào state profile hiện tại để UI cập nhật ngay (không cần reload).
+  const handleProfileUpdated = useCallback((updatedUser) => {
+    setProfile((prev) => ({
+      ...prev,
+      ...updatedUser,
+    }));
   }, []);
 
   useEffect(() => {
@@ -110,7 +153,8 @@ function ProfilePage() {
       : post.time || "Vừa xong",
     author: {
       name: post.username ?? profile?.username ?? "ChayBook User",
-      avatar: post.avatarUrl ?? profile?.avatarUrl,
+      fullName: post.username ?? profile?.username ?? "ChayBook User",
+      avatarUrl: post.avatarUrl ?? profile?.avatarUrl,
       initials: (post.username || profile?.username || "CB")
         .slice(0, 2)
         .toUpperCase(),
@@ -146,6 +190,22 @@ function ProfilePage() {
       }),
     );
 
+    // Update selected post if it's the one being liked
+    setSelectedPostForComments((prev) => {
+      if (!prev) return null;
+      if ((prev.postId ?? prev.id) !== postId) return prev;
+
+      const nextLikes = isCurrentlyLiked
+        ? Math.max(0, currentLikes - 1)
+        : currentLikes + 1;
+
+      return {
+        ...prev,
+        likedByCurrentUser: !isCurrentlyLiked,
+        likeCount: nextLikes,
+      };
+    });
+
     try {
       if (isCurrentlyLiked) {
         await removePostInteraction(postId, "LIKE");
@@ -175,6 +235,15 @@ function ProfilePage() {
       }),
     );
 
+    setSelectedPostForComments((prev) => {
+      if (!prev || (prev.postId ?? prev.id) !== postId) return prev;
+
+      return {
+        ...prev,
+        bookmarkedByCurrentUser: !isCurrentlyBookmarked,
+      };
+    });
+
     try {
       if (isCurrentlyBookmarked) {
         await removePostInteraction(postId, "BOOKMARK");
@@ -188,7 +257,7 @@ function ProfilePage() {
   };
 
   const handleComment = (post) => {
-    console.log("Comment:", post.postId ?? post.id);
+    setSelectedPostForComments(post);
   };
 
   const handleShare = (post) => {
@@ -266,7 +335,10 @@ function ProfilePage() {
     >
       <main className="w-full pt-20 bg-[#f7faf7]">
         {/* ================= PROFILE HEADER ================= */}
-        <ProfileHeader profile={profile} />
+        <ProfileHeader
+          profile={profile}
+          onProfileUpdated={handleProfileUpdated}
+        />
 
         {/* ================= MAIN CONTENT ================= */}
         <section
@@ -286,16 +358,18 @@ function ProfilePage() {
             grid-cols-1
             lg:grid-cols-12
             gap-8
-            items-start
+            items-center
+            
+   
           "
           >
             {/* LEFT SIDEBAR */}
-            <ProfileSidebar profile={profile} />
 
             {/* RIGHT CONTENT */}
             <section
               className="
               lg:col-span-8
+              lg:col-start-3
               flex
               flex-col
               gap-6
@@ -470,6 +544,16 @@ function ProfilePage() {
           </div>
         </section>
       </main>
+
+      <PostCommentModal
+        isOpen={Boolean(selectedPostForComments)}
+        post={selectedPostForComments}
+        currentUser={profile}
+        onClose={() => setSelectedPostForComments(null)}
+        onLike={handleLike}
+        onBookmark={handleBookmark}
+        onCommentCountChange={handleCommentCountChange}
+      />
     </div>
   );
 }

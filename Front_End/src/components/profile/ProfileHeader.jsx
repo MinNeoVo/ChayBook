@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { CalendarDays, FileText, Heart, Plus, Edit3 } from "lucide-react";
 
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
+import EditProfileModal from "./EditProfileModal";
 
-function ProfileHeader({ profile }) {
+function ProfileHeader({ profile, onProfileUpdated }) {
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const username = profile?.username || "ChayBook User";
   const fullName = profile?.fullName || username;
   const avatarUrl = profile?.avatarUrl;
@@ -28,31 +32,43 @@ function ProfileHeader({ profile }) {
   const roleLabel =
     role === "ADMIN" ? "Administrator" : "Plant-based Food Enthusiast";
 
+  // Resolve avatar URL (relative → absolute)
+  const API_ORIGIN = "http://localhost:8080";
+  const resolvedAvatarUrl =
+    avatarUrl && !avatarUrl.startsWith("http")
+      ? `${API_ORIGIN}${avatarUrl.startsWith("/") ? "" : "/"}${avatarUrl}`
+      : avatarUrl;
+
+  function handleSaved(updatedUser) {
+    onProfileUpdated?.(updatedUser);
+  }
+
   return (
-    <section className="w-full px-4 pt-4 md:px-8 lg:px-12">
-      <div className="mx-auto max-w-[1280px]">
-        {/* Botanical Banner */}
-        <div
-          className="
+    <>
+      <section className="w-full px-4 pt-4 md:px-8 lg:px-12">
+        <div className="mx-auto max-w-[1280px]">
+          {/* Botanical Banner */}
+          <div
+            className="
             relative h-48 w-full overflow-hidden rounded-2xl
             bg-gradient-to-r from-[#caead6] via-[#92f5a4]/40 to-[#e6e9e6]
             shadow-sm
             md:h-64
           "
-        >
-          {/* Pattern */}
-          <div
-            className="
+          >
+            {/* Pattern */}
+            <div
+              className="
               absolute inset-0
               opacity-15
               bg-[radial-gradient(#006b2c_1px,transparent_1px)]
               [background-size:16px_16px]
             "
-          />
+            />
 
-          {/* Right decoration */}
-          <div
-            className="
+            {/* Right decoration */}
+            <div
+              className="
               pointer-events-none
               absolute -bottom-16 -right-12
               h-80 w-80
@@ -60,11 +76,11 @@ function ProfileHeader({ profile }) {
               bg-[#7ffc97]/30
               blur-3xl
             "
-          />
+            />
 
-          {/* Left decoration */}
-          <div
-            className="
+            {/* Left decoration */}
+            <div
+              className="
               pointer-events-none
               absolute -left-8 -top-12
               h-64 w-64
@@ -72,11 +88,11 @@ function ProfileHeader({ profile }) {
               bg-[#95f8a7]/40
               blur-2xl
             "
-          />
+            />
 
-          {/* Certification badge */}
-          <div
-            className="
+            {/* Certification badge */}
+            <div
+              className="
               absolute right-4 top-4
               rounded-full
               bg-white/80
@@ -85,14 +101,14 @@ function ProfileHeader({ profile }) {
               shadow-sm
               backdrop-blur-md
             "
-          >
-            🌱 {roleLabel}
+            >
+              🌱 {roleLabel}
+            </div>
           </div>
-        </div>
 
-        {/* Profile Card */}
-        <div
-          className="
+          {/* Profile Card */}
+          <div
+            className="
             relative z-10
             mx-3 -mt-16
             rounded-2xl
@@ -101,146 +117,179 @@ function ProfileHeader({ profile }) {
             shadow-sm
             md:-mt-20 md:mx-6 md:p-8
           "
-        >
-          <div
-            className="
+          >
+            <div
+              className="
               flex flex-col justify-between gap-6
               md:flex-row md:items-end
             "
-          >
-            {/* Identity */}
-            <div
-              className="
+            >
+              {/* Identity */}
+              <div
+                className="
                 flex flex-col items-start gap-4
                 sm:flex-row sm:items-end
               "
-            >
-              {/* Avatar */}{" "}
-              <div className="relative shrink-0">
-                {" "}
-                <div className=" h-28 w-28 overflow-hidden rounded-full bg-gradient-to-b from-[#006d30] to-[#006b2c] p-1 shadow-md md:h-36 md:w-36 ">
-                  {" "}
-                  <Avatar
-                    src={avatarUrl}
-                    alt={fullName}
-                    size="xl"
-                    className="h-full w-full bg-chaybook-primary"
-                  />{" "}
-                </div>{" "}
-                {/* Online status */}{" "}
-                <span className=" absolute bottom-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#00873a] ">
-                  {" "}
-                  <span className="h-2 w-2 rounded-full bg-white" />{" "}
-                </span>{" "}
-              </div>
-              {/* User information */}
-              <div className="flex flex-col gap-1">
-                {/* Name + Role */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1
-                    className="
-                      text-2xl font-bold text-gray-900
-                      md:text-3xl
-                    "
-                  >
-                    {fullName}
-                  </h1>
-
-                  <span
-                    className="
-                      rounded-full
-                      bg-[#caead6]
-                      px-2 py-0.5
-                      text-xs font-semibold
-                      text-[#314d3e]
-                    "
-                  >
-                    {roleLabel}
-                  </span>
-                </div>
-
-                {/* Username */}
-                <p className="text-sm text-gray-600">
-                  @{username} • {profile?.email || ""}
-                </p>
-
-                {/* Statistics */}
-                <div
-                  className="
-                    flex flex-wrap items-center gap-2
-                    pt-1
-                  "
-                >
-                  {/* Member since */}
-                  <span
-                    className="
-                      flex items-center gap-1
-                      rounded-full
-                      bg-[#f1f4f1]
-                      px-2.5 py-1
-                      text-xs text-gray-600
-                    "
-                  >
-                    <CalendarDays size={15} className="text-chaybook-primary" />
-                    Thành viên từ {memberSince}
-                  </span>
-
-                  {/* Published posts */}
-                  <span
-                    className="
-                      flex items-center gap-1
-                      rounded-full
-                      bg-[#f1f4f1]
-                      px-2.5 py-1
-                      text-xs text-gray-600
-                    "
-                  >
-                    <FileText size={15} className="text-chaybook-primary" />
-                    {postCount} bài viết
-                  </span>
-
-                  {/* Total likes */}
-                  <span
-                    className="
-                      flex items-center gap-1
-                      rounded-full
-                      bg-[#f1f4f1]
-                      px-2.5 py-1
-                      text-xs text-gray-600
-                    "
-                  >
-                    <Heart size={15} className="text-chaybook-primary" />
-                    {totalLikes} lượt thích
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex w-full items-center gap-2 md:w-auto">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="flex-1 md:flex-none"
               >
-                <span className="flex items-center justify-center gap-1.5">
-                  <Edit3 size={17} />
-                  Edit Profile
-                </span>
-              </Button>
+                {/* Avatar – click to open edit modal */}
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(true)}
+                    className="
+                      group relative block
+                      h-28 w-28 md:h-36 md:w-36
+                      rounded-full overflow-hidden
+                      bg-gradient-to-b from-[#006d30] to-[#006b2c]
+                      p-1 shadow-md
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary
+                    "
+                    title="Chỉnh sửa ảnh đại diện"
+                  >
+                    <Avatar
+                      src={resolvedAvatarUrl}
+                      alt={fullName}
+                      size="xl"
+                      className="h-full w-full bg-chaybook-primary"
+                    />
+                    {/* Hover overlay on avatar */}
+                    <span
+                      className="
+                        absolute inset-0 flex items-center justify-center
+                        rounded-full bg-black/40
+                        opacity-0 group-hover:opacity-100
+                        transition-opacity
+                      "
+                    >
+                      <Edit3 size={22} className="text-white" />
+                    </span>
+                  </button>
 
-              <Button type="button" size="sm" className="flex-1 md:flex-none">
-                <span className="flex items-center justify-center gap-1.5">
-                  <Plus size={18} />
-                  Create Post
-                </span>
-              </Button>
+                  {/* Online status */}
+                  <span className=" absolute bottom-2 right-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#00873a] ">
+                    <span className="h-2 w-2 rounded-full bg-white" />
+                  </span>
+                </div>
+
+                {/* User information */}
+                <div className="flex flex-col gap-1">
+                  {/* Name + Role */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1
+                      className="
+                        text-2xl font-bold text-gray-900
+                        md:text-3xl
+                      "
+                    >
+                      {fullName}
+                    </h1>
+
+                    <span
+                      className="
+                        rounded-full
+                        bg-[#caead6]
+                        px-2 py-0.5
+                        text-xs font-semibold
+                        text-[#314d3e]
+                      "
+                    >
+                      {roleLabel}
+                    </span>
+                  </div>
+
+                  {/* Username */}
+                  <p className="text-sm text-gray-600">
+                    @{username} • {profile?.email || ""}
+                  </p>
+
+                  {/* Statistics */}
+                  <div
+                    className="
+                      flex flex-wrap items-center gap-2
+                      pt-1
+                    "
+                  >
+                    {/* Member since */}
+                    <span
+                      className="
+                        flex items-center gap-1
+                        rounded-full
+                        bg-[#f1f4f1]
+                        px-2.5 py-1
+                        text-xs text-gray-600
+                      "
+                    >
+                      <CalendarDays size={15} className="text-chaybook-primary" />
+                      Thành viên từ {memberSince}
+                    </span>
+
+                    {/* Published posts */}
+                    <span
+                      className="
+                        flex items-center gap-1
+                        rounded-full
+                        bg-[#f1f4f1]
+                        px-2.5 py-1
+                        text-xs text-gray-600
+                      "
+                    >
+                      <FileText size={15} className="text-chaybook-primary" />
+                      {postCount} bài viết
+                    </span>
+
+                    {/* Total likes */}
+                    <span
+                      className="
+                        flex items-center gap-1
+                        rounded-full
+                        bg-[#f1f4f1]
+                        px-2.5 py-1
+                        text-xs text-gray-600
+                      "
+                    >
+                      <Heart size={15} className="text-chaybook-primary" />
+                      {totalLikes} lượt thích
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex w-full items-center gap-2 md:w-auto">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1 md:flex-none"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Edit3 size={17} />
+                    Edit Profile
+                  </span>
+                </Button>
+
+                <Button type="button" size="sm" className="flex-1 md:flex-none">
+                  <span className="flex items-center justify-center gap-1.5">
+                    <Plus size={18} />
+                    Create Post
+                  </span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* ── Edit Profile Modal ── */}
+      {showEditModal && (
+        <EditProfileModal
+          profile={profile}
+          onClose={() => setShowEditModal(false)}
+          onSaved={handleSaved}
+        />
+      )}
+    </>
   );
 }
 
