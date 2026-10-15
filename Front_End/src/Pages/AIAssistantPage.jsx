@@ -12,7 +12,7 @@ import { X, Check } from "lucide-react";
 import { sendAIMessage } from "../services/aiAssistantService";
 
 function AIAssistantPage() {
-  const { user } = useAuth();
+  const { user, loading: isAuthLoading } = useAuth();
 
   // Không còn tin nhắn mẫu
   const [messages, setMessages] = useState([]);
@@ -20,11 +20,17 @@ function AIAssistantPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
   const [lastUserPrompt, setLastUserPrompt] = useState("");
+  const [guestTrialExhausted, setGuestTrialExhausted] = useState(false);
 
   const [activeModal, setActiveModal] = useState(null);
 
   const handleSendMessage = async (text) => {
-    if (!text || !text.trim()) {
+    if (
+      !text ||
+      !text.trim() ||
+      isAuthLoading ||
+      (!user && guestTrialExhausted)
+    ) {
       return;
     }
 
@@ -52,6 +58,9 @@ function AIAssistantPage() {
       const aiMessage = await sendAIMessage(text);
 
       setMessages((prev) => [...prev, aiMessage]);
+      if (!user && aiMessage.guestQuestionsRemaining === 0) {
+        setGuestTrialExhausted(true);
+      }
     } catch (err) {
       console.error("AI Assistant error:", err);
 
@@ -59,7 +68,11 @@ function AIAssistantPage() {
 
       if (err.status === 429) {
         errorMessage =
-          "Bạn đã hết 3 lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+        setMessages((prev) =>
+          prev.filter((message) => message.id !== userMessage.id),
+        );
+        setGuestTrialExhausted(true);
       } else if (err.status === 503) {
         errorMessage =
           "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
@@ -137,6 +150,7 @@ function AIAssistantPage() {
           messages={messages}
           isTyping={isTyping}
           error={error}
+          guestTrialExhausted={!user && guestTrialExhausted}
           onRetry={handleRetry}
           onSelectSuggestion={handleSendMessage}
           userName={user?.fullName || user?.name || "You"}
@@ -144,12 +158,15 @@ function AIAssistantPage() {
 
         {/* Input */}
         <div className="mt-auto flex flex-col gap-2.5 border-t border-gray-200/60 pt-3">
-          <ChatInput onSendMessage={handleSendMessage} disabled={isTyping} />
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+            />
 
-          <SuggestionChips
-            onSelectSuggestion={handleSendMessage}
-            disabled={isTyping}
-          />
+            <SuggestionChips
+              onSelectSuggestion={handleSendMessage}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+            />
         </div>
       </div>
 

@@ -41,22 +41,23 @@ public class ChatbotService {
 
     // Đổi chữ ký hàm ở đầu ChatbotService
     public ChatMessageResponse sendMessage(Integer userId, String guestId, ChatMessageRequest request) {
+        boolean guestRequest = userId == null;
+        if (guestRequest && !trialLimiter.tryAcquire(guestId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục.");
+        }
+
         try {
             Integer conversationId = request.getConversationId();
             String userMessage = request.getMessage();
-
-            // 1. Kiểm tra giới hạn dùng thử nếu là Guest
-            if (userId == null) {
-                if (!trialLimiter.isAllowed(guestId)) {
-                    throw new RuntimeException("Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục.");
-                }
-            }
 
             // 2. Lấy hoặc tạo Conversation VÀ CHẶN IDOR
             AiConversation conversation;
             if (conversationId != null) {
                 conversation = conversationRepository.findById(conversationId)
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "Không tìm thấy hội thoại (Conversation ID: " + conversationId + ")"));
 
                 // --- KIỂM TRA IDOR (BẢO MẬT) ---
@@ -66,12 +67,16 @@ public class ChatbotService {
                     // User đã đăng nhập không được truy cập hội thoại của người khác hoặc hội thoại
                     // của guest
                     if (ownerId == null || !ownerId.equals(userId)) {
-                        throw new RuntimeException("Lỗi bảo mật (IDOR): Bạn không có quyền truy cập hội thoại này.");
+                        throw new ResponseStatusException(
+                                HttpStatus.FORBIDDEN,
+                                "Bạn không có quyền truy cập hội thoại này.");
                     }
                 } else {
                     // Guest không được truy cập hội thoại của người dùng đã đăng nhập
                     if (ownerId != null) {
-                        throw new RuntimeException("Lỗi bảo mật: Khách không thể truy cập hội thoại của người dùng.");
+                        throw new ResponseStatusException(
+                                HttpStatus.FORBIDDEN,
+                                "Khách không thể truy cập hội thoại của người dùng.");
                     }
                 }
                 // ---------------------------------
@@ -80,7 +85,9 @@ public class ChatbotService {
                 conversation = new AiConversation();
                 if (userId != null) {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("Không tìm thấy User (User ID: " + userId + ")"));
+                            .orElseThrow(() -> new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "Không tìm thấy tài khoản người dùng."));
                     conversation.setUser(user);
                 }
                 conversation.setTitle(generateTitle(userMessage));
@@ -110,22 +117,18 @@ public class ChatbotService {
             aiMsg.setMessage(aiReply);
             aiMsg = messageRepository.save(aiMsg); // Gán lại để lấy được messageId vừa sinh ra
 
-            // 8. Tăng số đếm nếu là Guest
-            if (userId == null) {
-                trialLimiter.increment(guestId);
-            }
-
             // Trả về JSON DTO hoàn chỉnh cho Frontend
             return new ChatMessageResponse(
                     conversation.getConversationId(),
                     aiMsg.getMessageId(),
-                    aiReply);
+                    aiReply,
+                    guestRequest ? trialLimiter.getRemaining(guestId) : null);
 
-        } catch (Exception e) {
-            System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
-            e.printStackTrace();
-            System.err.println("=============================================");
-            throw new RuntimeException(e);
+        } catch (RuntimeException e) {
+            if (guestRequest) {
+                trialLimiter.release(guestId);
+            }
+            throw e;
         }
     }
 
