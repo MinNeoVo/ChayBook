@@ -23,7 +23,7 @@ public class AdminPostVideoRepository {
                 p.post_id AS content_id,
                 'POST' AS content_type,
                 p.title AS title,
-                CAST(LEFT(COALESCE(p.content, ''), 500) AS VARCHAR(500)) AS description,
+                CAST(COALESCE(p.content, N'') AS NVARCHAR(MAX)) AS description,
                 COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
                 p.created_at AS submitted_at,
                 p.status AS status,
@@ -38,7 +38,7 @@ public class AdminPostVideoRepository {
                 v.video_id AS content_id,
                 'VIDEO' AS content_type,
                 v.title AS title,
-                CAST(LEFT(COALESCE(v.description, ''), 500) AS VARCHAR(500)) AS description,
+                CAST(COALESCE(v.description, N'') AS NVARCHAR(MAX)) AS description,
                 COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
                 v.created_at AS submitted_at,
                 v.status AS status,
@@ -135,6 +135,7 @@ public class AdminPostVideoRepository {
                     UNION ALL
                     SELECT status FROM VIDEO
                 ) submissions
+                WHERE UPPER(COALESCE(status, '')) <> 'REMOVED'
                 """).getSingleResult();
 
         return new AdminPostVideoResponse.Statistics(
@@ -143,6 +144,23 @@ public class AdminPostVideoRepository {
                 ((Number) row[2]).longValue(),
                 ((Number) row[3]).longValue()
         );
+    }
+
+    public AdminPostVideoResponse findDetail(String type, Integer id) {
+        Query query = entityManager.createNativeQuery("""
+                SELECT content_id, content_type, title, description, creator,
+                       submitted_at, status, thumbnail_url, media_url
+                FROM (%s) content
+                WHERE content_type = :type AND content_id = :id
+                  AND UPPER(COALESCE(status, '')) <> 'REMOVED'
+                """.formatted(CONTENT_UNION));
+        query.setParameter("type", type);
+        query.setParameter("id", id);
+        try {
+            return toResponse((Object[]) query.getSingleResult());
+        } catch (NoResultException exception) {
+            return null;
+        }
     }
 
     public String findStatus(String type, Integer id) {
