@@ -1,7 +1,6 @@
 package com.chaybook.backend.assistant.service;
 
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -9,22 +8,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class GuestTrialLimiter {
 
-    private static final int DAILY_LIMIT = 5;
+    private static final int TRIAL_LIMIT = 3;
 
     private final Map<String, AtomicInteger> usageMap = new ConcurrentHashMap<>();
 
-    public boolean isAllowed(String guestId) {
-        String key = buildKey(guestId);
-        AtomicInteger count = usageMap.computeIfAbsent(key, k -> new AtomicInteger(0));
-        return count.get() < DAILY_LIMIT;
+    public boolean tryAcquire(String guestId) {
+        AtomicInteger count = usageMap.computeIfAbsent(guestId, key -> new AtomicInteger());
+        int currentCount = count.get();
+
+        while (currentCount < TRIAL_LIMIT) {
+            if (count.compareAndSet(currentCount, currentCount + 1)) {
+                return true;
+            }
+            currentCount = count.get();
+        }
+
+        return false;
     }
 
-    public void increment(String guestId) {
-        String key = buildKey(guestId);
-        usageMap.computeIfAbsent(key, k -> new AtomicInteger(0)).incrementAndGet();
+    public void release(String guestId) {
+        usageMap.computeIfAbsent(guestId, key -> new AtomicInteger()).decrementAndGet();
     }
 
-    private String buildKey(String guestId) {
-        return guestId + "_" + LocalDate.now();
+    public int getRemaining(String guestId) {
+        AtomicInteger count = usageMap.get(guestId);
+        return count == null ? TRIAL_LIMIT : Math.max(0, TRIAL_LIMIT - count.get());
     }
 }
