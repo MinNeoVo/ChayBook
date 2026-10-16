@@ -137,6 +137,10 @@ function LoginForm() {
         </Button>
       </form>
 
+      <div className="mt-3 text-right">
+        <Link to="/forgot-password" className="text-sm font-medium text-chaybook-primary hover:underline">Forgot password?</Link>
+      </div>
+
       {/* Google + Facebook */}
       <SocialLogin />
 

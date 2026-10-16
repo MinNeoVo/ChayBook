@@ -6,6 +6,10 @@ import com.chaybook.backend.auth.dto.LoginResponse;
 import com.chaybook.backend.auth.dto.MeResponse;
 import com.chaybook.backend.auth.dto.RegisterRequest;
 import com.chaybook.backend.auth.dto.RegisterResponse;
+import com.chaybook.backend.auth.dto.VerifyRegistrationRequest;
+import com.chaybook.backend.auth.dto.ResetPasswordRequest;
+import com.chaybook.backend.auth.entity.AuthOtpChallenge;
+import com.chaybook.backend.auth.repository.AuthOtpChallengeRepository;
 import com.chaybook.backend.security.JwtService;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
@@ -17,10 +21,15 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.time.LocalDateTime;
+import java.security.SecureRandom;
 
 
 @Service
@@ -28,15 +37,25 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthOtpChallengeRepository otpRepository;
+    private final JavaMailSender mailSender;
+    private final String mailFrom;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            AuthOtpChallengeRepository otpRepository,
+            JavaMailSender mailSender,
+            @Value("${app.mail.from:}") String mailFrom
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.otpRepository = otpRepository;
+        this.mailSender = mailSender;
+        this.mailFrom = mailFrom;
     }
 
 public LoginResult login(LoginRequest request) {
@@ -92,7 +111,7 @@ return new LoginResult(response, token);
 }
 
     @Transactional
-    public RegisterResponse register(RegisterRequest request) {
+    public void startRegistration(RegisterRequest request) {
 
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(
@@ -115,30 +134,104 @@ return new LoginResult(response, token);
             );
         }
 
+        String code = newOtp();
+        AuthOtpChallenge challenge = new AuthOtpChallenge();
+        challenge.setEmail(request.email());
+        challenge.setPurpose("REGISTER");
+        challenge.setOtpHash(passwordEncoder.encode(code));
+        challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        challenge.setAttempts(0);
+        challenge.setUsername(request.username());
+        challenge.setPasswordHash(passwordEncoder.encode(request.password()));
+        challenge.setFullName(request.fullName());
+        otpRepository.deleteByEmailAndPurpose(request.email(), "REGISTER");
+        otpRepository.save(challenge);
+        sendOtp(request.email(), code, "Xác minh email đăng ký ChayBook");
+    }
+
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public RegisterResponse verifyRegistration(VerifyRegistrationRequest request) {
+        AuthOtpChallenge challenge = getValidChallenge(request.email().strip().toLowerCase(), "REGISTER", request.code());
+        if (userRepository.existsByEmailIgnoreCase(challenge.getEmail())
+                || userRepository.existsByUsernameIgnoreCase(challenge.getUsername())) {
+            otpRepository.delete(challenge);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email hoặc username đã được sử dụng.");
+        }
         User user = new User();
+        user.setUsername(challenge.getUsername());
+        user.setEmail(challenge.getEmail());
+        user.setFullName(challenge.getFullName());
+        user.setPasswordHash(challenge.getPasswordHash());
+        User saved = userRepository.saveAndFlush(user);
+        otpRepository.delete(challenge);
+        return new RegisterResponse("Đăng ký thành công.", new RegisterResponse.UserData(
+                saved.getUserId(), saved.getUsername(), saved.getEmail(), saved.getFullName(), saved.getRole()));
+    }
 
-        user.setUsername(request.username());
-        user.setEmail(request.email());
-        user.setFullName(request.fullName());
+    @Transactional
+    public void requestPasswordReset(String email) {
+        String normalizedEmail = email.strip().toLowerCase();
+        Optional<User> account = userRepository.findByEmailIgnoreCase(normalizedEmail);
+        if (account.isEmpty()) return;
+        String code = newOtp();
+        AuthOtpChallenge challenge = new AuthOtpChallenge();
+        challenge.setEmail(normalizedEmail);
+        challenge.setPurpose("PASSWORD_RESET");
+        challenge.setOtpHash(passwordEncoder.encode(code));
+        challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        challenge.setAttempts(0);
+        otpRepository.deleteByEmailAndPurpose(normalizedEmail, "PASSWORD_RESET");
+        otpRepository.save(challenge);
+        sendOtp(normalizedEmail, code, "Mã OTP đặt lại mật khẩu ChayBook");
+    }
 
-        user.setPasswordHash(
-                passwordEncoder.encode(request.password())
-        );
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public void resetPassword(ResetPasswordRequest request) {
+        if (request.newPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được vượt quá 72 byte.");
+        }
+        AuthOtpChallenge challenge = getValidChallenge(request.email().strip().toLowerCase(), "PASSWORD_RESET", request.code());
+        User user = userRepository.findByEmailIgnoreCase(challenge.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ."));
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+        otpRepository.delete(challenge);
+    }
 
+    private AuthOtpChallenge getValidChallenge(String email, String purpose, String code) {
+        AuthOtpChallenge challenge = otpRepository.findByEmailAndPurpose(email, purpose)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn."));
+        if (challenge.getExpiresAt().isBefore(LocalDateTime.now())) {
+            otpRepository.delete(challenge);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn.");
+        }
+        if (challenge.getAttempts() >= 5) {
+            otpRepository.delete(challenge);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn.");
+        }
+        if (!passwordEncoder.matches(code, challenge.getOtpHash())) {
+            if (challenge.getAttempts() + 1 >= 5) {
+                otpRepository.delete(challenge);
+            } else {
+                challenge.setAttempts(challenge.getAttempts() + 1);
+                otpRepository.save(challenge);
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn.");
+        }
+        return challenge;
+    }
 
+    private String newOtp() {
+        return String.format("%06d", secureRandom.nextInt(1_000_000));
+    }
 
-        User savedUser = userRepository.saveAndFlush(user);
-
-        return new RegisterResponse(
-                "Register successful",
-                new RegisterResponse.UserData(
-                        savedUser.getUserId(),
-                        savedUser.getUsername(),
-                        savedUser.getEmail(),
-                        savedUser.getFullName(),
-                        savedUser.getRole()
-                )
-        );
+    private void sendOtp(String email, String code, String subject) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        if (mailFrom != null && !mailFrom.isBlank()) message.setFrom(mailFrom);
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText("Mã OTP của bạn là " + code + ". Mã có hiệu lực trong 10 phút và chỉ sử dụng một lần.");
+        mailSender.send(message);
     }
 
     public MeResponse getCurrentUser(org.springframework.security.core.Authentication authentication) {

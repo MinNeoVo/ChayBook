@@ -7,6 +7,18 @@ export const registerUser = async (userData) => {
   });
 };
 
+export const verifyRegistration = async (email, code) => apiFetch("/auth/register/verify", {
+  method: "POST", body: JSON.stringify({ email, code }),
+});
+
+export const requestPasswordReset = async (email) => apiFetch("/auth/forgot-password", {
+  method: "POST", body: JSON.stringify({ email }),
+});
+
+export const resetPassword = async (email, code, newPassword) => apiFetch("/auth/reset-password", {
+  method: "POST", body: JSON.stringify({ email, code, newPassword }),
+});
+
 export const loginUser = async (loginData) => {
   return apiFetch("/auth/login", {
     method: "POST",

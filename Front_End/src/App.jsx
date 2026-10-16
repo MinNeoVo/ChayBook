@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
 
 import ContentPage from "./Pages/ContentPage";
 import ContentPageDetail from "./Pages/ContentPageDetail";
@@ -42,6 +43,7 @@ function App() {
 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         <Route path="/content" element={<ContentPage />} />
         <Route path="/content/:id" element={<ContentPageDetail />} />
