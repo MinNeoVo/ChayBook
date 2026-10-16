@@ -8,6 +8,7 @@ BEGIN
         otp_hash VARCHAR(255) NOT NULL,
         expires_at DATETIME2 NOT NULL,
         attempts INT NOT NULL CONSTRAINT DF_AUTH_OTP_ATTEMPTS DEFAULT 0,
+        verified BIT NOT NULL CONSTRAINT DF_AUTH_OTP_VERIFIED DEFAULT 0,
         username VARCHAR(50) NULL,
         password_hash VARCHAR(255) NULL,
         full_name VARCHAR(255) NULL,

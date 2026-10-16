@@ -8,6 +8,7 @@ import com.chaybook.backend.auth.dto.RegisterRequest;
 import com.chaybook.backend.auth.dto.RegisterResponse;
 import com.chaybook.backend.auth.dto.VerifyRegistrationRequest;
 import com.chaybook.backend.auth.dto.ResetPasswordRequest;
+import com.chaybook.backend.auth.dto.VerifyPasswordResetRequest;
 import com.chaybook.backend.auth.entity.AuthOtpChallenge;
 import com.chaybook.backend.auth.repository.AuthOtpChallengeRepository;
 import com.chaybook.backend.security.JwtService;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import java.security.SecureRandom;
+import java.util.Base64;
 
 
 @Service
@@ -143,6 +145,7 @@ return new LoginResult(response, token);
         challenge.setOtpHash(passwordEncoder.encode(code));
         challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         challenge.setAttempts(0);
+        challenge.setVerified(false);
         challenge.setUsername(request.username());
         challenge.setPasswordHash(passwordEncoder.encode(request.password()));
         challenge.setFullName(request.fullName());
@@ -183,8 +186,25 @@ return new LoginResult(response, token);
         challenge.setOtpHash(passwordEncoder.encode(code));
         challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         challenge.setAttempts(0);
+        challenge.setVerified(false);
         otpRepository.save(challenge);
         sendOtp(normalizedEmail, code, "Mã OTP đặt lại mật khẩu ChayBook");
+    }
+
+    @Transactional(noRollbackFor = ResponseStatusException.class)
+    public String verifyPasswordReset(VerifyPasswordResetRequest request) {
+        String email = request.email().strip().toLowerCase();
+        AuthOtpChallenge challenge = getValidChallenge(email, "PASSWORD_RESET", request.code());
+        byte[] tokenBytes = new byte[32];
+        secureRandom.nextBytes(tokenBytes);
+        String resetToken = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(tokenBytes);
+        challenge.setOtpHash(passwordEncoder.encode(resetToken));
+        challenge.setVerified(true);
+        challenge.setAttempts(0);
+        challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        otpRepository.save(challenge);
+        return resetToken;
     }
 
     @Transactional(noRollbackFor = ResponseStatusException.class)
@@ -192,7 +212,14 @@ return new LoginResult(response, token);
         if (request.newPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được vượt quá 72 byte.");
         }
-        AuthOtpChallenge challenge = getValidChallenge(request.email().strip().toLowerCase(), "PASSWORD_RESET", request.code());
+        String email = request.email().strip().toLowerCase();
+        AuthOtpChallenge challenge = otpRepository.findByEmailAndPurpose(email, "PASSWORD_RESET")
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."));
+        if (!challenge.isVerified()
+                || challenge.getExpiresAt().isBefore(LocalDateTime.now())
+                || !passwordEncoder.matches(request.resetToken(), challenge.getOtpHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+        }
         User user = userRepository.findByEmailIgnoreCase(challenge.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ."));
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));

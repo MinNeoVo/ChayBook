@@ -52,6 +52,13 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "Nếu email có tài khoản, mã OTP sẽ được gửi đến hộp thư."));
     }
 
+    @PostMapping("/forgot-password/verify")
+    public ResponseEntity<PasswordResetVerificationResponse> verifyPasswordReset(
+            @Valid @RequestBody VerifyPasswordResetRequest request) {
+        return ResponseEntity.ok(new PasswordResetVerificationResponse(
+                authService.verifyPasswordReset(request)));
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {

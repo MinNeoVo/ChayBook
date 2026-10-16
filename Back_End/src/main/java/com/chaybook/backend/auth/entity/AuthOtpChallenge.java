@@ -27,6 +27,9 @@ public class AuthOtpChallenge {
     @Column(nullable = false)
     private int attempts;
 
+    @Column(nullable = false)
+    private boolean verified;
+
     @Column(name = "username", length = 50)
     private String username;
 
@@ -47,6 +50,8 @@ public class AuthOtpChallenge {
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
     public int getAttempts() { return attempts; }
     public void setAttempts(int attempts) { this.attempts = attempts; }
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public String getPasswordHash() { return passwordHash; }

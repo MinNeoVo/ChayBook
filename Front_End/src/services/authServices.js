@@ -15,8 +15,12 @@ export const requestPasswordReset = async (email) => apiFetch("/auth/forgot-pass
   method: "POST", body: JSON.stringify({ email }),
 });
 
-export const resetPassword = async (email, code, newPassword) => apiFetch("/auth/reset-password", {
-  method: "POST", body: JSON.stringify({ email, code, newPassword }),
+export const verifyPasswordResetOtp = async (email, code) => apiFetch("/auth/forgot-password/verify", {
+  method: "POST", body: JSON.stringify({ email, code }),
+});
+
+export const resetPassword = async (email, resetToken, newPassword) => apiFetch("/auth/reset-password", {
+  method: "POST", body: JSON.stringify({ email, resetToken, newPassword }),
 });
 
 export const loginUser = async (loginData) => {
