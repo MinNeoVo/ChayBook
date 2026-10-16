@@ -135,7 +135,9 @@ return new LoginResult(response, token);
         }
 
         String code = newOtp();
-        AuthOtpChallenge challenge = new AuthOtpChallenge();
+        AuthOtpChallenge challenge = otpRepository
+                .findByEmailAndPurpose(request.email(), "REGISTER")
+                .orElseGet(AuthOtpChallenge::new);
         challenge.setEmail(request.email());
         challenge.setPurpose("REGISTER");
         challenge.setOtpHash(passwordEncoder.encode(code));
@@ -144,7 +146,6 @@ return new LoginResult(response, token);
         challenge.setUsername(request.username());
         challenge.setPasswordHash(passwordEncoder.encode(request.password()));
         challenge.setFullName(request.fullName());
-        otpRepository.deleteByEmailAndPurpose(request.email(), "REGISTER");
         otpRepository.save(challenge);
         sendOtp(request.email(), code, "Xác minh email đăng ký ChayBook");
     }
@@ -174,13 +175,14 @@ return new LoginResult(response, token);
         Optional<User> account = userRepository.findByEmailIgnoreCase(normalizedEmail);
         if (account.isEmpty()) return;
         String code = newOtp();
-        AuthOtpChallenge challenge = new AuthOtpChallenge();
+        AuthOtpChallenge challenge = otpRepository
+                .findByEmailAndPurpose(normalizedEmail, "PASSWORD_RESET")
+                .orElseGet(AuthOtpChallenge::new);
         challenge.setEmail(normalizedEmail);
         challenge.setPurpose("PASSWORD_RESET");
         challenge.setOtpHash(passwordEncoder.encode(code));
         challenge.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         challenge.setAttempts(0);
-        otpRepository.deleteByEmailAndPurpose(normalizedEmail, "PASSWORD_RESET");
         otpRepository.save(challenge);
         sendOtp(normalizedEmail, code, "Mã OTP đặt lại mật khẩu ChayBook");
     }
