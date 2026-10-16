@@ -91,6 +91,7 @@ public class SecurityConfig {
                                 "/api/recipes/",
                                 "/api/recipes/**",
                                 "/api/articles",
+                                "/api/article-images/*",
                                 "/api/articles/**")
                         .permitAll()
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BadgeCheck,
   Ban,
@@ -23,7 +23,12 @@ import {
   X,
 } from "lucide-react";
 
-import { createAdminPostVideoMockData } from "../../data/adminPostVideoMock";
+import useAdminResource from "../../hooks/useAdminResource";
+import AdminRequestState from "../../components/admin/AdminRequestState";
+import {
+  getAdminSubmissions, getAdminSubmissionStatistics, getAdminSubmission,
+  updateAdminSubmissionStatus, resolveAdminMediaUrl,
+} from "../../services/adminContentServices";
 
 const PAGE_SIZE = 7;
 const NUMBER_FORMAT = new Intl.NumberFormat("en-US");
@@ -32,8 +37,7 @@ const STAT_CARDS = [
   {
     key: "total",
     title: "Total Submissions",
-    description: "vs past 7 days review load",
-    growth: "+12%",
+    description: "Posts and videos in the moderation queue",
     growthTone: "green",
     Icon: FileImage,
     tone: "neutral",
@@ -41,8 +45,7 @@ const STAT_CARDS = [
   {
     key: "pending",
     title: "Pending Moderation",
-    description: "Average response time: 24m",
-    growth: "+8%",
+    description: "Awaiting moderation",
     growthTone: "neutral",
     Icon: Clock3,
     tone: "neutral",
@@ -51,7 +54,6 @@ const STAT_CARDS = [
     key: "approved",
     title: "Approved & Live",
     description: "Published directly to feed",
-    growth: "+15%",
     growthTone: "green",
     Icon: BadgeCheck,
     tone: "green",
@@ -59,8 +61,7 @@ const STAT_CARDS = [
   {
     key: "rejected",
     title: "Rejected Entries",
-    description: "Feedback logs dispatched to users",
-    growth: "-2%",
+    description: "Rejected by moderators",
     growthTone: "red",
     Icon: Ban,
     tone: "red",
@@ -70,7 +71,6 @@ const STAT_CARDS = [
 const GUIDELINES = [
   "Review that the post or video relates to plant-based food or the ChayBook community.",
   "Check that images, music, and other media appear appropriate to share.",
-  "Give a clear reason when declining a submission so its creator can understand what to revise.",
   "These examples are for this UI demonstration and are not official ChayBook policies.",
 ];
 
@@ -85,24 +85,16 @@ function formatNumber(value) {
   return NUMBER_FORMAT.format(value);
 }
 
-function filterRecords(records, contentType, statusFilter, searchQuery) {
-  const query = searchQuery.trim().toLocaleLowerCase();
-
-  return records.filter((record) => {
-    const matchesType = contentType === "ALL" || record.type === contentType;
-    const matchesStatus = statusFilter === "ALL" || record.status === statusFilter;
-    const searchableText = [
-      record.id,
-      String(record.id).padStart(4, "0"),
-      record.title,
-      record.creator,
-      record.description,
-    ]
-      .join(" ")
-      .toLocaleLowerCase();
-
-    return matchesType && matchesStatus && searchableText.includes(query);
-  });
+function toRecord(item) {
+  const submitted = item.submittedAt ? new Date(item.submittedAt) : null;
+  const validDate = submitted && !Number.isNaN(submitted.getTime());
+  return {
+    ...item,
+    thumbnailUrl: resolveAdminMediaUrl(item.thumbnailUrl),
+    videoUrl: resolveAdminMediaUrl(item.mediaUrl),
+    submittedDate: validDate ? submitted.toLocaleDateString("en-GB") : "—",
+    submittedTime: validDate ? submitted.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "—",
+  };
 }
 
 function getPageNumbers(totalPages, currentPage) {
@@ -125,14 +117,14 @@ function ContentThumbnail({ record, large = false, onClick }) {
       >
         {fallbackEmojis[(record.id - 1) % fallbackEmojis.length]}
       </span>
-      <img
+      {record.thumbnailUrl && <img
         src={large ? record.thumbnailUrl.replace("w=120", "w=1200") : record.thumbnailUrl}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
         onError={(event) => {
           event.currentTarget.hidden = true;
         }}
-      />
+      />}
       {record.type === "VIDEO" && (
         <span
           aria-hidden="true"
@@ -215,11 +207,11 @@ function StatCard({ card, value }) {
       </div>
       <div className="mt-2 flex items-end justify-between gap-2">
         <p className={`text-2xl font-bold tracking-tight sm:text-3xl ${valueTone}`}>
-          {formatNumber(value)}
+          {value == null ? "—" : formatNumber(value)}
         </p>
-        <span className={`mb-1 whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-semibold ${growthTone}`}>
+        {card.growth && <span className={`mb-1 whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-semibold ${growthTone}`}>
           {card.growth}
-        </span>
+        </span>}
       </div>
       <p className="mt-1.5 text-[11px] leading-4 text-slate-500">{card.description}</p>
     </section>
@@ -287,16 +279,30 @@ function ContentSummary({ record }) {
   );
 }
 
+function VideoPreview({ record }) {
+  const [failed, setFailed] = useState(false);
+  if (failed || !record.videoUrl) {
+    return <div className="space-y-3">
+      <ContentThumbnail record={record} large />
+      <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+        {record.videoUrl ? <>This video could not be played. <a href={record.videoUrl} target="_blank" rel="noopener noreferrer" className="underline">Open original video</a></> : "No playable video URL is available."}
+      </p>
+    </div>;
+  }
+  return <video src={record.videoUrl} controls playsInline preload="metadata"
+    poster={record.thumbnailUrl || undefined} onError={() => setFailed(true)}
+    aria-label={`Video player for ${record.title}`}
+    className="aspect-video w-full rounded-lg bg-slate-950 object-contain" />;
+}
+
 function ModerationDialog({
   dialog,
   onClose,
   onApprove,
   onReject,
   onRemove,
-  rejectionDraft,
-  setRejectionDraft,
-  rejectionError,
-  setRejectionError,
+  busy,
+  error,
 }) {
   if (!dialog) return null;
 
@@ -311,13 +317,17 @@ function ModerationDialog({
     </button>
   );
   const primaryButton = (label, onClick, tone = "green", type = "button") => (
+    <>
+    {error && <p role="alert" className="w-full text-sm text-red-700">{error}</p>}
     <button
       type={type}
+      disabled={busy}
       onClick={type === "submit" ? undefined : onClick}
       className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${tone === "red" ? "bg-red-600 hover:bg-red-700" : "bg-chaybook-primary hover:bg-chaybook-hover"}`}
     >
-      {label}
+      {busy ? "Saving…" : label}
     </button>
+    </>
   );
 
   if (kind === "guidelines") {
@@ -391,43 +401,15 @@ function ModerationDialog({
     return (
       <ModalShell title="Reject submission" icon={CircleAlert} onClose={onClose}>
         <p className="mb-4 text-sm leading-6 text-slate-600">
-          Add a reason for the creator. This change is stored only in local page state.
+          Confirm rejection of this submission. Rejection feedback is currently unavailable.
         </p>
         <ContentSummary record={record} />
-        <form
-          className="mt-4 space-y-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            onReject();
-          }}
-        >
-          <label htmlFor="rejection-reason" className="block text-sm font-semibold text-slate-700">
-            Rejection reason <span className="text-red-600">*</span>
-          </label>
-          <textarea
-            id="rejection-reason"
-            rows={3}
-            value={rejectionDraft}
-            onChange={(event) => {
-              setRejectionDraft(event.target.value);
-              if (event.target.value.trim()) setRejectionError(false);
-            }}
-            aria-invalid={rejectionError}
-            aria-required="true"
-            aria-describedby={rejectionError ? "rejection-error" : undefined}
-            className="w-full resize-y rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-chaybook-primary focus:ring-2 focus:ring-emerald-700/10"
-            placeholder="Explain what should be changed..."
-          />
-          {rejectionError && (
-            <p id="rejection-error" role="alert" className="text-xs font-medium text-red-700">
-              Enter a rejection reason before confirming.
-            </p>
-          )}
+        <div className="mt-4">
           <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
             {closeButton}
-            {primaryButton("Confirm rejection", undefined, "red", "submit")}
+            {primaryButton("Confirm rejection", onReject, "red")}
           </div>
-        </form>
+        </div>
       </ModalShell>
     );
   }
@@ -437,19 +419,8 @@ function ModerationDialog({
 
     return (
       <ModalShell title={`${mediaType} details`} icon={record.type === "VIDEO" ? Video : FileImage} onClose={onClose} width="max-w-xl">
-        {record.type === "VIDEO" && record.videoUrl ? (
-          <video
-            key={record.id}
-            controls
-            playsInline
-            preload="metadata"
-            poster={record.thumbnailUrl}
-            aria-label={`Video player for ${record.title}`}
-            className="aspect-video w-full rounded-lg bg-slate-950 object-contain"
-          >
-            <source src={record.videoUrl} type="video/mp4" />
-            Your browser does not support HTML video.
-          </video>
+        {record.type === "VIDEO" ? (
+          <VideoPreview key={`${record.type}-${record.id}`} record={record} />
         ) : (
           <ContentThumbnail record={record} large />
         )}
@@ -460,7 +431,8 @@ function ModerationDialog({
           </div>
           <StatusBadge status={record.status} />
         </div>
-        <p className="mt-3 text-sm leading-6 text-slate-700">{record.description}</p>
+        <AdminRequestState loading={dialog.loading} error={error} />
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">{record.description}</p>
         <dl className="mt-5 grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs font-medium text-slate-500">Submitted</dt>
@@ -498,12 +470,12 @@ function ModerationDialog({
         footer={
           <>
             {closeButton}
-            {primaryButton("Remove from mock data", onRemove, "red")}
+            {primaryButton("Remove submission", onRemove, "red")}
           </>
         }
       >
         <p className="mb-4 text-sm leading-6 text-slate-600">
-          The item will be removed from this page's local dataset only.
+          The item will be removed from the moderation queue and public feed.
         </p>
         <ContentSummary record={record} />
       </ModalShell>
@@ -624,7 +596,7 @@ function ModerationRow({ record, onOpenDialog }) {
               <ActionButton
                 Icon={Trash2}
                 tone="red"
-                label={`Remove ${record.title} from mock data`}
+                label={`Remove ${record.title}`}
                 onClick={() => onOpenDialog("remove", record)}
               >
                 Remove
@@ -633,13 +605,6 @@ function ModerationRow({ record, onOpenDialog }) {
           )}
           {record.status === "REJECTED" && (
             <>
-              <ActionButton
-                Icon={Info}
-                label={`View rejection reason for ${record.title}`}
-                onClick={() => onOpenDialog("reason", record)}
-              >
-                Reason
-              </ActionButton>
               <ActionButton
                 Icon={Eye}
                 label={`View ${record.title}`}
@@ -664,59 +629,71 @@ function ModerationRow({ record, onOpenDialog }) {
 }
 
 function AdminPostVideoPage() {
-  const [records, setRecords] = useState(createAdminPostVideoMockData);
   const [contentType, setContentType] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("PENDING");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [dialog, setDialog] = useState(null);
-  const [rejectionDraft, setRejectionDraft] = useState("");
-  const [rejectionError, setRejectionError] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [notice, setNotice] = useState("");
+  const load = useCallback((signal) => getAdminSubmissions({
+    type: contentType, status: statusFilter, q: searchQuery.trim(),
+    page: currentPage - 1, size: PAGE_SIZE, signal,
+  }).then((data) => {
+    if (!signal.aborted && currentPage > Math.max(1, data.totalPages)) {
+      setCurrentPage(Math.max(1, data.totalPages));
+    }
+    return data;
+  }), [contentType, statusFilter, searchQuery, currentPage]);
+  const resource = useAdminResource(load);
+  const loadStatistics = useCallback((signal) => getAdminSubmissionStatistics({ signal }), []);
+  const statistics = useAdminResource(loadStatistics);
+  const detailKind = dialog?.kind;
+  const detailType = dialog?.record?.type;
+  const detailId = dialog?.record?.id;
+
+  useEffect(() => {
+    if (detailKind !== "detail") return;
+    const controller = new AbortController();
+    getAdminSubmission(detailType, detailId, { signal: controller.signal })
+      .then((data) => {
+        if (!controller.signal.aborted) setDialog({ kind: "detail", record: toRecord(data), loading: false });
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) {
+          setActionError(error.message);
+          setDialog((current) => ({ ...current, loading: false }));
+        }
+      });
+    return () => controller.abort();
+  }, [detailKind, detailType, detailId]);
 
   useEffect(() => {
     if (!dialog) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") setDialog(null);
+      if (event.key === "Escape" && !busy) setDialog(null);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [dialog]);
+  }, [dialog, busy]);
 
-  const counts = useMemo(
-    () =>
-      records.reduce(
-        (totals, record) => {
-          totals.total += 1;
-          if (record.type === "POST") totals.posts += 1;
-          if (record.type === "VIDEO") totals.videos += 1;
-          if (record.status === "PENDING") totals.pending += 1;
-          if (record.status === "APPROVED") totals.approved += 1;
-          if (record.status === "REJECTED") totals.rejected += 1;
-          return totals;
-        },
-        { total: 0, posts: 0, videos: 0, pending: 0, approved: 0, rejected: 0 },
-      ),
-    [records],
-  );
-
-  const statsValues = {
-    total: counts.total,
-    pending: counts.pending,
-    approved: counts.approved,
-    rejected: counts.rejected,
+  const counts = {
+    total: statistics.data?.totalSubmission,
+    pending: statistics.data?.pendingModeration,
+    approved: statistics.data?.approvedLive,
+    rejected: statistics.data?.rejectedEntries,
   };
 
-  const filteredRecords = useMemo(
-    () => filterRecords(records, contentType, statusFilter, searchQuery),
-    [records, contentType, statusFilter, searchQuery],
-  );
-  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / PAGE_SIZE));
+  const statsValues = counts;
+  const totalElements = resource.data?.totalElements ?? 0;
+  const totalPages = Math.max(1, resource.data?.totalPages ?? 0);
   const page = Math.min(currentPage, totalPages);
-  const visibleRecords = filteredRecords.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const visibleRecords = (resource.data?.items ?? []).map(toRecord);
   const pageNumbers = getPageNumbers(totalPages, page);
-  const firstItem = filteredRecords.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const lastItem = Math.min(page * PAGE_SIZE, filteredRecords.length);
+  const firstItem = visibleRecords.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const lastItem = visibleRecords.length === 0 ? 0 : (page - 1) * PAGE_SIZE + visibleRecords.length;
   const statusDescription =
     statusFilter === "ALL"
       ? "matching items"
@@ -728,61 +705,42 @@ function AdminPostVideoPage() {
   };
 
   const openDialog = (kind, record = null) => {
-    setRejectionDraft("");
-    setRejectionError(false);
-    setDialog({ kind, record });
+    if (busy) return;
+    setActionError("");
+    setDialog({ kind, record, loading: kind === "detail" });
   };
 
   const closeDialog = () => {
+    if (busy) return;
     setDialog(null);
-    setRejectionDraft("");
-    setRejectionError(false);
+    setActionError("");
   };
 
-  const commitRecords = (nextRecords) => {
-    setRecords(nextRecords);
-    const nextCount = filterRecords(
-      nextRecords,
-      contentType,
-      statusFilter,
-      searchQuery,
-    ).length;
-    const nextTotalPages = Math.max(1, Math.ceil(nextCount / PAGE_SIZE));
-    setCurrentPage((current) => Math.min(current, nextTotalPages));
-  };
-
-  const updateSelectedStatus = (status, rejectionReason = "") => {
-    if (!dialog?.record) return;
-    const nextRecords = records.map((record) =>
-      record.id === dialog.record.id
-        ? { ...record, status, rejectionReason }
-        : record,
-    );
-    commitRecords(nextRecords);
-    closeDialog();
-  };
-
-  const handleReject = () => {
-    const reason = rejectionDraft.trim();
-    if (!reason) {
-      setRejectionError(true);
-      return;
+  const updateSelectedStatus = async (status) => {
+    if (!dialog?.record || busy) return;
+    setBusy(true);
+    setActionError("");
+    try {
+      await updateAdminSubmissionStatus(dialog.record.type, dialog.record.id, status);
+      setDialog(null);
+      setNotice("Submission updated successfully.");
+      resource.retry();
+      statistics.retry();
+    } catch (error) {
+      setActionError(error.message);
+      if (error.status === 409 || error.status === 404) {
+        setDialog(null);
+        resource.retry();
+        statistics.retry();
+      }
+    } finally {
+      setBusy(false);
     }
-    updateSelectedStatus("REJECTED", reason);
-  };
-
-  const handleRemove = () => {
-    if (!dialog?.record) return;
-    commitRecords(records.filter((record) => record.id !== dialog.record.id));
-    closeDialog();
   };
 
   const handleRefresh = () => {
-    setRecords(createAdminPostVideoMockData());
-    setContentType("ALL");
-    setStatusFilter("PENDING");
-    setSearchQuery("");
-    setCurrentPage(1);
+    resource.retry();
+    statistics.retry();
     closeDialog();
   };
 
@@ -824,6 +782,9 @@ function AdminPostVideoPage() {
           </button>
         </div>
       </header>
+      {notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-emerald-800">{notice}</p>}
+      {!dialog && <AdminRequestState error={actionError} />}
+      <AdminRequestState {...statistics} onRetry={statistics.retry} />
 
       <section aria-label="Submission statistics" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {STAT_CARDS.map((card) => (
@@ -835,9 +796,9 @@ function AdminPostVideoPage() {
         <div className="flex flex-col gap-3 border-b border-slate-100 p-3 sm:p-4 xl:flex-row xl:items-center">
           <div role="tablist" aria-label="Filter by content type" className="flex w-fit max-w-full shrink-0 items-center rounded-lg bg-slate-100 p-1">
             {[
-              { key: "ALL", label: "All", count: counts.total },
-              { key: "POST", label: "Post", count: counts.posts },
-              { key: "VIDEO", label: "Video", count: counts.videos },
+              { key: "ALL", label: "All" },
+              { key: "POST", label: "Post" },
+              { key: "VIDEO", label: "Video" },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -849,7 +810,7 @@ function AdminPostVideoPage() {
               >
                 {tab.label}
                 <span className={`text-[10px] ${contentType === tab.key ? "text-slate-500" : "text-slate-400"}`}>
-                  {formatNumber(tab.count)}
+                  {tab.count == null ? "" : formatNumber(tab.count)}
                 </span>
               </button>
             ))}
@@ -875,21 +836,23 @@ function AdminPostVideoPage() {
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-medium text-slate-700 outline-none focus:border-chaybook-primary focus:ring-2 focus:ring-emerald-700/10 sm:w-auto"
           >
             <option value="ALL">All Status</option>
-            <option value="PENDING">Pending ({counts.pending})</option>
-            <option value="APPROVED">Approved ({counts.approved})</option>
-            <option value="REJECTED">Rejected ({counts.rejected})</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
           </select>
           <button
             type="button"
             onClick={handleRefresh}
-            aria-label="Refresh mock submissions and reset filters"
-            title="Refresh mock data"
+            disabled={resource.loading || busy}
+            aria-label="Refresh submissions"
+            title="Refresh submissions"
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-lg border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-white hover:text-emerald-800 sm:self-auto"
           >
             <RefreshCw aria-hidden="true" size={15} />
           </button>
         </div>
 
+        <AdminRequestState {...resource} onRetry={resource.retry} />
         <div className="w-full overflow-x-auto">
           <table className="w-full min-w-[900px] border-collapse text-left">
             <thead className="bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
@@ -903,7 +866,7 @@ function AdminPostVideoPage() {
               </tr>
             </thead>
             <tbody>
-              {visibleRecords.length === 0 ? (
+              {resource.loading || resource.error ? null : visibleRecords.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-14 text-center">
                     <div className="mx-auto flex max-w-sm flex-col items-center">
@@ -915,7 +878,7 @@ function AdminPostVideoPage() {
                 </tr>
               ) : (
                 visibleRecords.map((record) => (
-                  <ModerationRow key={record.id} record={record} onOpenDialog={openDialog} />
+                  <ModerationRow key={`${record.type}-${record.id}`} record={record} onOpenDialog={openDialog} />
                 ))
               )}
             </tbody>
@@ -924,13 +887,13 @@ function AdminPostVideoPage() {
 
         <footer className="flex flex-col gap-3 border-t border-slate-100 px-3 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <p className="text-[11px] text-slate-500" aria-live="polite">
-            Showing {formatNumber(firstItem)} to {formatNumber(lastItem)} of {formatNumber(filteredRecords.length)} {statusDescription}
+            Showing {formatNumber(firstItem)} to {formatNumber(lastItem)} of {formatNumber(totalElements)} {statusDescription}
           </p>
           <nav aria-label="Moderation pages" className="flex items-center gap-1 self-end sm:self-auto">
             <button
               type="button"
               onClick={() => setCurrentPage(page - 1)}
-              disabled={page <= 1}
+              disabled={page <= 1 || resource.loading}
               aria-label="Previous page"
               className="inline-flex h-8 min-w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
             >
@@ -951,7 +914,7 @@ function AdminPostVideoPage() {
             <button
               type="button"
               onClick={() => setCurrentPage(page + 1)}
-              disabled={page >= totalPages}
+              disabled={page >= totalPages || resource.loading}
               aria-label="Next page"
               className="inline-flex h-8 min-w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300"
             >
@@ -965,12 +928,10 @@ function AdminPostVideoPage() {
         dialog={dialog}
         onClose={closeDialog}
         onApprove={() => updateSelectedStatus("APPROVED")}
-        onReject={handleReject}
-        onRemove={handleRemove}
-        rejectionDraft={rejectionDraft}
-        setRejectionDraft={setRejectionDraft}
-        rejectionError={rejectionError}
-        setRejectionError={setRejectionError}
+        onReject={() => updateSelectedStatus("REJECTED")}
+        onRemove={() => updateSelectedStatus("REMOVED")}
+        busy={busy}
+        error={actionError}
       />
     </div>
   );
