@@ -79,7 +79,11 @@ public class SecurityConfig {
                         // Mở cửa cho các API công khai khác
                         .requestMatchers(
                                 "/api/auth/register",
+                                "/api/auth/register/verify",
                                 "/api/auth/login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/forgot-password/verify",
+                                "/api/auth/reset-password",
                                 "/api/auth/logout",
                                 "/api/categories/**"
                                 )
