@@ -29,5 +29,9 @@ public record AdminPostVideoResponse(
             int totalPages
     ) {}
 
-    public record StatusRequest(String status) {}
+    public record StatusRequest(
+            @jakarta.validation.constraints.NotBlank
+            @jakarta.validation.constraints.Pattern(regexp = "APPROVED|REJECTED|REMOVED")
+            String status
+    ) {}
 }
