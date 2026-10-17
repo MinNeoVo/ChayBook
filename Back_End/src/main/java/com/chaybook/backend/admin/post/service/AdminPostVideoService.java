@@ -15,6 +15,8 @@ public interface AdminPostVideoService {
 
     AdminPostVideoResponse.Statistics getStatistics(Integer adminId);
 
+    AdminPostVideoResponse getDetail(Integer adminId, String type, Integer contentId);
+
     void updateStatus(
             Integer adminId,
             String type,

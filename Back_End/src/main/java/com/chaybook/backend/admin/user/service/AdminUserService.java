@@ -31,6 +31,18 @@ public class AdminUserService {
     }
 
     @Transactional(readOnly = true)
+    public void requireActiveAdmin(Integer authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId <= 0) {
+            throw new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in");
+        }
+        User admin = userRepository.findById(authenticatedUserId)
+                .orElseThrow(() -> new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in again"));
+        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || !"ACTIVE".equalsIgnoreCase(admin.getStatus())) {
+            throw new AdminUserException(HttpStatus.FORBIDDEN, "An active administrator account is required");
+        }
+    }
+
+    @Transactional(readOnly = true)
     public PageResponse<AdminUserResponse> getUsers(
             int page,
             int size

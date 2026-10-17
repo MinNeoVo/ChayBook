@@ -44,7 +44,7 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
     ) {
         requireActiveAdmin(adminId);
 
-        if (page < 0 || size < 1 || size > 100) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "page phải từ 0 trở lên; size phải từ 1 đến 100"
@@ -82,6 +82,18 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
     public AdminPostVideoResponse.Statistics getStatistics(Integer adminId) {
         requireActiveAdmin(adminId);
         return repository.getStatistics();
+    }
+
+    @Override
+    public AdminPostVideoResponse getDetail(Integer adminId, String type, Integer contentId) {
+        requireActiveAdmin(adminId);
+        String normalizedType = normalize(type, "");
+        if (!CONTENT_TYPES.contains(normalizedType) || contentId == null || contentId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content type or ID");
+        }
+        AdminPostVideoResponse result = repository.findDetail(normalizedType, contentId);
+        if (result == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Content not found");
+        return result;
     }
 
     @Override

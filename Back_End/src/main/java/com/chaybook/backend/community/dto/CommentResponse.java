@@ -18,6 +18,7 @@ public record CommentResponse(
 ) {
     public record Author(
             Integer userId,
+            String username,
             String displayName,
             String avatarUrl
     ) {

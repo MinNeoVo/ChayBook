@@ -1,5 +1,19 @@
 import { apiFetch } from "./api";
 
+const GUEST_ID_STORAGE_KEY = "chaybook.ai.guestId";
+
+function getGuestId() {
+  let guestId = window.localStorage.getItem(GUEST_ID_STORAGE_KEY);
+
+  if (!guestId) {
+    guestId = window.crypto?.randomUUID?.() ??
+      `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(GUEST_ID_STORAGE_KEY, guestId);
+  }
+
+  return guestId;
+}
+
 /**
  * Gửi tin nhắn đến AI assistant.
  * Nếu conversationId là null, backend tạo cuộc hội thoại mới.
@@ -17,6 +31,9 @@ export async function sendAIMessage(prompt, conversationId = null) {
         message: prompt,
         conversationId,
       },
+      headers: {
+        "X-Guest-Id": getGuestId(),
+      },
     });
 
     return {
@@ -25,6 +42,7 @@ export async function sendAIMessage(prompt, conversationId = null) {
       content: response.content,
       conversationId: response.conversationId ?? conversationId,
       createdAt: "Just now",
+      guestQuestionsRemaining: response.guestQuestionsRemaining,
     };
   } catch (err) {
     console.error("Error calling AI assistant API:", err);
