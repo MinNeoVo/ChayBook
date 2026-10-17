@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -30,7 +30,13 @@ import {
   useParams,
 } from "react-router-dom";
 
-import { MOCK_ARTICLES, MOCK_ARTICLE_CATEGORIES } from "./adminArticleMockData";
+import useAdminResource from "../../hooks/useAdminResource";
+import AdminRequestState from "../../components/admin/AdminRequestState";
+import {
+  getAdminArticles, getAdminArticle, getAdminCategories,
+  createAdminArticle, updateAdminArticle, deleteAdminArticle,
+  uploadAdminArticleImage, resolveAdminMediaUrl,
+} from "../../services/adminContentServices";
 
 const PAGE_SIZE = 6;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -67,14 +73,8 @@ function formatDate(value, options = {}) {
   });
 }
 
-function getCategory(categoryId) {
-  return MOCK_ARTICLE_CATEGORIES.find(
-    (category) => Number(category.categoryId) === Number(categoryId),
-  );
-}
-
-function getCategoryName(categoryId) {
-  return getCategory(categoryId)?.name || "Uncategorized";
+function getCategoryName(categoryId, categories) {
+  return categories.find((category) => Number(category.categoryId) === Number(categoryId))?.name || "Uncategorized";
 }
 
 function getExcerpt(content = "", maxLength = 170) {
@@ -114,7 +114,7 @@ function Breadcrumbs({ current, parent = "Articles" }) {
   );
 }
 
-function MockSessionNotice({ message, onDismiss }) {
+function SessionNotice({ message, onDismiss }) {
   if (!message) return null;
 
   return (
@@ -151,7 +151,7 @@ function StatCard({ label, value, Icon, tone }) {
           <Icon aria-hidden="true" size={18} />
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{formatCount(value)}</p>
+      <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{value == null ? "—" : formatCount(value)}</p>
     </section>
   );
 }
@@ -183,7 +183,7 @@ function ArticleCover({ article, className = "" }) {
       </div>
       {article.coverImage && (
         <img
-          src={article.coverImage}
+          src={resolveAdminMediaUrl(article.coverImage)}
           alt={article.title ? `Cover for ${article.title}` : "Article cover"}
           className="absolute inset-0 h-full w-full object-cover"
           onError={(event) => {
@@ -195,7 +195,7 @@ function ArticleCover({ article, className = "" }) {
   );
 }
 
-function ArticleCard({ article }) {
+function ArticleCard({ article, categories }) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md">
       <Link
@@ -215,18 +215,12 @@ function ArticleCard({ article }) {
           <h2 className="line-clamp-2 min-h-[3.5rem] text-base font-bold leading-6 text-slate-900 transition-colors group-hover:text-emerald-800 sm:text-lg">
             {article.title}
           </h2>
-          <p className="mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-slate-500">
-            {getExcerpt(article.content, 140) || "No content preview available."}
-          </p>
           <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
             <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800">
-              {getCategoryName(article.categoryId)}
+              {getCategoryName(article.categoryId, categories)}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <UserRound aria-hidden="true" size={13} /> User {article.createdBy ?? "—"}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarDays aria-hidden="true" size={13} /> {formatDate(article.createdAt)}
+              <CalendarDays aria-hidden="true" size={13} /> Updated {formatDate(article.updatedAt)}
             </span>
           </div>
           <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800">
@@ -274,57 +268,47 @@ function EmptyArticles({ filtered, onClear }) {
 }
 
 export default function AdminArticleManagement() {
-  const [articles, setArticles] = useState(() => MOCK_ARTICLES.map((article) => ({ ...article })));
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [notice, setNotice] = useState("");
-
-  const context = useMemo(
-    () => ({
-      articles,
-      setArticles,
-      filters,
-      setFilters,
-      notice,
-      setNotice,
-    }),
-    [articles, filters, notice],
+  const loadCategories = useCallback((signal) => getAdminCategories("ARTICLE", { signal }), []);
+  const categoriesResource = useAdminResource(loadCategories);
+  if (categoriesResource.loading || categoriesResource.error) {
+    return <AdminRequestState {...categoriesResource} onRetry={categoriesResource.retry} />;
+  }
+  return (
+    <Outlet context={{ categories: categoriesResource.data, filters, setFilters, notice, setNotice }} />
   );
-
-  return <Outlet context={context} />;
 }
 
 export function AdminArticleListPage() {
-  const { articles, filters, setFilters, notice, setNotice } = useOutletContext();
-  const publishedCount = articles.filter((article) => article.status === "PUBLISHED").length;
-  const draftCount = articles.filter((article) => article.status === "DRAFT").length;
-
-  const filteredArticles = useMemo(() => {
-    const query = filters.search.trim().toLowerCase();
-    return articles
-      .filter((article) => {
-        const categoryName = getCategoryName(article.categoryId).toLowerCase();
-        const author = `user ${article.createdBy ?? ""}`.toLowerCase();
-        const matchesSearch =
-          !query ||
-          [article.title, categoryName, author].some((value) => String(value || "").toLowerCase().includes(query));
-        const matchesCategory =
-          filters.categoryId === "all" || Number(article.categoryId) === Number(filters.categoryId);
-        const matchesStatus = filters.status === "all" || article.status === filters.status;
-        return matchesSearch && matchesCategory && matchesStatus;
-      })
-      .sort((left, right) => {
-        const direction = filters.sort === "oldest" ? 1 : -1;
-        return direction * (new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
-      });
-  }, [articles, filters]);
-
-  const pageCount = Math.ceil(filteredArticles.length / PAGE_SIZE);
-  const currentPage = Math.min(filters.page, Math.max(0, pageCount - 1));
-  const pageArticles = filteredArticles.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+  const { categories, filters, setFilters, notice, setNotice } = useOutletContext();
+  const load = useCallback((signal) => getAdminArticles({
+    q: filters.search.trim(), categoryId: filters.categoryId, status: filters.status,
+    sort: filters.sort, page: filters.page, size: PAGE_SIZE, signal,
+  }).then((data) => {
+    if (!signal.aborted && filters.page > Math.max(0, data.totalPages - 1)) {
+      setFilters((current) => ({ ...current, page: Math.max(0, data.totalPages - 1) }));
+    }
+    return data;
+  }), [filters, setFilters]);
+  const resource = useAdminResource(load);
+  const loadCounts = useCallback(async (signal) => {
+    const [all, published, draft] = await Promise.all([
+      getAdminArticles({ size: 1, signal }),
+      getAdminArticles({ status: "PUBLISHED", size: 1, signal }),
+      getAdminArticles({ status: "DRAFT", size: 1, signal }),
+    ]);
+    return { total: all.totalElements, published: published.totalElements, draft: draft.totalElements };
+  }, []);
+  const counts = useAdminResource(loadCounts);
+  const totalElements = resource.data?.totalElements ?? 0;
+  const pageCount = resource.data?.totalPages ?? 0;
+  const currentPage = filters.page;
+  const pageArticles = resource.data?.items ?? [];
   const hasFilters = Boolean(filters.search || filters.categoryId !== "all" || filters.status !== "all");
 
   const updateFilter = (key, value) => {
-    setFilters((current) => ({ ...current, [key]: value, page: key === "sort" ? current.page : 0 }));
+    setFilters((current) => ({ ...current, [key]: value, page: 0 }));
   };
 
   const clearFilters = () => setFilters({ ...INITIAL_FILTERS });
@@ -332,7 +316,7 @@ export function AdminArticleListPage() {
   return (
     <div className="mx-auto w-full max-w-[1500px]">
       <Breadcrumbs current="Articles" />
-      <MockSessionNotice message={notice} onDismiss={() => setNotice("")} />
+      <SessionNotice message={notice} onDismiss={() => setNotice("")} />
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Article Management</h1>
         <Link
@@ -344,21 +328,22 @@ export function AdminArticleListPage() {
       </header>
 
       <section aria-label="Article statistics" className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Total Articles" value={articles.length} Icon={FileText} tone="emerald" />
-        <StatCard label="Published Articles" value={publishedCount} Icon={Activity} tone="blue" />
-        <StatCard label="Draft Articles" value={draftCount} Icon={Pencil} tone="amber" />
+        <StatCard label="Total Articles" value={counts.data?.total} Icon={FileText} tone="emerald" />
+        <StatCard label="Published Articles" value={counts.data?.published} Icon={Activity} tone="blue" />
+        <StatCard label="Draft Articles" value={counts.data?.draft} Icon={Pencil} tone="amber" />
       </section>
+      <AdminRequestState {...counts} onRetry={counts.retry} />
 
       <section className="mb-5 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5" aria-label="Search and filter articles">
         <div className="grid gap-3 lg:grid-cols-[minmax(260px,1fr)_repeat(3,minmax(150px,190px))]">
           <label className="relative block">
-            <span className="sr-only">Search articles by title, author, or category</span>
+            <span className="sr-only">Search articles by title</span>
             <Search aria-hidden="true" size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               value={filters.search}
               onChange={(event) => updateFilter("search", event.target.value)}
-              placeholder="Search articles by title, author, or category..."
+              placeholder="Search articles by title..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-600/10"
             />
           </label>
@@ -370,7 +355,7 @@ export function AdminArticleListPage() {
               className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-3.5 pr-9 text-sm text-slate-700 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10"
             >
               <option value="all">All categories</option>
-              {MOCK_ARTICLE_CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <option key={category.categoryId} value={category.categoryId}>{category.name}</option>
               ))}
             </select>
@@ -406,7 +391,7 @@ export function AdminArticleListPage() {
 
       <div className="mb-3 flex items-center justify-between gap-3 px-1">
         <p className="text-sm text-slate-500">
-          Showing <span className="font-semibold text-slate-800">{filteredArticles.length ? currentPage * PAGE_SIZE + 1 : 0}–{Math.min((currentPage + 1) * PAGE_SIZE, filteredArticles.length)}</span> of {formatCount(filteredArticles.length)} articles
+          Showing <span className="font-semibold text-slate-800">{pageArticles.length ? currentPage * PAGE_SIZE + 1 : 0}–{pageArticles.length ? currentPage * PAGE_SIZE + pageArticles.length : 0}</span> of {formatCount(totalElements)} articles
         </p>
         {hasFilters && (
           <button type="button" onClick={clearFilters} className="text-xs font-semibold text-emerald-800 hover:text-emerald-950">
@@ -415,13 +400,14 @@ export function AdminArticleListPage() {
         )}
       </div>
 
-      {pageArticles.length ? (
+      <AdminRequestState {...resource} onRetry={resource.retry} />
+      {!resource.loading && !resource.error && (pageArticles.length ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          {pageArticles.map((article) => <ArticleCard key={article.articleId} article={article} />)}
+          {pageArticles.map((article) => <ArticleCard key={article.articleId} article={article} categories={categories} />)}
         </div>
       ) : (
         <EmptyArticles filtered={hasFilters || Boolean(filters.search)} onClear={clearFilters} />
-      )}
+      ))}
 
       {pageCount > 1 && (
         <nav aria-label="Article pagination" className="mt-6 flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 sm:flex-row">
@@ -430,7 +416,7 @@ export function AdminArticleListPage() {
             <button
               type="button"
               onClick={() => setFilters((current) => ({ ...current, page: Math.max(0, current.page - 1) }))}
-              disabled={currentPage === 0}
+              disabled={currentPage === 0 || resource.loading}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft aria-hidden="true" size={16} /> Previous
@@ -438,7 +424,7 @@ export function AdminArticleListPage() {
             <button
               type="button"
               onClick={() => setFilters((current) => ({ ...current, page: Math.min(pageCount - 1, current.page + 1) }))}
-              disabled={currentPage >= pageCount - 1}
+              disabled={currentPage >= pageCount - 1 || resource.loading}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Next <ChevronRight aria-hidden="true" size={16} />
@@ -462,6 +448,7 @@ function ReadonlyField({ label, value, icon: Icon }) {
 }
 
 function DetailSidebar({ article }) {
+  const { categories } = useOutletContext();
   return (
     <aside className="lg:sticky lg:top-6">
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
@@ -470,7 +457,7 @@ function DetailSidebar({ article }) {
           <ArticleStatus status={article.status} />
         </div>
         <div className="mt-2">
-          <ReadonlyField label="Category" value={getCategoryName(article.categoryId)} />
+          <ReadonlyField label="Category" value={getCategoryName(article.categoryId, categories)} />
           <ReadonlyField label="Author ID" value={article.createdBy == null ? "—" : `User ${article.createdBy}`} icon={UserRound} />
           <ReadonlyField label="Article ID" value={`#${article.articleId}`} icon={FileText} />
           <ReadonlyField label="Created" value={formatDate(article.createdAt)} icon={CalendarDays} />
@@ -510,12 +497,14 @@ function createFormValues(article) {
 }
 
 function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
+  const { categories } = useOutletContext();
   const [initialValues] = useState(() => createFormValues(article));
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [imageError, setImageError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [showDiscard, setShowDiscard] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -532,7 +521,8 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
     setSubmitError("");
   };
 
-  const loadImage = (file) => {
+  const loadImage = async (file) => {
+    if (isUploading || isSaving) return;
     setImageError("");
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -544,12 +534,15 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") updateField("coverImage", reader.result);
-    };
-    reader.onerror = () => setImageError("This image could not be previewed. Try another file.");
-    reader.readAsDataURL(file);
+    setIsUploading(true);
+    try {
+      const response = await uploadAdminArticleImage(file);
+      updateField("coverImage", response.coverImage);
+    } catch (error) {
+      setImageError(error.message || "Unable to upload image.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const requestCancel = () => {
@@ -559,8 +552,10 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSaving || isUploading) return;
     const nextErrors = {};
     if (!values.title.trim()) nextErrors.title = "Enter an article title.";
+    if (values.title.trim().length > 255) nextErrors.title = "Title must be at most 255 characters.";
     if (!values.categoryId) nextErrors.categoryId = "Choose a category.";
     if (!values.content.trim()) nextErrors.content = "Write the article content.";
     setErrors(nextErrors);
@@ -569,8 +564,6 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
 
     setIsSaving(true);
     try {
-      // Small local delay gives the demo form a visible submitting state. No request is made.
-      await new Promise((resolve) => window.setTimeout(resolve, 280));
       const savedArticle = await onSubmit({
         ...values,
         categoryId: Number(values.categoryId),
@@ -581,6 +574,7 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
       onComplete(savedArticle);
     } catch (error) {
       setIsSaving(false);
+      setErrors(error.data?.errors || {});
       setSubmitError(error?.message || "Unable to save the article. Please try again.");
     }
   };
@@ -651,6 +645,7 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <button
                       type="button"
+                      disabled={isUploading || isSaving}
                       onClick={() => fileInputRef.current?.click()}
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={(event) => {
@@ -662,16 +657,16 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
                       <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
                         <UploadCloud aria-hidden="true" size={20} />
                       </span>
-                      <span className="text-sm font-semibold text-slate-800">Click to upload or drag and drop</span>
+                      <span className="text-sm font-semibold text-slate-800">{isUploading ? "Uploading…" : "Click to upload or drag and drop"}</span>
                     </button>
                     <div className="relative min-h-40 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
                       {values.coverImage ? (
                         <>
-                          <img src={values.coverImage} alt="Selected article cover preview" className="absolute inset-0 h-full w-full object-cover" />
+                          <img src={resolveAdminMediaUrl(values.coverImage)} alt="Selected article cover preview" className="absolute inset-0 h-full w-full object-cover" />
                           <div className="absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 bg-slate-950/65 p-3 text-white">
                             <div className="flex gap-2">
-                              <button type="button" onClick={() => fileInputRef.current?.click()} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-xs font-semibold transition hover:bg-white/25">Replace</button>
-                              <button type="button" onClick={() => updateField("coverImage", "")} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-xs font-semibold transition hover:bg-red-500/80">Remove</button>
+                              <button type="button" disabled={isUploading || isSaving} onClick={() => fileInputRef.current?.click()} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-xs font-semibold transition hover:bg-white/25">Replace</button>
+                              <button type="button" disabled={isUploading || isSaving} onClick={() => updateField("coverImage", "")} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-xs font-semibold transition hover:bg-red-500/80">Remove</button>
                             </div>
                           </div>
                         </>
@@ -686,6 +681,7 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
                   <input
                     ref={fileInputRef}
                     type="file"
+                    disabled={isUploading || isSaving}
                     accept="image/jpeg,image/png,image/webp"
                     className="sr-only"
                     onChange={(event) => {
@@ -746,8 +742,8 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
                       className={`w-full appearance-none rounded-xl border bg-white px-3.5 py-3 pr-9 text-sm text-slate-800 outline-none transition focus:ring-2 ${errors.categoryId ? "border-red-300 focus:border-red-500 focus:ring-red-500/10" : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-600/10"}`}
                     >
                       <option value="">Choose category</option>
-                      {MOCK_ARTICLE_CATEGORIES.map((category) => (
-                        <option key={category.categoryId} value={category.categoryId}>{category.name}</option>
+                      {categories.filter((category) => category.status === "ACTIVE" || String(category.categoryId) === initialValues.categoryId).map((category) => (
+                        <option key={category.categoryId} value={category.categoryId}>{category.name}{category.status !== "ACTIVE" ? " (deleted)" : ""}</option>
                       ))}
                     </select>
                     <ChevronDown aria-hidden="true" size={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -776,7 +772,7 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
               {submitError && <p role="alert" className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{submitError}</p>}
               <button
                 type="submit"
-                disabled={isSaving}
+                disabled={isSaving || isUploading}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 disabled:cursor-wait disabled:opacity-70"
               >
                 {isSaving ? <LoaderCircle aria-hidden="true" size={16} className="animate-spin" /> : <Check aria-hidden="true" size={16} />}
@@ -784,7 +780,7 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
               </button>
               <button
                 type="button"
-                disabled={isSaving}
+                disabled={isSaving || isUploading}
                 onClick={requestCancel}
                 className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -803,23 +799,10 @@ function ArticleForm({ mode, article, onCancel, onSubmit, onComplete }) {
 
 export function AdminArticleCreatePage() {
   const navigate = useNavigate();
-  const { articles, setArticles, setFilters, setNotice } = useOutletContext();
+  const { setFilters, setNotice } = useOutletContext();
 
-  const createArticle = (values) => {
-    const now = new Date().toISOString();
-    const articleId = Math.max(100, ...articles.map((item) => Number(item.articleId) || 0)) + 1;
-    const article = {
-      articleId,
-      categoryId: values.categoryId,
-      createdBy: 1,
-      title: values.title,
-      content: values.content,
-      coverImage: values.coverImage,
-      status: values.status,
-      createdAt: now,
-      updatedAt: now,
-    };
-    setArticles((current) => [article, ...current]);
+  const createArticle = async (values) => {
+    const article = await createAdminArticle(values);
     setFilters((current) => ({ ...current, page: 0 }));
     setNotice("Article added to the list.");
     return article;
@@ -836,23 +819,31 @@ export function AdminArticleCreatePage() {
   );
 }
 
-function ArticleDetail({ article }) {
-  const { setArticles, notice, setNotice } = useOutletContext();
+function ArticleDetail({ article, onRefresh }) {
+  const navigate = useNavigate();
+  const { categories, notice, setNotice } = useOutletContext();
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
-  const updateArticle = (values) => {
-    const updatedArticle = {
-      ...article,
-      categoryId: values.categoryId,
-      title: values.title,
-      content: values.content,
-      coverImage: values.coverImage,
-      status: values.status,
-      updatedAt: new Date().toISOString(),
-    };
-    setArticles((current) => current.map((item) => item.articleId === article.articleId ? updatedArticle : item));
+  const updateArticle = async (values) => {
+    const updatedArticle = await updateAdminArticle(article.articleId, values);
     setNotice("Article updated.");
     return updatedArticle;
+  };
+
+  const removeArticle = async () => {
+    if (isDeleting || !window.confirm(`Permanently delete article "${article.title}"?`)) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteAdminArticle(article.articleId);
+      setNotice("Article deleted.");
+      navigate("/admin/articles");
+    } catch (error) {
+      setDeleteError(error.message);
+      setIsDeleting(false);
+    }
   };
 
   if (isEditing) {
@@ -862,7 +853,7 @@ function ArticleDetail({ article }) {
         mode="edit"
         article={article}
         onSubmit={updateArticle}
-        onComplete={() => setIsEditing(false)}
+        onComplete={() => { setIsEditing(false); onRefresh(); }}
         onCancel={() => setIsEditing(false)}
       />
     );
@@ -871,15 +862,19 @@ function ArticleDetail({ article }) {
   return (
     <div className="mx-auto w-full max-w-[1500px]">
       <Breadcrumbs current="Article Detail" parent="Articles" />
-      <MockSessionNotice message={notice} onDismiss={() => setNotice("")} />
+      <SessionNotice message={notice} onDismiss={() => setNotice("")} />
+      <AdminRequestState error={deleteError} />
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Article Detail</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Link to="/admin/articles" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
             <ArrowLeft aria-hidden="true" size={16} /> Back to Articles
           </Link>
-          <button type="button" onClick={() => setIsEditing(true)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">
+          <button type="button" disabled={isDeleting} onClick={() => setIsEditing(true)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">
             <Pencil aria-hidden="true" size={15} /> Edit Article
+          </button>
+          <button type="button" disabled={isDeleting} onClick={removeArticle} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+            {isDeleting ? "Deleting…" : "Delete Article"}
           </button>
         </div>
       </header>
@@ -889,7 +884,7 @@ function ArticleDetail({ article }) {
           <ArticleCover article={article} className="aspect-[16/6] sm:aspect-[16/5]" />
           <div className="p-5 sm:p-7">
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">{getCategoryName(article.categoryId)}</span>
+              <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800">{getCategoryName(article.categoryId, categories)}</span>
               <ArticleStatus status={article.status} />
             </div>
             <h2 className="break-words text-2xl font-bold leading-tight tracking-tight text-slate-950 sm:text-3xl">{article.title}</h2>
@@ -911,8 +906,10 @@ function ArticleDetail({ article }) {
 
 export function AdminArticleDetailPage() {
   const { articleId } = useParams();
-  const { articles } = useOutletContext();
-  const article = articles.find((item) => String(item.articleId) === articleId);
+  const load = useCallback((signal) => getAdminArticle(articleId, { signal }), [articleId]);
+  const resource = useAdminResource(load);
+  const article = resource.data;
+  if (resource.loading || resource.error) return <AdminRequestState {...resource} onRetry={resource.retry} />;
 
   if (!article) {
     return (
@@ -924,5 +921,5 @@ export function AdminArticleDetailPage() {
     );
   }
 
-  return <ArticleDetail key={article.articleId} article={article} />;
+  return <ArticleDetail key={article.articleId} article={article} onRefresh={resource.retry} />;
 }

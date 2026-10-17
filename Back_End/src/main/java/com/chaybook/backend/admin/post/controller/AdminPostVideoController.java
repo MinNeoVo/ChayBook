@@ -51,7 +51,7 @@ public class AdminPostVideoController {
     public ResponseEntity<Void> updateStatus(
             @PathVariable String type,
             @PathVariable Integer contentId,
-            @RequestBody AdminPostVideoResponse.StatusRequest request,
+            @jakarta.validation.Valid @RequestBody AdminPostVideoResponse.StatusRequest request,
             Authentication authentication
     ) {
         service.updateStatus(
@@ -61,6 +61,15 @@ public class AdminPostVideoController {
                 request.status()
         );
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
+    }
+
+    @GetMapping("/{type}/{contentId}")
+    public ResponseEntity<AdminPostVideoResponse> getDetail(
+            @PathVariable String type,
+            @PathVariable Integer contentId,
+            Authentication authentication
+    ) {
+        return noStore(service.getDetail(authenticatedUserId(authentication), type, contentId));
     }
 
     private Integer authenticatedUserId(Authentication authentication) {
