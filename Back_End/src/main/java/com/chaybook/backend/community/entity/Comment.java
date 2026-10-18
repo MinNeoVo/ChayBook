@@ -40,7 +40,6 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @org.hibernate.annotations.Nationalized
     @Column(name = "content", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 

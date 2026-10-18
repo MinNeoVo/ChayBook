@@ -1,12 +1,12 @@
-package com.chaybook.backend.admin.recipe.service;
+package com.chaybook.backend.admin.recipe.service.impl;
 
 import com.chaybook.backend.admin.recipe.dto.AdminRecipeResponse;
+import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.ingredient.repository.IngredientRepository;
-import com.chaybook.backend.mealplan.repository.MealPlanItemRepository;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
 import com.chaybook.backend.recipe.exception.RecipeException;
@@ -23,7 +23,7 @@ import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
-public class AdminRecipeService {
+public class AdminRecipeServiceImpl implements AdminRecipeService {
 
     private final RecipeRepository recipeRepository;
     private final RecipeIngredientRepository recipeIngredientRepository;
@@ -31,7 +31,7 @@ public class AdminRecipeService {
     private final IngredientRepository ingredientRepository;
     private final UserRepository userRepository;
 
-    public AdminRecipeService(
+    public AdminRecipeServiceImpl(
             RecipeRepository recipeRepository,
             RecipeIngredientRepository recipeIngredientRepository,
             CategoryRepository categoryRepository,
@@ -46,7 +46,6 @@ public class AdminRecipeService {
     }
 
 
-    //Admin được xem các recipe đã xóa, vẫn có thể lọc theo category đã xóa
     public PageResponse<AdminRecipeResponse.Summary> getRecipes(
             Integer authenticatedUserId,
             Integer categoryId,
@@ -203,7 +202,13 @@ public class AdminRecipeService {
                 savedRecipe.getImageUrl(),
                 savedRecipe.getPrepTime(),
                 savedRecipe.getCookTime(),
+                savedRecipe.getServings(),
+                savedRecipe.getDifficulty(),
                 savedRecipe.getInstructions(),
+                savedRecipe.getCalories(),
+                savedRecipe.getProtein(),
+                savedRecipe.getCarbs(),
+                savedRecipe.getFat(),
                 savedIngredients.stream()
                         .map(this::toIngredientResponse)
                         .toList()
@@ -406,7 +411,13 @@ public class AdminRecipeService {
         recipe.setImageUrl(request.imageUrl());
         recipe.setPrepTime(request.prepTime());
         recipe.setCookTime(request.cookTime());
+        recipe.setServings(request.servings());
+        recipe.setDifficulty(request.difficulty().strip());
         recipe.setInstructions(request.instructions());
+        recipe.setCalories(request.calories());
+        recipe.setProtein(request.protein());
+        recipe.setCarbs(request.carbs());
+        recipe.setFat(request.fat());
     }
 
     private List<RecipeIngredient> syncIngredients(

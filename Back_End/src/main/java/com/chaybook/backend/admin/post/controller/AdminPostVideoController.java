@@ -58,7 +58,8 @@ public class AdminPostVideoController {
                 authenticatedUserId(authentication),
                 type,
                 contentId,
-                request.status()
+                request.status(),
+                request.reason()
         );
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }

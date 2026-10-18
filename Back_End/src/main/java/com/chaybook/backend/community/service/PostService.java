@@ -7,6 +7,7 @@ import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.*;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
+import com.chaybook.backend.moderation.entity.AiModeration;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.*;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import com.chaybook.backend.moderation.service.AiModerationService;
 
 @Service
 public class PostService {
@@ -25,19 +27,22 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final AiModerationService aiModerationService;
 
     public PostService(
             PostRepository postRepository,
             PostInteractionRepository postInteractionRepository,
             CommentRepository commentRepository,
             UserRepository userRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            AiModerationService aiModerationService
     ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.aiModerationService = aiModerationService;
     }
 
     @Transactional(readOnly = true)
@@ -223,6 +228,7 @@ public PostCreateResponse createPost(
     post.setStatus("PENDING");
 
     Post savedPost = postRepository.saveAndFlush(post);
+    aiModerationService.moderatePost(savedPost);
 
     PostCreateResponse.PostData postData =
             new PostCreateResponse.PostData(

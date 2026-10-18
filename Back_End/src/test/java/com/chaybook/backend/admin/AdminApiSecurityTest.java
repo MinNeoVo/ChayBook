@@ -104,7 +104,7 @@ class AdminApiSecurityTest {
         mvc.perform(patch("/api/admin/posts-videos/VIDEO/7/status").cookie(token("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"APPROVED\"}"))
                 .andExpect(status().isNoContent());
-        verify(context.getBean(AdminPostVideoService.class)).updateStatus(1, "VIDEO", 7, "APPROVED");
+        verify(context.getBean(AdminPostVideoService.class)).updateStatus(1, "VIDEO", 7, "APPROVED", null);
     }
 
     @Test void defaultCorsAllowsTheExistingFrontendAndRejectsOtherOrigins() throws Exception {

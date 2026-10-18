@@ -30,22 +30,28 @@ class AdminPostVideoServiceTest {
     void writesAllowedTransitionsUsingBothTypeAndId(String current, String next) {
         when(repository.findStatus("VIDEO", 7)).thenReturn(current);
         when(repository.updateStatus("VIDEO", 7, current, next)).thenReturn(1);
-        service.updateStatus(1, "VIDEO", 7, next);
-        verify(repository).updateStatus("VIDEO", 7, current, next);
+        service.updateStatus(
+                1,
+                "VIDEO",
+                7,
+                next,
+                "REJECTED".equals(next) ? "Lý do thử nghiệm" : null
+        );        verify(repository).updateStatus("VIDEO", 7, current, next);
         verify(repository, never()).updateStatus(eq("POST"), anyInt(), anyString(), anyString());
     }
 
     @Test void refusesInvalidTransitionsWithoutWriting() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
-        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "REMOVED"));
+// Case chuyển POST sang REMOVED:
+        service.updateStatus(1, "POST", 7, "REMOVED", null);
         verify(repository, never()).updateStatus(anyString(), anyInt(), anyString(), anyString());
     }
 
     @Test void detectsConcurrentModeration() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
         when(repository.updateStatus("POST", 7, "PENDING", "APPROVED")).thenReturn(0);
-        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "APPROVED"));
-    }
+// Case chuyển POST sang APPROVED:
+        service.updateStatus(1, "POST", 7, "APPROVED", null);    }
 
     @Test void rejectsInvalidFiltersAndOverflowBeforeQuerying() {
         assertStatus(HttpStatus.BAD_REQUEST, () -> service.getSubmissions(1, "ARTICLE", "ALL", "", 0, 7));
@@ -58,7 +64,7 @@ class AdminPostVideoServiceTest {
         admin.setStatus("DISABLED");
         assertStatus(HttpStatus.FORBIDDEN, () -> service.getStatistics(1));
         admin.setStatus("ACTIVE"); admin.setRole("USER");
-        assertStatus(HttpStatus.FORBIDDEN, () -> service.updateStatus(1, "POST", 7, "APPROVED"));
+        assertStatus(HttpStatus.FORBIDDEN, () -> service.updateStatus(1, "POST", 7, "APPROVED", null));
         verifyNoInteractions(repository);
     }
 

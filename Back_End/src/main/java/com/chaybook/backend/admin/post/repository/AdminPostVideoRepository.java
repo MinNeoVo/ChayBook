@@ -19,34 +19,80 @@ public class AdminPostVideoRepository {
     private EntityManager entityManager;
 
     private static final String CONTENT_UNION = """
-            SELECT
-                p.post_id AS content_id,
-                'POST' AS content_type,
-                p.title AS title,
-                CAST(COALESCE(p.content, N'') AS NVARCHAR(MAX)) AS description,
-                COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
-                p.created_at AS submitted_at,
-                p.status AS status,
-                p.image_url AS thumbnail_url,
-                CAST(NULL AS VARCHAR(255)) AS media_url
-            FROM POST p
-            LEFT JOIN [USER] u ON u.user_id = p.user_id
+        SELECT
+            p.post_id AS content_id,
+            'POST' AS content_type,
+            p.title AS title,
+            CAST(COALESCE(p.content, N'') AS NVARCHAR(MAX)) AS description,
+            COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
+            p.created_at AS submitted_at,
+            p.status AS status,
+            p.image_url AS thumbnail_url,
+            CAST(NULL AS VARCHAR(255)) AS media_url,
+            ai.result AS ai_result,
+            ai.reason AS ai_reason,
+            ai.confidence AS ai_confidence,
+            ai.moderation_status AS moderation_status,
+            admin_decision.reason AS admin_reason
+        FROM POST p
+        LEFT JOIN [USER] u ON u.user_id = p.user_id
+        OUTER APPLY (
+            SELECT TOP 1
+                am.result,
+                am.reason,
+                am.confidence,
+                am.moderation_status
+            FROM AI_MODERATION am
+            WHERE am.post_id = p.post_id
+            ORDER BY am.created_at DESC, am.moderation_id DESC
+        ) ai
+        OUTER APPLY (
+            SELECT TOP 1 d.reason
+            FROM ADMIN_CONTENT_DECISION d
+            WHERE d.post_id = p.post_id
+              AND d.decision = 'REJECTED'
+              AND UPPER(p.status) = 'REJECTED'
+            ORDER BY d.decided_at DESC, d.decision_id DESC
+        ) admin_decision
 
-            UNION ALL
+        UNION ALL
 
-            SELECT
-                v.video_id AS content_id,
-                'VIDEO' AS content_type,
-                v.title AS title,
-                CAST(COALESCE(v.description, N'') AS NVARCHAR(MAX)) AS description,
-                COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
-                v.created_at AS submitted_at,
-                v.status AS status,
-                v.thumbnail_url AS thumbnail_url,
-                v.video_url AS media_url
-            FROM VIDEO v
-            LEFT JOIN [USER] u ON u.user_id = v.created_by
-            """;
+        SELECT
+            v.video_id AS content_id,
+            'VIDEO' AS content_type,
+            v.title AS title,
+            CAST(COALESCE(v.description, N'') AS NVARCHAR(MAX)) AS description,
+            COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
+            v.created_at AS submitted_at,
+            v.status AS status,
+            v.thumbnail_url AS thumbnail_url,
+            v.video_url AS media_url,
+            ai.result AS ai_result,
+            ai.reason AS ai_reason,
+            ai.confidence AS ai_confidence,
+            ai.moderation_status AS moderation_status,
+            admin_decision.reason AS admin_reason
+        FROM VIDEO v
+        LEFT JOIN [USER] u ON u.user_id = v.created_by
+        OUTER APPLY (
+            SELECT TOP 1
+                am.result,
+                am.reason,
+                am.confidence,
+                am.moderation_status
+            FROM AI_MODERATION am
+            WHERE am.video_id = v.video_id
+            ORDER BY am.created_at DESC, am.moderation_id DESC
+        ) ai
+        OUTER APPLY (
+            SELECT TOP 1 d.reason
+            FROM ADMIN_CONTENT_DECISION d
+            WHERE d.video_id = v.video_id
+              AND d.decision = 'REJECTED'
+              AND UPPER(v.status) = 'REJECTED'
+            ORDER BY d.decided_at DESC, d.decision_id DESC
+        ) admin_decision
+        """;
 
     private static final String FILTERED_CONTENT = """
             SELECT *
@@ -93,7 +139,12 @@ public class AdminPostVideoRepository {
                     submitted_at,
                     status,
                     thumbnail_url,
-                    media_url
+                    media_url,
+                    ai_result,
+                    ai_reason,
+                    ai_confidence,
+                    moderation_status,
+                    admin_reason
                 FROM (%s) filtered
                 ORDER BY submitted_at DESC, content_type ASC, content_id DESC
                 OFFSET :offset ROWS FETCH NEXT :size ROWS ONLY
@@ -149,7 +200,15 @@ public class AdminPostVideoRepository {
     public AdminPostVideoResponse findDetail(String type, Integer id) {
         Query query = entityManager.createNativeQuery("""
                 SELECT content_id, content_type, title, description, creator,
-                       submitted_at, status, thumbnail_url, media_url
+                       submitted_at, 
+                       status, 
+                       thumbnail_url, 
+                       media_url,
+                       ai_result,
+                       ai_reason,
+                     ai_confidence,
+                  moderation_status,
+                     admin_reason
                 FROM (%s) content
                 WHERE content_type = :type AND content_id = :id
                   AND UPPER(COALESCE(status, '')) <> 'REMOVED'
@@ -225,8 +284,17 @@ public class AdminPostVideoRepository {
                 dateValue(row[5]),
                 stringValue(row[6]),
                 stringValue(row[7]),
-                stringValue(row[8])
+                stringValue(row[8]),
+                stringValue(row[9]),
+                stringValue(row[10]),
+                doubleValue(row[11]),
+                stringValue(row[12]),
+                stringValue(row[13])
         );
+    }
+
+    private Double doubleValue(Object value) {
+        return value == null ? null : ((Number) value).doubleValue();
     }
 
     private String stringValue(Object value) {
@@ -242,5 +310,68 @@ public class AdminPostVideoRepository {
             return dateTime;
         }
         return LocalDateTime.parse(value.toString().replace(' ', 'T'));
+    }
+
+
+    public void insertDecision(
+            String type,
+            Integer contentId,
+            Integer adminId,
+            String previousStatus,
+            String decision,
+            String reason
+    ) {
+        boolean isPost = "POST".equals(type);
+        boolean hasReason = reason != null && !reason.isBlank();
+
+        String contentColumn = isPost ? "post_id" : "video_id";
+        String reasonColumn = hasReason ? ", reason" : "";
+        String reasonValue = hasReason ? ", :reason" : "";
+
+        String sql = """
+            INSERT INTO ADMIN_CONTENT_DECISION
+                (%s, admin_id, previous_status, decision%s, decided_at)
+            VALUES
+                (:contentId, :adminId, :previousStatus, :decision%s, SYSDATETIME())
+            """.formatted(contentColumn, reasonColumn, reasonValue);
+
+        var query = entityManager.createNativeQuery(sql)
+                .setParameter("contentId", contentId)
+                .setParameter("adminId", adminId)
+                .setParameter("previousStatus", previousStatus)
+                .setParameter("decision", decision);
+
+        if (hasReason) {
+            query.setParameter("reason", reason.strip());
+        }
+
+        query.executeUpdate();
+    }
+
+
+    public int markLatestModerationReviewed(
+            String type,
+            Integer contentId,
+            Integer adminId
+    ) {
+        boolean isPost = "POST".equals(type);
+        String contentColumn = isPost ? "post_id" : "video_id";
+
+        String sql = """
+            UPDATE AI_MODERATION
+            SET reviewed_by = :adminId,
+                reviewed_at = SYSDATETIME()
+            WHERE moderation_id = (
+                SELECT TOP 1 moderation_id
+                FROM AI_MODERATION
+                WHERE %s = :contentId
+                ORDER BY created_at DESC, moderation_id DESC
+            )
+            """.formatted(contentColumn);
+
+        return entityManager.createNativeQuery(sql)
+                .setParameter("adminId", adminId)
+                .setParameter("contentId", contentId)
+                .executeUpdate();
     }
 }

@@ -102,12 +102,25 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
             Integer adminId,
             String type,
             Integer contentId,
-            String requestedStatus
+            String requestedStatus,
+            String requestedReason
     ) {
-        requireActiveAdmin(adminId);
+        User admin = requireActiveAdmin(adminId);
 
         String normalizedType = normalize(type, "");
         String nextStatus = normalize(requestedStatus, "");
+
+        String reason = requestedReason == null
+                ? null
+                : requestedReason.strip();
+
+        if ("REJECTED".equals(nextStatus)
+                && (reason == null || reason.isBlank())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cần nhập lý do khi từ chối nội dung"
+            );
+        }
 
         if (!CONTENT_TYPES.contains(normalizedType)) {
             throw new ResponseStatusException(
@@ -169,6 +182,21 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
                     "Trạng thái nội dung vừa được thay đổi; hãy tải lại danh sách"
             );
         }
+
+        repository.insertDecision(
+                normalizedType,
+                contentId,
+                admin.getUserId(),
+                currentStatus,
+                nextStatus,
+                reason
+        );
+
+        repository.markLatestModerationReviewed(
+                normalizedType,
+                contentId,
+                admin.getUserId()
+        );
     }
 
     private User requireActiveAdmin(Integer adminId) {
