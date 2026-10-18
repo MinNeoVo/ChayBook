@@ -18,6 +18,7 @@ import RecipeDetailPage from "./Pages/RecipeDetailPage";
 import BmiPage from "./Pages/BmiPage";
 import MealPlanPage from "./Pages/MealPlanPage";
 import AIAssistantPage from "./Pages/AIAssistantPage";
+import PlacesPage from "./Pages/PlacesPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -65,6 +66,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/meal-plan" element={<MealPlanPage />} />
+          <Route path="/places" element={<PlacesPage />} />
         </Route>
       </Route>
 
