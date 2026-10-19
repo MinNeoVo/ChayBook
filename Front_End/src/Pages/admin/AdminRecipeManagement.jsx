@@ -11,6 +11,29 @@ const FIELD = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text
 const BUTTON = "inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50";
 const PANEL = "rounded-xl border border-slate-200 bg-white p-5 shadow-sm";
 const PAGE_SIZE = 10;
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+const NUTRITION_FIELDS = [
+  ["calories", "Calories", "kcal"],
+  ["protein", "Protein", "g"],
+  ["carbs", "Carbs", "g"],
+  ["fat", "Fat", "g"],
+];
+
+function validateAdditionalFields(values) {
+  const errors = {};
+  if (!values.servings.trim() || !Number.isSafeInteger(Number(values.servings)) || Number(values.servings) < 1) {
+    errors.servings = "Servings must be a whole number of at least 1.";
+  }
+  if (!DIFFICULTIES.includes(values.difficulty)) {
+    errors.difficulty = "Choose Easy, Medium or Hard.";
+  }
+  NUTRITION_FIELDS.forEach(([field, label, unit]) => {
+    if (!values[field].trim() || !Number.isFinite(Number(values[field])) || Number(values[field]) < 0) {
+      errors[field] = `${label} must be a finite number of at least 0 ${unit}.`;
+    }
+  });
+  return errors;
+}
 
 function RecipeImage({ imageUrl, name }) {
   const src = resolveAdminMediaUrl(imageUrl);
@@ -150,6 +173,7 @@ function initialValues(recipe) {
     description: recipe?.description ?? "", imageUrl: recipe?.imageUrl ?? "",
     prepTime: String(recipe?.prepTime ?? 0), cookTime: String(recipe?.cookTime ?? 0),
     instructions: recipe?.instructions ?? "",
+    ...(recipe ? {} : { servings: "1", difficulty: "Easy", calories: "", protein: "", carbs: "", fat: "" }),
     ingredients: recipe?.ingredients?.map((item) => ({ ingredientId: String(item.ingredientId), quantity: String(item.quantity), unit: item.unit })) ?? [{ ingredientId: "", quantity: "", unit: "" }],
   };
 }
@@ -161,9 +185,16 @@ function RecipeForm({ recipe }) {
   const [values, setValues] = useState(original);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const load = useCallback((signal) => getAdminRecipeIngredients({ signal }), []);
   const ingredients = useAdminResource(load);
-  const change = (field, value) => setValues((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => {
+    setValues((current) => ({ ...current, [field]: value }));
+    setFieldErrors((current) => ({ ...current, [field]: "" }));
+  };
+  const validateField = (field) => {
+    setFieldErrors((current) => ({ ...current, [field]: validateAdditionalFields(values)[field] || "" }));
+  };
   const changeIngredient = (index, field, value) => setValues((current) => ({
     ...current, ingredients: current.ingredients.map((item, position) => position === index ? { ...item, [field]: value } : item),
   }));
@@ -176,20 +207,28 @@ function RecipeForm({ recipe }) {
     event.preventDefault();
     if (saving || ingredients.loading || ingredients.error) return;
     setError("");
+    if (!recipe) {
+      const errors = validateAdditionalFields(values);
+      setFieldErrors(errors);
+      if (Object.keys(errors).length) return;
+    }
     const ids = values.ingredients.map((item) => Number(item.ingredientId));
     if (new Set(ids).size !== ids.length) { setError("Choose each ingredient only once."); return; }
     if (!values.name.trim() || !values.instructions.trim() || values.ingredients.some((item) => !item.unit.trim() || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) {
       setError("Enter a name, instructions, and valid ingredient quantities and units."); return;
     }
     const body = {
-      ...values, name: values.name.trim(), categoryId: Number(values.categoryId),
+      // The current write API does not accept servings, difficulty or nutrition.
+      // Keep an explicit allowlist so these form-only values are never sent.
+      name: values.name.trim(), categoryId: Number(values.categoryId),
+      description: values.description, imageUrl: values.imageUrl, instructions: values.instructions,
       prepTime: Number(values.prepTime), cookTime: Number(values.cookTime),
       ingredients: values.ingredients.map((item) => ({ ingredientId: Number(item.ingredientId), quantity: Number(item.quantity), unit: item.unit.trim() })),
     };
     setSaving(true);
     try {
       const saved = recipe ? await updateAdminRecipe(recipe.recipeId, body) : await createAdminRecipe(body);
-      setNotice(recipe ? "Recipe updated successfully." : "Recipe created successfully.");
+      setNotice(recipe ? "Recipe updated successfully." : "Recipe created.");
       navigate(`/admin/recipes/${saved.recipeId}`);
     } catch (requestError) {
       const fields = Object.values(requestError.data?.errors || {}).join("; ");
@@ -212,6 +251,44 @@ function RecipeForm({ recipe }) {
         <label className="block text-sm font-medium">Image URL<input className={FIELD} maxLength={255} value={values.imageUrl} onChange={(event) => change("imageUrl", event.target.value)} placeholder="Image URL or server path" /></label>
         <RecipeImage imageUrl={values.imageUrl} name={values.name} />
         <div className="grid gap-4 sm:grid-cols-2">{[["prepTime", "Preparation time (minutes)"], ["cookTime", "Cooking time (minutes)"]].map(([field, label]) => <label key={field} className="text-sm font-medium">{label} *<input className={FIELD} type="number" min={0} max={2147483647} step={1} required value={values[field]} onChange={(event) => change(field, event.target.value)} /></label>)}</div>
+        {!recipe && <>
+          <fieldset className="min-w-0 space-y-3">
+            <legend className="mb-3 font-bold">Recipe Information</legend>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="recipe-servings" className="block text-sm font-medium">Servings (servings) *</label>
+                <input id="recipe-servings" name="servings" className={FIELD} type="number" min={1} step={1} required
+                  value={values.servings} onChange={(event) => change("servings", event.target.value)}
+                  onBlur={() => validateField("servings")} onInvalid={() => validateField("servings")}
+                  aria-invalid={Boolean(fieldErrors.servings)} aria-describedby={fieldErrors.servings ? "recipe-servings-error" : undefined} />
+                {fieldErrors.servings && <p id="recipe-servings-error" role="alert" className="mt-1 text-sm text-red-600">{fieldErrors.servings}</p>}
+              </div>
+              <div>
+                <label htmlFor="recipe-difficulty" className="block text-sm font-medium">Difficulty *</label>
+                <select id="recipe-difficulty" name="difficulty" className={FIELD} required value={values.difficulty}
+                  onChange={(event) => change("difficulty", event.target.value)} onBlur={() => validateField("difficulty")}
+                  onInvalid={() => validateField("difficulty")} aria-invalid={Boolean(fieldErrors.difficulty)}
+                  aria-describedby={fieldErrors.difficulty ? "recipe-difficulty-error" : undefined}>
+                  {DIFFICULTIES.map((difficulty) => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
+                </select>
+                {fieldErrors.difficulty && <p id="recipe-difficulty-error" role="alert" className="mt-1 text-sm text-red-600">{fieldErrors.difficulty}</p>}
+              </div>
+            </div>
+          </fieldset>
+          <fieldset className="min-w-0 space-y-3">
+            <legend className="mb-3 font-bold">Nutrition Information</legend>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {NUTRITION_FIELDS.map(([field, label, unit]) => <div key={field}>
+                <label htmlFor={`recipe-${field}`} className="block text-sm font-medium">{label} ({unit}) *</label>
+                <input id={`recipe-${field}`} name={field} className={FIELD} type="number" min={0} step="any" required
+                  value={values[field]} onChange={(event) => change(field, event.target.value)}
+                  onBlur={() => validateField(field)} onInvalid={() => validateField(field)}
+                  aria-invalid={Boolean(fieldErrors[field])} aria-describedby={fieldErrors[field] ? `recipe-${field}-error` : undefined} />
+                {fieldErrors[field] && <p id={`recipe-${field}-error`} role="alert" className="mt-1 text-sm text-red-600">{fieldErrors[field]}</p>}
+              </div>)}
+            </div>
+          </fieldset>
+        </>}
         <label className="block text-sm font-medium">Instructions *<textarea className={FIELD} rows={7} required value={values.instructions} onChange={(event) => change("instructions", event.target.value)} /></label>
         <h2 className="font-bold">Ingredients *</h2>
         {values.ingredients.map((item, index) => <div key={index} className="grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
