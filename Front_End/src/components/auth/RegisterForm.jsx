@@ -2,7 +2,7 @@ import { useState } from "react";
 import { User, Mail, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { registerUser } from "../../services/authServices";
+import { registerUser, verifyRegistration } from "../../services/authServices";
 
 import Input from "../common/Input";
 import Button from "../common/Button";
@@ -20,6 +20,8 @@ function RegisterForm() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   const [error, setError] = useState({});
 
   const validateForm = () => {
@@ -112,14 +114,7 @@ function RegisterForm() {
         email: formData.email.trim(),
         password: formData.password,
       });
-
-      // Registration successful
-      navigate("/login", {
-        replace: true,
-        state: {
-          successMessage: "Account created successfully! Please log in.",
-        },
-      });
+      setVerificationPending(true);
     } catch (error) {
       console.error("Registration failed:", error);
 
@@ -148,9 +143,30 @@ function RegisterForm() {
     }
   };
 
+  const handleVerifyRegistration = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError({});
+    try {
+      await verifyRegistration(formData.email.trim(), verificationCode);
+      navigate("/login", { replace: true, state: { successMessage: "Account created successfully! Please log in." } });
+    } catch (err) {
+      setError({ general: err.message || "OTP verification failed." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      {verificationPending ? (
+      <form className="space-y-4" onSubmit={handleVerifyRegistration}>
+        <p className="text-sm text-gray-600">We sent a 6-digit OTP to {formData.email}. It expires in 10 minutes. Your account will only be created after successful verification.</p>
+        {error.general && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error.general}</div>}
+        <Input label="Email OTP" type="text" name="otp" placeholder="000000" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
+        <Button type="submit" size="md" className="w-full" disabled={isLoading || verificationCode.length !== 6}>{isLoading ? "Verifying..." : "Verify and create account"}</Button>
+      </form>
+      ) : <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         {/* General Error */}
         {error.general && (
           <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -222,7 +238,7 @@ function RegisterForm() {
         <Button type="submit" size="md" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating Account..." : "Create Account"}
         </Button>
-      </form>
+      </form>}
 
       {/* Google + Facebook */}
       <SocialLogin />
