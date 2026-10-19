@@ -12,7 +12,12 @@ public record AdminPostVideoResponse(
         LocalDateTime submittedAt,
         String status,
         String thumbnailUrl,
-        String mediaUrl
+        String mediaUrl,
+        String aiResult,
+        String aiReason,
+        Double aiConfidence,
+        String moderationStatus,
+        String adminReason
 ) {
     public record Statistics(
             long totalSubmission,
@@ -32,6 +37,7 @@ public record AdminPostVideoResponse(
     public record StatusRequest(
             @jakarta.validation.constraints.NotBlank
             @jakarta.validation.constraints.Pattern(regexp = "APPROVED|REJECTED|REMOVED")
-            String status
+            String status,
+            String reason
     ) {}
 }

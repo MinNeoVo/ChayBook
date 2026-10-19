@@ -21,6 +21,7 @@ public interface AdminPostVideoService {
             Integer adminId,
             String type,
             Integer contentId,
-            String status
+            String status,
+            String reason
     );
 }

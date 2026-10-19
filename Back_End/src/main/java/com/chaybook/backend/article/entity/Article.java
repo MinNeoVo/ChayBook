@@ -28,7 +28,7 @@ public class Article {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "content", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Column(name = "cover_image", length = 255)
