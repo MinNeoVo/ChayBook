@@ -29,7 +29,7 @@ public class Recipe {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "image_url", length = 255)
@@ -47,7 +47,7 @@ public class Recipe {
     @Column(name = "difficulty", length = 50)
     private String difficulty;
 
-    @Column(name = "instructions", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "instructions", columnDefinition = "NVARCHAR(MAX)")
     private String instructions;
 
     @Column(name = "calories")

@@ -174,11 +174,12 @@ public class AdminArticleServiceImpl implements AdminArticleService {
             Integer categoryId,
             String status,
             int page,
-            int size
+            int size,
+            String sort
     ) {
         requireAdmin(authenticatedUserId);
 
-        if (page < 0 || size < 1 || size > 10) {
+        if (page < 0 || size < 1 || size > 10 || (long) page * size > Integer.MAX_VALUE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Page phải từ 0; size phải từ 1 đến 10"
@@ -195,10 +196,15 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         String keyword = q == null || q.isBlank() ? null : q.strip();
         String normalizedStatus = normalizeOptionalStatus(status);
 
+        if (!Set.of("newest", "oldest").contains(sort == null ? "" : sort)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sort must be newest or oldest");
+        }
+        Sort.Direction direction = "oldest".equals(sort) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "articleId")
+                Sort.by(direction, "createdAt").and(Sort.by(direction, "articleId"))
         );
 
         Page<Article> articles = articleRepository.search(

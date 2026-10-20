@@ -44,7 +44,7 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
     ) {
         requireActiveAdmin(adminId);
 
-        if (page < 0 || size < 1 || size > 100) {
+        if (page < 0 || size < 1 || size > 100 || (long) page * size > Integer.MAX_VALUE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "page phải từ 0 trở lên; size phải từ 1 đến 100"
@@ -85,17 +85,42 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
     }
 
     @Override
+    public AdminPostVideoResponse getDetail(Integer adminId, String type, Integer contentId) {
+        requireActiveAdmin(adminId);
+        String normalizedType = normalize(type, "");
+        if (!CONTENT_TYPES.contains(normalizedType) || contentId == null || contentId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content type or ID");
+        }
+        AdminPostVideoResponse result = repository.findDetail(normalizedType, contentId);
+        if (result == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Content not found");
+        return result;
+    }
+
+    @Override
     @Transactional
     public void updateStatus(
             Integer adminId,
             String type,
             Integer contentId,
-            String requestedStatus
+            String requestedStatus,
+            String requestedReason
     ) {
-        requireActiveAdmin(adminId);
+        User admin = requireActiveAdmin(adminId);
 
         String normalizedType = normalize(type, "");
         String nextStatus = normalize(requestedStatus, "");
+
+        String reason = requestedReason == null
+                ? null
+                : requestedReason.strip();
+
+        if ("REJECTED".equals(nextStatus)
+                && (reason == null || reason.isBlank())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cần nhập lý do khi từ chối nội dung"
+            );
+        }
 
         if (!CONTENT_TYPES.contains(normalizedType)) {
             throw new ResponseStatusException(
@@ -157,6 +182,21 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
                     "Trạng thái nội dung vừa được thay đổi; hãy tải lại danh sách"
             );
         }
+
+        repository.insertDecision(
+                normalizedType,
+                contentId,
+                admin.getUserId(),
+                currentStatus,
+                nextStatus,
+                reason
+        );
+
+        repository.markLatestModerationReviewed(
+                normalizedType,
+                contentId,
+                admin.getUserId()
+        );
     }
 
     private User requireActiveAdmin(Integer adminId) {

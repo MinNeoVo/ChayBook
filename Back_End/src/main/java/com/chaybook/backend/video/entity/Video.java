@@ -28,7 +28,7 @@ public class Video {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "video_url", nullable = false, length = 255)

@@ -70,13 +70,14 @@ public class AdminArticleController {
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "newest") String sort,
             Authentication authentication
     ) {
         Integer userId = requireAuthenticatedUserId(authentication);
 
         return ResponseEntity.ok(
                 articleService.getArticles(
-                        userId, q, categoryId, status, page, size
+                        userId, q, categoryId, status, page, size, sort
                 )
         );
     }

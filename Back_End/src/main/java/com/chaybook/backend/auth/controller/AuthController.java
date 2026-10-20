@@ -34,11 +34,36 @@ public class AuthController {
     public ResponseEntity<RegisterResponse> register(
             @Valid @RequestBody RegisterRequest request
     ) {
-        RegisterResponse response = authService.register(request);
+        authService.startRegistration(request);
+        return ResponseEntity.accepted().body(new RegisterResponse(
+                "Mã OTP đã được gửi đến email. Nhập mã trong vòng 10 phút để hoàn tất đăng ký.", null));
+    }
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+    @PostMapping("/register/verify")
+    public ResponseEntity<RegisterResponse> verifyRegistration(
+            @Valid @RequestBody VerifyRegistrationRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.verifyRegistration(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request.email());
+        return ResponseEntity.ok(Map.of("message", "Nếu email có tài khoản, mã OTP sẽ được gửi đến hộp thư."));
+    }
+
+    @PostMapping("/forgot-password/verify")
+    public ResponseEntity<PasswordResetVerificationResponse> verifyPasswordReset(
+            @Valid @RequestBody VerifyPasswordResetRequest request) {
+        return ResponseEntity.ok(new PasswordResetVerificationResponse(
+                authService.verifyPasswordReset(request)));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật."));
     }
 
 @PostMapping(

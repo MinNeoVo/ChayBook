@@ -143,6 +143,7 @@ function UserManagementPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [updatingUserId, setUpdatingUserId] = useState(null);
   const [actionError, setActionError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [statisticsRefreshKey, setStatisticsRefreshKey] = useState(0);
 
@@ -251,6 +252,7 @@ function UserManagementPage() {
 
     setUpdatingUserId(user.userId);
     setActionError("");
+    setSuccessMessage("");
 
     try {
       const response = await updateAdminUserStatus(user.userId, nextStatus);
@@ -264,6 +266,7 @@ function UserManagementPage() {
         ),
       );
       setStatisticsRefreshKey((current) => current + 1);
+      setSuccessMessage(`Account ${user.username || user.email} is now ${updatedStatus.toLowerCase()}.`);
     } catch (requestError) {
       console.error(`Unable to update status for user ${user.userId}:`, requestError);
       setActionError(requestError.message || "Unable to update user status.");
@@ -334,6 +337,7 @@ function UserManagementPage() {
         />
       </section>
 
+      {successMessage && <p role="status" className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{successMessage}</p>}
       {statisticsError && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           <span className="inline-flex items-center gap-2">

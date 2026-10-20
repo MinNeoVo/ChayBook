@@ -40,7 +40,7 @@ function AdminLayout() {
       icon: FileText,
     },
     {
-      name: "Recipes",
+      name: "Recipe Management",
       path: "/admin/recipes",
       icon: ChefHat,
     },

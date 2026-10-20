@@ -18,7 +18,7 @@ public class Category {
     @Column(name = "type", length = 50)
     private String type;
 
-    @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Nationalized

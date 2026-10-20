@@ -2,6 +2,9 @@ import { Routes, Route } from "react-router-dom";
 
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
+import VerifyResetOtpPage from "./Pages/VerifyResetOtpPage";
+import ResetPasswordPage from "./Pages/ResetPasswordPage";
 
 import ContentPage from "./Pages/ContentPage";
 import ContentPageDetail from "./Pages/ContentPageDetail";
@@ -15,6 +18,7 @@ import RecipeDetailPage from "./Pages/RecipeDetailPage";
 import BmiPage from "./Pages/BmiPage";
 import MealPlanPage from "./Pages/MealPlanPage";
 import AIAssistantPage from "./Pages/AIAssistantPage";
+import PlacesPage from "./Pages/PlacesPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -25,6 +29,12 @@ import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./Pages/admin/AdminDashboardPage";
 import AdminUsers from "./Pages/admin/AdminUsers";
 import AdminPostVideoPage from "./Pages/admin/AdminPostVideoPage";
+import AdminRecipeManagement, {
+  AdminRecipeListPage,
+  AdminRecipeCreatePage,
+  AdminRecipeDetailPage,
+  AdminRecipeEditPage,
+} from "./Pages/admin/AdminRecipeManagement";
 import AdminArticleManagement, {
   AdminArticleCreatePage,
   AdminArticleDetailPage,
@@ -43,6 +53,9 @@ function App() {
 
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/content" element={<ContentPage />} />
         <Route path="/content/:id" element={<ContentPageDetail />} />
@@ -57,6 +70,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/meal-plan" element={<MealPlanPage />} />
+          <Route path="/places" element={<PlacesPage />} />
         </Route>
       </Route>
 
@@ -68,6 +82,12 @@ function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="categories" element={<AdminCategoryPage />} />
+          <Route path="recipes" element={<AdminRecipeManagement />}>
+            <Route index element={<AdminRecipeListPage />} />
+            <Route path="new" element={<AdminRecipeCreatePage />} />
+            <Route path=":recipeId" element={<AdminRecipeDetailPage />} />
+            <Route path=":recipeId/edit" element={<AdminRecipeEditPage />} />
+          </Route>
           <Route path="posts-videos" element={<AdminPostVideoPage />} />
           <Route path="articles" element={<AdminArticleManagement />}>
             <Route index element={<AdminArticleListPage />} />

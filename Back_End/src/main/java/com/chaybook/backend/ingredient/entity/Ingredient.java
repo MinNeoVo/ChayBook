@@ -17,7 +17,7 @@ public class Ingredient {
     @Column(name = "name", nullable = false, length = 255, unique = true)
     private String name;
 
-    @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @ManyToMany(mappedBy = "ingredients", fetch = FetchType.LAZY)

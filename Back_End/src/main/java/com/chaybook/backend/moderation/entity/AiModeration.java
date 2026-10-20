@@ -28,11 +28,14 @@ public class AiModeration {
     @Column(name = "result", length = 255)
     private String result;
 
-    @Column(name = "reason", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "reason", columnDefinition = "NVARCHAR(MAX)")
     private String reason;
 
     @Column(name = "confidence")
     private Double confidence;
+
+    @Column(name = "moderation_status", nullable = false, length = 20)
+    private String moderationStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by")
@@ -60,6 +63,13 @@ public class AiModeration {
         this.createdAt = createdAt;
     }
 
+    public String getModerationStatus() {
+        return moderationStatus;
+    }
+
+    public void setModerationStatus(String moderationStatus) {
+        this.moderationStatus = moderationStatus;
+    }
 
     public Integer getModerationId() {
         return moderationId;
