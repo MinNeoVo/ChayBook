@@ -30,6 +30,7 @@ import AdminArticleManagement, {
   AdminArticleDetailPage,
   AdminArticleListPage,
 } from "./Pages/admin/AdminArticleManagement";
+import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="categories" element={<AdminCategoryPage />} />
           <Route path="posts-videos" element={<AdminPostVideoPage />} />
           <Route path="articles" element={<AdminArticleManagement />}>
             <Route index element={<AdminArticleListPage />} />
