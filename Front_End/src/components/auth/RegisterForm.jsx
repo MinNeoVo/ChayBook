@@ -29,42 +29,42 @@ function RegisterForm() {
 
     // Full Name
     if (!formData.fullName.trim()) {
-      newError.fullName = "Full name is required";
+      newError.fullName = "Vui lòng nhập họ và tên.";
     } else if (formData.fullName.trim().length > 255) {
-      newError.fullName = "Full name must not exceed 255 characters";
+      newError.fullName = "Họ và tên không được vượt quá 255 ký tự.";
     }
 
     // Username
     if (!formData.username.trim()) {
-      newError.username = "Username is required";
+      newError.username = "Vui lòng nhập tên người dùng.";
     } else if (!/^[a-z0-9_.]{3,50}$/.test(formData.username)) {
       newError.username =
-        "Username must be 3-50 characters and contain only lowercase letters, numbers, _ or .";
+        "Tên người dùng phải có từ 3–50 ký tự, chỉ gồm chữ thường, chữ số, dấu gạch dưới (_) hoặc dấu chấm (.).";
     }
 
     // Email
     if (!formData.email.trim()) {
-      newError.email = "Email is required";
+      newError.email = "Vui lòng nhập email.";
     } else if (formData.email.trim().length > 255) {
-      newError.email = "Email must not exceed 255 characters";
+      newError.email = "Email không được vượt quá 255 ký tự.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newError.email = "Email is invalid";
+      newError.email = "Email không hợp lệ.";
     }
 
     // Password
     if (!formData.password) {
-      newError.password = "Password is required";
+      newError.password = "Vui lòng nhập mật khẩu.";
     } else if (formData.password.length < 8) {
-      newError.password = "Password must be at least 8 characters";
+      newError.password = "Mật khẩu phải có ít nhất 8 ký tự.";
     } else if (formData.password.length > 72) {
-      newError.password = "Password must not exceed 72 characters";
+      newError.password = "Mật khẩu không được vượt quá 72 ký tự.";
     }
 
     // Confirm Password
     if (!formData.confirmPassword) {
-      newError.confirmPassword = "Please confirm your password";
+      newError.confirmPassword = "Vui lòng xác nhận mật khẩu.";
     } else if (formData.password !== formData.confirmPassword) {
-      newError.confirmPassword = "Passwords do not match";
+      newError.confirmPassword = "Mật khẩu xác nhận không khớp.";
     }
 
     setError(newError);
@@ -127,15 +127,15 @@ function RegisterForm() {
 
       if (error.status === 409 && message.includes("username")) {
         setError({
-          username: "This username is already taken.",
+          username: "Tên người dùng này đã được sử dụng.",
         });
       } else if (error.status === 409 && message.includes("email")) {
         setError({
-          email: "This email is already registered.",
+          email: "Email này đã được đăng ký.",
         });
       } else {
         setError({
-          general: error.message || "Registration failed.",
+          general: error.message || "Đăng ký thất bại.",
         });
       }
     } finally {
@@ -149,9 +149,9 @@ function RegisterForm() {
     setError({});
     try {
       await verifyRegistration(formData.email.trim(), verificationCode);
-      navigate("/login", { replace: true, state: { successMessage: "Account created successfully! Please log in." } });
+      navigate("/login", { replace: true, state: { successMessage: "Tạo tài khoản thành công! Vui lòng đăng nhập." } });
     } catch (err) {
-      setError({ general: err.message || "OTP verification failed." });
+      setError({ general: err.message || "Xác thực OTP thất bại." });
     } finally {
       setIsLoading(false);
     }
@@ -161,10 +161,10 @@ function RegisterForm() {
     <>
       {verificationPending ? (
       <form className="space-y-4" onSubmit={handleVerifyRegistration}>
-        <p className="text-sm text-gray-600">We sent a 6-digit OTP to {formData.email}. It expires in 10 minutes. Your account will only be created after successful verification.</p>
+        <p className="text-sm text-gray-600">Mã OTP gồm 6 chữ số đã được gửi đến {formData.email}. Mã có hiệu lực trong 10 phút. Tài khoản chỉ được tạo sau khi xác thực thành công.</p>
         {error.general && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error.general}</div>}
-        <Input label="Email OTP" type="text" name="otp" placeholder="000000" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-        <Button type="submit" size="md" className="w-full" disabled={isLoading || verificationCode.length !== 6}>{isLoading ? "Verifying..." : "Verify and create account"}</Button>
+        <Input label="Mã OTP" type="text" name="otp" placeholder="000000" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
+        <Button type="submit" size="md" className="w-full" disabled={isLoading || verificationCode.length !== 6}>{isLoading ? "Đang xác thực..." : "Xác thực và tạo tài khoản"}</Button>
       </form>
       ) : <form className="space-y-4" onSubmit={handleSubmit} noValidate>
         {/* General Error */}
@@ -176,10 +176,10 @@ function RegisterForm() {
 
         {/* Full Name */}
         <Input
-          label="Full Name"
+          label="Họ và tên"
           type="text"
           name="fullName"
-          placeholder="Enter your full name"
+          placeholder="Nhập họ và tên"
           icon={User}
           value={formData.fullName}
           onChange={handleChange}
@@ -188,10 +188,10 @@ function RegisterForm() {
 
         {/* Username */}
         <Input
-          label="Username"
+          label="Tên người dùng"
           type="text"
           name="username"
-          placeholder="Enter your username"
+          placeholder="Nhập tên người dùng"
           icon={User}
           value={formData.username}
           onChange={handleChange}
@@ -203,7 +203,7 @@ function RegisterForm() {
           label="Email"
           type="email"
           name="email"
-          placeholder="Enter your email"
+          placeholder="Nhập email"
           icon={Mail}
           value={formData.email}
           onChange={handleChange}
@@ -212,10 +212,10 @@ function RegisterForm() {
 
         {/* Password */}
         <Input
-          label="Password"
+          label="Mật khẩu"
           type="password"
           name="password"
-          placeholder="Create your password"
+          placeholder="Tạo mật khẩu"
           icon={Lock}
           value={formData.password}
           onChange={handleChange}
@@ -224,10 +224,10 @@ function RegisterForm() {
 
         {/* Confirm Password */}
         <Input
-          label="Confirm Password"
+          label="Xác nhận mật khẩu"
           type="password"
           name="confirmPassword"
-          placeholder="Confirm your password"
+          placeholder="Nhập lại mật khẩu"
           icon={Lock}
           value={formData.confirmPassword}
           onChange={handleChange}
@@ -236,7 +236,7 @@ function RegisterForm() {
 
         {/* Create Account */}
         <Button type="submit" size="md" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating Account..." : "Create Account"}
+          {isLoading ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
         </Button>
       </form>}
 
@@ -246,12 +246,12 @@ function RegisterForm() {
       {/* Login */}
       <div className="mt-6 border-t border-gray-200 pt-6 text-center">
         <p className="text-sm text-gray-500">
-          Already have an account?{" "}
+          Bạn đã có tài khoản?{" "}
           <Link
             to="/login"
             className="font-medium text-chaybook-primary hover:underline"
           >
-            Login
+            Đăng nhập
           </Link>
         </p>
       </div>

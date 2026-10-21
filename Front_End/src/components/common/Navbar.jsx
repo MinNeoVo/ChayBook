@@ -11,13 +11,13 @@ function Navbar() {
   const { user, isLoggedIn, logout } = useAuth();
 
   const navItems = [
-    { name: "Home", path: "/", end: true },
-    { name: "Content", path: "/content" },
-    ...(isLoggedIn ? [{ name: "Community", path: "/community" }] : []),
-    { name: "AI Assistant", path: "/ai-assistant" },
-    { name: "Recipes", path: "/recipes" },
-    ...(isLoggedIn ? [{ name: "Shops & Places", path: "/places" }] : []),
-    { name: "Meal Plan", path: "/meal-plan" },
+    { name: "Trang chủ", path: "/", end: true },
+    { name: "Bài viết", path: "/content" },
+    ...(isLoggedIn ? [{ name: "Cộng đồng", path: "/community" }] : []),
+    { name: "Trợ lý AI", path: "/ai-assistant" },
+    { name: "Công thức", path: "/recipes" },
+    ...(isLoggedIn ? [{ name: "Địa điểm", path: "/places" }] : []),
+    { name: "Thực đơn", path: "/meal-plan" },
   ];
 
   return (
@@ -72,7 +72,7 @@ function Navbar() {
                 size="md"
                 className="h-10 whitespace-nowrap py-2"
               >
-                Admin Dashboard
+                Bảng điều khiển
               </Button>
             </Link>
           )}
@@ -85,7 +85,7 @@ function Navbar() {
               onClick={logout}
               className="h-10 whitespace-nowrap py-2 "
             >
-              Logout
+              Đăng xuất
             </Button>
           ) : (
             <Link to="/login">
@@ -94,7 +94,7 @@ function Navbar() {
                 size="md"
                 className="h-10 whitespace-nowrap py-2 "
               >
-                Login / Sign Up
+                Đăng nhập / Đăng ký
               </Button>
             </Link>
           )}
@@ -104,12 +104,12 @@ function Navbar() {
           {isLoggedIn && (
             <Link
               to="/profile"
-              aria-label="User Account"
+              aria-label="Tài khoản người dùng"
               className="flex h-10 w-10 shrink-0 rounded-full shadow-sm transition-opacity hover:opacity-80 border-spacing-x-0.5 "
             >
               <Avatar
                 src={user?.avatarUrl}
-                alt={user?.fullName || "User avatar"}
+                alt={user?.fullName || "Ảnh đại diện người dùng"}
                 size="md"
               />
             </Link>

@@ -16,8 +16,8 @@ const TYPE_ICONS = {
 };
 
 const STATUS_LABELS = {
-  ACTIVE: "Active",
-  DELETED: "Deleted",
+  ACTIVE: "Đang hoạt động",
+  DELETED: "Đã xóa",
 };
 
 const actionClass =
@@ -43,16 +43,16 @@ export default function CategoryTable({ categories, busy, onEdit, onDelete }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="w-full min-w-[720px] border-collapse text-left">
-        <caption className="sr-only">Category list</caption>
+        <caption className="sr-only">Danh sách danh mục</caption>
 
         <thead className="bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
           <tr>
             {[
-              "Category ID",
-              "Type",
-              "Name & Description",
-              "Status",
-              "Actions",
+              "Mã danh mục",
+              "Loại",
+              "Tên & mô tả",
+              "Trạng thái",
+              "Thao tác",
             ].map((title) => (
               <th key={title} scope="col" className="px-4 py-3">
                 {title}
@@ -68,7 +68,7 @@ export default function CategoryTable({ categories, busy, onEdit, onDelete }) {
                 colSpan={5}
                 className="px-4 py-10 text-center text-sm text-slate-500"
               >
-                No matching categories found.
+                Không tìm thấy danh mục phù hợp.
               </td>
             </tr>
           )}
@@ -118,22 +118,22 @@ export default function CategoryTable({ categories, busy, onEdit, onDelete }) {
                       type="button"
                       disabled={busy || !active}
                       onClick={() => onEdit(category)}
-                      aria-label={`Edit category ${category.name}`}
+                      aria-label={`Chỉnh sửa danh mục ${category.name}`}
                       className={`${actionClass} bg-emerald-100 text-emerald-800 enabled:hover:bg-emerald-200 focus-visible:outline-emerald-700`}
                     >
                       <Pencil aria-hidden="true" size={12} />
-                      Edit
+                      Sửa
                     </button>
 
                     <button
                       type="button"
                       disabled={busy || !active}
                       onClick={() => onDelete(category)}
-                      aria-label={`Delete category ${category.name}`}
+                      aria-label={`Xóa danh mục ${category.name}`}
                       className={`${actionClass} bg-red-100 text-red-700 enabled:hover:bg-red-200 focus-visible:outline-red-700`}
                     >
                       <Trash2 aria-hidden="true" size={12} />
-                      Delete
+                      Xóa
                     </button>
                   </div>
                 </td>

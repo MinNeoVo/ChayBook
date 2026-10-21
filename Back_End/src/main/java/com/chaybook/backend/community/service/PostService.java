@@ -7,6 +7,7 @@ import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.*;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
+import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.moderation.entity.AiModeration;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
@@ -15,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
 import com.chaybook.backend.moderation.service.AiModerationService;
 
@@ -28,6 +27,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final AiModerationService aiModerationService;
+    private final MediaService mediaService;
 
     public PostService(
             PostRepository postRepository,
@@ -35,7 +35,8 @@ public class PostService {
             CommentRepository commentRepository,
             UserRepository userRepository,
             CategoryRepository categoryRepository,
-            AiModerationService aiModerationService
+            AiModerationService aiModerationService,
+            MediaService mediaService
     ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
@@ -43,6 +44,7 @@ public class PostService {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.aiModerationService = aiModerationService;
+        this.mediaService = mediaService;
     }
 
     @Transactional(readOnly = true)
@@ -183,7 +185,8 @@ public class PostService {
                     bookmarkCounts.getOrDefault(postId, 0L),
                     commentCounts.getOrDefault(postId, 0L),
                     likedPostIds.contains(postId),
-                    bookmarkedPostIds.contains(postId)
+                    bookmarkedPostIds.contains(postId),
+                    null
             );
         });
 
@@ -197,7 +200,8 @@ public PostCreateResponse createPost(
         Integer categoryId,
         String title,
         String content,
-        MultipartFile image
+        MultipartFile image,
+        String mediaUrl
 ) {
     User currentUser = requireActiveUser(currentUserId);
 
@@ -205,6 +209,12 @@ public PostCreateResponse createPost(
         throw new PostException(
                 HttpStatus.BAD_REQUEST,
                 "Title is required and must not exceed 255 characters"
+        );
+    }
+    if (title.codePoints().anyMatch(Character::isDigit)) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Title must not contain digits"
         );
     }
 
@@ -217,7 +227,16 @@ public PostCreateResponse createPost(
 
     Category category = findOptionalCategory(categoryId);
 
-    String imageUrl = savePostImage(image);
+    if (mediaUrl != null && !mediaUrl.isBlank() && image != null && !image.isEmpty()) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Provide either a media URL or a file, not both"
+        );
+    }
+
+    String imageUrl = mediaUrl == null || mediaUrl.isBlank()
+            ? uploadPostMedia(image)
+            : normalizeImageUrl(mediaUrl);
 
     Post post = new Post();
     post.setUser(currentUser);
@@ -248,50 +267,17 @@ public PostCreateResponse createPost(
     );
 }
 
-private String savePostImage(MultipartFile image) {
+private String uploadPostMedia(MultipartFile image) {
     if (image == null || image.isEmpty()) {
         return null;
     }
 
-    if (image.getSize() > 5 * 1024 * 1024) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                "Image must not exceed 5 MB"
-        );
-    }
-
-    String contentType = image.getContentType();
-
-    if (contentType == null ||
-            !(contentType.equalsIgnoreCase("image/jpeg")
-                    || contentType.equalsIgnoreCase("image/png"))) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                "Only JPEG and PNG images are allowed"
-        );
-    }
-
-    String extension = contentType.equalsIgnoreCase("image/png")
-            ? ".png"
-            : ".jpg";
-
-    String fileName = UUID.randomUUID() + extension;
-    Path uploadDir = Paths.get("uploads", "posts").toAbsolutePath();
-    Path destination = uploadDir.resolve(fileName).normalize();
-
     try {
-        Files.createDirectories(uploadDir);
-        Files.copy(
-                image.getInputStream(),
-                destination,
-                StandardCopyOption.REPLACE_EXISTING
-        );
-
-        return "/uploads/posts/" + fileName;
-    } catch (IOException exception) {
+        return mediaService.upload(image).getUrl();
+    } catch (IllegalArgumentException exception) {
         throw new PostException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to save image"
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
         );
     }
 }
@@ -317,6 +303,12 @@ private String savePostImage(MultipartFile image) {
         String newTitle = request.title() == null
                 ? post.getTitle()
                 : normalizePostText(request.title(), "Title");
+        if (newTitle.codePoints().anyMatch(Character::isDigit)) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Title must not contain digits"
+            );
+        }
 
         String newContent = request.content() == null
                 ? post.getContent()
@@ -634,7 +626,7 @@ private String savePostImage(MultipartFile image) {
         if (normalizedUrl.length() > 255) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
-                    "Image URL must not exceed 255 characters"
+                    "Media URL must not exceed 255 characters"
             );
         }
 

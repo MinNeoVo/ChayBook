@@ -9,14 +9,15 @@ import {
   Utensils,
 } from "lucide-react";
 import { getNearbyShopRecommendations } from "../services/shopServices";
+import PlacesMap from "./PlacesMap";
 import "./PlacesPage.css";
 
 const DEFAULT_RADIUS = 10000;
 
 function formatDistance(distanceMeters) {
-  if (!Number.isFinite(distanceMeters)) return "Distance unavailable";
-  if (distanceMeters < 1000) return `${Math.round(distanceMeters)} m away`;
-  return `${(distanceMeters / 1000).toFixed(1)} km away`;
+  if (!Number.isFinite(distanceMeters)) return "Chưa có khoảng cách";
+  if (distanceMeters < 1000) return `Cách ${Math.round(distanceMeters)} m`;
+  return `Cách ${(distanceMeters / 1000).toFixed(1)} km`;
 }
 
 function mapsAreaUrl(location) {
@@ -38,15 +39,15 @@ function ShopCard({ shop, index }) {
           <h3>{shop.name}</h3>
           <span className="shop-distance"><MapPin size={13} />{formatDistance(shop.distanceMeters)}</span>
         </div>
-        <p className="shop-address"><MapPin size={13} />{shop.address || "Address not provided"}</p>
+        <p className="shop-address"><MapPin size={13} />{shop.address || "Chưa có địa chỉ"}</p>
         <div className="shop-evidence-row">
-          <span className="shop-dietary-badge"><Leaf size={12} />Plant-based category</span>
-          <span className="shop-dish-status">Nearby suggestion</span>
+          <span className="shop-dietary-badge"><Leaf size={12} />Danh mục món thực vật</span>
+          <span className="shop-dish-status">Gợi ý gần bạn</span>
         </div>
-        <p className="shop-reason">Suggested by location and dietary category. Please check the current menu with the restaurant.</p>
+        <p className="shop-reason">Gợi ý dựa trên vị trí và danh mục chế độ ăn. Vui lòng kiểm tra thực đơn hiện tại với nhà hàng.</p>
         <div className="shop-card-footer">
           <span className="shop-attribution">{shop.attributions?.map((item) => item.provider).filter(Boolean).join(" · ")}</span>
-          <a href={mapsPlaceUrl(shop)} target="_blank" rel="noreferrer">Directions <ExternalLink size={13} /></a>
+          <a href={mapsPlaceUrl(shop)} target="_blank" rel="noreferrer">Chỉ đường <ExternalLink size={13} /></a>
         </div>
       </div>
     </article>
@@ -88,7 +89,7 @@ function PlacesPage() {
       setShops(Array.isArray(response?.items) ? response.items : []);
     } catch (requestError) {
       setShops([]);
-      setError(requestError.message || "Could not load nearby places. Please try again.");
+      setError(requestError.message || "Không thể tải địa điểm gần đây. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ function PlacesPage() {
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setLocationError("This browser does not support location access.");
+      setLocationError("Trình duyệt này không hỗ trợ truy cập vị trí.");
       setLocationState("error");
       return;
     }
@@ -110,8 +111,8 @@ function PlacesPage() {
       },
       (geoError) => {
         const message = geoError.code === geoError.PERMISSION_DENIED
-          ? "Location access was declined. Allow location in your browser to find nearby places."
-          : "Could not get your location. Check your connection and try again.";
+          ? "Bạn đã từ chối quyền truy cập vị trí. Hãy cho phép trình duyệt truy cập vị trí để tìm địa điểm gần bạn."
+          : "Không thể lấy vị trí của bạn. Hãy kiểm tra kết nối và thử lại.";
         setLocationError(message);
         setLocationState("error");
       },
@@ -132,13 +133,13 @@ function PlacesPage() {
   return (
     <main className="places-page">
       <div className="places-shell">
-        <div className="places-breadcrumb"><span>Home</span><span>/</span><span>Explore</span><span>/</span><strong>Nearby Vegetarian Places</strong></div>
+        <div className="places-breadcrumb"><span>Trang chủ</span><span>/</span><span>Khám phá</span><span>/</span><strong>Địa điểm ăn chay gần đây</strong></div>
 
         <section className="places-hero">
           <div className="places-hero-copy">
-            <span className="places-eyebrow"><Leaf size={13} /> Nearby place finder</span>
-            <h1>Vegetarian places near you</h1>
-            <p>We’ll find nearby vegetarian and vegan restaurants using your current location.</p>
+            <span className="places-eyebrow"><Leaf size={13} /> Tìm địa điểm gần bạn</span>
+            <h1>Địa điểm ăn chay gần bạn</h1>
+            <p>Chúng tôi sẽ tìm nhà hàng chay và thuần chay gần bạn dựa trên vị trí hiện tại.</p>
           </div>
           <div className="places-hero-art"><Utensils size={60} /></div>
         </section>
@@ -148,25 +149,25 @@ function PlacesPage() {
             <div className="places-current-location">
               <MapPin size={18} />
               <div>
-                <strong>{locationState === "loading" ? "Finding your location…" : location ? "Searching near your current location" : "Location needed to find nearby places"}</strong>
-                <span>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Allow location access when your browser asks."}</span>
+                <strong>{locationState === "loading" ? "Đang tìm vị trí…" : location ? "Đang tìm quanh vị trí hiện tại" : "Cần vị trí để tìm địa điểm gần đây"}</strong>
+                <span>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Cho phép truy cập vị trí khi trình duyệt yêu cầu."}</span>
               </div>
             </div>
-            <select value={dietaryMode} onChange={(event) => setDietaryMode(event.target.value)} aria-label="Dietary preference">
-              <option value="VEGETARIAN">Vegetarian & vegan</option>
-              <option value="VEGAN">Vegan only</option>
+            <select value={dietaryMode} onChange={(event) => setDietaryMode(event.target.value)} aria-label="Tùy chọn chế độ ăn">
+              <option value="VEGETARIAN">Ăn chay & thuần chay</option>
+              <option value="VEGAN">Chỉ thuần chay</option>
             </select>
-            <select value={radiusMeters} onChange={(event) => setRadiusMeters(Number(event.target.value))} aria-label="Search radius">
-              <option value={3000}>Within 3 km</option>
-              <option value={5000}>Within 5 km</option>
-              <option value={10000}>Within 10 km</option>
+            <select value={radiusMeters} onChange={(event) => setRadiusMeters(Number(event.target.value))} aria-label="Bán kính tìm kiếm">
+              <option value={3000}>Trong phạm vi 3 km</option>
+              <option value={5000}>Trong phạm vi 5 km</option>
+              <option value={10000}>Trong phạm vi 10 km</option>
             </select>
             <button className={`places-location-button ${locationState === "ready" ? "places-location-ready" : ""}`} type="button" onClick={requestLocation} disabled={locationState === "loading"}>
-              <LocateFixed size={16} />{locationState === "loading" ? "Finding you…" : locationState === "ready" ? "Refresh location" : "Use my location"}
+              <LocateFixed size={16} />{locationState === "loading" ? "Đang xác định…" : locationState === "ready" ? "Làm mới vị trí" : "Dùng vị trí của tôi"}
             </button>
-            <a className="places-submit-button places-maps-area-link" href={mapsAreaUrl(location)} target="_blank" rel="noreferrer"><MapPin size={16} />Open in Google Maps</a>
+            <a className="places-submit-button places-maps-area-link" href={mapsAreaUrl(location)} target="_blank" rel="noreferrer"><MapPin size={16} />Mở Google Maps</a>
           </div>
-          <div className="places-search-foot"><span>Your location is used to find and sort nearby places.</span><span>Up to 10 results · Sorted by distance</span></div>
+          <div className="places-search-foot"><span>Vị trí của bạn được dùng để tìm và sắp xếp địa điểm gần đây.</span><span>Tối đa 10 kết quả · Sắp xếp theo khoảng cách</span></div>
         </section>
 
         {(locationError || error) && <div className="places-alert"><AlertCircle size={17} /><span>{locationError || error}</span></div>}
@@ -174,36 +175,31 @@ function PlacesPage() {
         <section className="places-results-layout">
           <div className="places-location-card">
             <div className="places-section-heading">
-              <div><span className="places-live-dot" /><h2>Search location</h2></div>
-              <button onClick={requestLocation} disabled={locationState === "loading"}><LocateFixed size={14} />{locationState === "loading" ? "Locating…" : "Refresh"}</button>
+              <div><span className="places-live-dot" /><h2>Vị trí tìm kiếm</h2></div>
+              <button onClick={requestLocation} disabled={locationState === "loading"}><LocateFixed size={14} />{locationState === "loading" ? "Đang xác định…" : "Làm mới"}</button>
             </div>
-            <div className="places-location-visual">
-              <div className="places-location-orbit places-orbit-one" />
-              <div className="places-location-orbit places-orbit-two" />
-              <div className="places-location-pin"><MapPin size={27} fill="currentColor" /></div>
-              <span className="places-location-radius">{radiusMeters / 1000} km search radius</span>
-            </div>
+            <PlacesMap location={location} shops={orderedShops} radiusMeters={radiusMeters} />
             <div className="places-location-details">
-              <div><span>Searching around</span><strong>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Your current location"}</strong></div>
-              <a href={mapsAreaUrl(location)} target="_blank" rel="noreferrer">Explore area in Google Maps <ExternalLink size={13} /></a>
+              <div><span>Đang tìm quanh</span><strong>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Vị trí hiện tại của bạn"}</strong></div>
+              <a href={mapsAreaUrl(location)} target="_blank" rel="noreferrer">Khám phá khu vực trên Google Maps <ExternalLink size={13} /></a>
             </div>
-            <p className="places-map-caption">Suggestions are based on nearby place categories and distance. Restaurant menus may change.</p>
+            <p className="places-map-caption">Gợi ý dựa trên danh mục địa điểm và khoảng cách. Thực đơn nhà hàng có thể thay đổi.</p>
           </div>
 
           <div className="places-list-column">
             <div className="places-list-heading">
-              <div><h2>Nearby places</h2><span>{hasSearched ? `${orderedShops.length} results` : "Finding places…"}</span></div>
-              <label>Sort <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="distance">Closest</option><option value="name">Name</option></select><ChevronDown size={13} /></label>
+              <div><h2>Địa điểm gần đây</h2><span>{hasSearched ? `${orderedShops.length} kết quả` : "Đang tìm địa điểm…"}</span></div>
+              <label>Sắp xếp <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="distance">Gần nhất</option><option value="name">Tên</option></select><ChevronDown size={13} /></label>
             </div>
-            {loading ? <div className="places-state-card"><span className="places-spinner" /><strong>Finding vegetarian places nearby…</strong><span>This may take a few seconds.</span></div>
-              : error ? <div className="places-state-card"><AlertCircle size={24} /><strong>We couldn’t load places</strong><span>{error}</span><button className="places-retry-button" onClick={() => location && searchNearby(location, dietaryMode, radiusMeters)}>Try again</button></div>
-                : !location ? <div className="places-state-card"><div className="places-state-icon"><LocateFixed size={22} /></div><strong>Share your location to begin</strong><span>Allow location access, then nearby vegetarian and vegan restaurants will load automatically.</span><button className="places-retry-button" onClick={requestLocation}>Use my location</button></div>
-                  : orderedShops.length === 0 ? <div className="places-state-card"><div className="places-state-icon"><MapPin size={22} /></div><strong>No places found within {radiusMeters / 1000} km</strong><span>Try a larger radius, or switch to vegan-only results if you prefer a narrower dietary category.</span></div>
+            {loading ? <div className="places-state-card"><span className="places-spinner" /><strong>Đang tìm địa điểm ăn chay gần bạn…</strong><span>Quá trình này có thể mất vài giây.</span></div>
+              : error ? <div className="places-state-card"><AlertCircle size={24} /><strong>Không thể tải địa điểm</strong><span>{error}</span><button className="places-retry-button" onClick={() => location && searchNearby(location, dietaryMode, radiusMeters)}>Thử lại</button></div>
+                : !location ? <div className="places-state-card"><div className="places-state-icon"><LocateFixed size={22} /></div><strong>Chia sẻ vị trí để bắt đầu</strong><span>Cho phép truy cập vị trí để tự động tải nhà hàng chay và thuần chay gần bạn.</span><button className="places-retry-button" onClick={requestLocation}>Dùng vị trí của tôi</button></div>
+                  : orderedShops.length === 0 ? <div className="places-state-card"><div className="places-state-icon"><MapPin size={22} /></div><strong>Không tìm thấy địa điểm trong phạm vi {radiusMeters / 1000} km</strong><span>Hãy tăng bán kính hoặc chỉ tìm địa điểm thuần chay để thu hẹp danh mục.</span></div>
                     : <div className="places-shop-list">{orderedShops.map((shop, index) => <ShopCard key={shop.placeId || `${shop.name}-${index}`} shop={shop} index={index} />)}</div>}
           </div>
         </section>
 
-        {hasSearched && orderedShops.length > 0 && <div className="places-attribution-note"><Leaf size={15} /><span>Dietary categories are based on place data and may not reflect the current menu. Please confirm details directly with the restaurant.</span></div>}
+        {hasSearched && orderedShops.length > 0 && <div className="places-attribution-note"><Leaf size={15} /><span>Danh mục chế độ ăn dựa trên dữ liệu địa điểm và có thể không phản ánh thực đơn hiện tại. Vui lòng xác nhận trực tiếp với nhà hàng.</span></div>}
       </div>
     </main>
   );

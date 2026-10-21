@@ -10,6 +10,7 @@ public record LoginResponse(
             String username,
             String email,
             String fullName,
+            String avatarUrl,
             String role
     ) {
     }

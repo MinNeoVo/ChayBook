@@ -1,5 +1,18 @@
 # React + Vite
 
+## Geoapify interactive map
+
+Create `Front_End/.env.local` with the Geoapify key for browser map tiles:
+
+```env
+VITE_GEOAPIFY_API_KEY=your_geoapify_key
+```
+
+Restart the Vite development server after changing the file. Vite embeds this
+key in frontend assets, so restrict it in Geoapify to the application's
+domains and the required Maps API. Keep the server-side `GEOAPIFY_API_KEY`
+configuration separate.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

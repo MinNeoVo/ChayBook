@@ -32,7 +32,7 @@ const EMPTY_STATISTICS = {
 };
 
 function formatCount(value) {
-  return Number(value || 0).toLocaleString("en-US");
+  return Number(value || 0).toLocaleString("vi-VN");
 }
 
 function formatJoinedDate(value) {
@@ -46,7 +46,7 @@ function formatJoinedDate(value) {
     return "—";
   }
 
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -124,7 +124,7 @@ function StatusBadge({ status }) {
           isActive ? "bg-emerald-600" : "bg-red-600"
         }`}
       />
-      {isActive ? "Active" : "Disabled"}
+      {isActive ? "Đang hoạt động" : "Đã vô hiệu hóa"}
     </span>
   );
 }
@@ -209,7 +209,7 @@ function UserManagementPage() {
       } catch (requestError) {
         if (!controller.signal.aborted) {
           console.error("Unable to load admin user statistics:", requestError);
-          setStatisticsError("Unable to load account statistics.");
+          setStatisticsError("Không thể tải thống kê tài khoản.");
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -266,10 +266,14 @@ function UserManagementPage() {
         ),
       );
       setStatisticsRefreshKey((current) => current + 1);
-      setSuccessMessage(`Account ${user.username || user.email} is now ${updatedStatus.toLowerCase()}.`);
+      setSuccessMessage(
+        `Tài khoản ${user.username || user.email} đã được ${
+          updatedStatus === "ACTIVE" ? "kích hoạt" : "vô hiệu hóa"
+        }.`,
+      );
     } catch (requestError) {
       console.error(`Unable to update status for user ${user.userId}:`, requestError);
-      setActionError(requestError.message || "Unable to update user status.");
+      setActionError(requestError.message || "Không thể cập nhật trạng thái người dùng.");
     } finally {
       setUpdatingUserId(null);
     }
@@ -281,13 +285,13 @@ function UserManagementPage() {
         <div>
           <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-chaybook-primary">
             <Users aria-hidden="true" size={15} />
-            User Management
+            Quản lý người dùng
           </p>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-            User Management
+            Quản lý người dùng
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Monitor, inspect, and manage member accounts.
+            Theo dõi, xem và quản lý tài khoản thành viên.
           </p>
         </div>
 
@@ -302,34 +306,34 @@ function UserManagementPage() {
             size={16}
             className={loadingUsers || loadingStatistics ? "animate-spin" : ""}
           />
-          Refresh
+          Làm mới
         </button>
       </header>
 
-      <section aria-label="User account statistics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section aria-label="Thống kê tài khoản người dùng" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Total Accounts"
+          title="Tổng số tài khoản"
           value={formatCount(statistics.totalAccounts)}
           Icon={Users}
           tone="neutral"
           loading={loadingStatistics || Boolean(statisticsError)}
         />
         <StatCard
-          title="Active Accounts"
+          title="Tài khoản đang hoạt động"
           value={formatCount(statistics.activeAccounts)}
           Icon={UserCheck}
           tone="green"
           loading={loadingStatistics || Boolean(statisticsError)}
         />
         <StatCard
-          title="Disabled Accounts"
+          title="Tài khoản đã vô hiệu hóa"
           value={formatCount(statistics.disabledAccounts)}
           Icon={UserX}
           tone="red"
           loading={loadingStatistics || Boolean(statisticsError)}
         />
         <StatCard
-          title="New This Week"
+          title="Tài khoản mới tuần này"
           value={`+${formatCount(statistics.newAccountsThisWeek)}`}
           Icon={UserPlus}
           tone="blue"
@@ -349,7 +353,7 @@ function UserManagementPage() {
             onClick={() => setStatisticsRefreshKey((current) => current + 1)}
             className="font-semibold underline underline-offset-2"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       )}
@@ -366,7 +370,7 @@ function UserManagementPage() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by name, username or email"
+              placeholder="Tìm theo tên, tên người dùng hoặc email"
               className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm text-gray-800 outline-none transition focus:border-chaybook-primary focus:bg-white focus:ring-2 focus:ring-chaybook-primary/10"
             />
           </label>
@@ -374,10 +378,10 @@ function UserManagementPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600">
               <Activity aria-hidden="true" size={14} />
-              {formatCount(totalElements)} accounts
+              {formatCount(totalElements)} tài khoản
             </span>
             <label className="sr-only" htmlFor="user-status-filter">
-              Filter by status
+              Lọc theo trạng thái
             </label>
             <select
               id="user-status-filter"
@@ -385,13 +389,13 @@ function UserManagementPage() {
               onChange={(event) => setStatusFilter(event.target.value)}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/10"
             >
-              <option value="ALL">All statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="DISABLED">Disabled</option>
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="DISABLED">Đã vô hiệu hóa</option>
             </select>
           </div>
           <p className="text-xs text-gray-400 xl:sr-only">
-            Search and status filter apply to the current page.
+            Tìm kiếm và lọc trạng thái áp dụng cho trang hiện tại.
           </p>
         </div>
 
@@ -409,12 +413,12 @@ function UserManagementPage() {
           <table className="w-full min-w-[900px] border-collapse text-left">
             <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
               <tr>
-                <th scope="col" className="px-5 py-3.5">User</th>
-                <th scope="col" className="px-5 py-3.5">Email Address</th>
-                <th scope="col" className="px-5 py-3.5">Full Name</th>
-                <th scope="col" className="px-5 py-3.5">Joined Date</th>
-                <th scope="col" className="px-5 py-3.5">Status</th>
-                <th scope="col" className="px-5 py-3.5 text-right">Action</th>
+                <th scope="col" className="px-5 py-3.5">Người dùng</th>
+                <th scope="col" className="px-5 py-3.5">Địa chỉ email</th>
+                <th scope="col" className="px-5 py-3.5">Họ và tên</th>
+                <th scope="col" className="px-5 py-3.5">Ngày tham gia</th>
+                <th scope="col" className="px-5 py-3.5">Trạng thái</th>
+                <th scope="col" className="px-5 py-3.5 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
@@ -433,14 +437,14 @@ function UserManagementPage() {
                   <td colSpan={6} className="px-5 py-12 text-center">
                     <div className="mx-auto flex max-w-sm flex-col items-center">
                       <AlertCircle aria-hidden="true" size={24} className="text-red-500" />
-                      <p className="mt-2 font-semibold text-gray-800">Unable to load users.</p>
+                      <p className="mt-2 font-semibold text-gray-800">Không thể tải danh sách người dùng.</p>
                       <button
                         type="button"
                         onClick={() => setRefreshKey((current) => current + 1)}
                         className="mt-3 inline-flex items-center gap-2 rounded-lg bg-chaybook-primary px-3 py-2 text-sm font-semibold text-white hover:bg-chaybook-hover"
                       >
                         <RefreshCw aria-hidden="true" size={15} />
-                        Retry
+                        Thử lại
                       </button>
                     </div>
                   </td>
@@ -449,8 +453,8 @@ function UserManagementPage() {
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-sm text-gray-500">
                     {users.length === 0
-                      ? "No users found."
-                      : "No users match the current search or status filter on this page."}
+                      ? "Không tìm thấy người dùng."
+                      : "Không có người dùng nào khớp với từ khóa hoặc trạng thái lọc trên trang này."}
                   </td>
                 </tr>
               ) : (
@@ -485,7 +489,7 @@ function UserManagementPage() {
                           type="button"
                           onClick={() => handleToggleStatus(user)}
                           disabled={updatingUserId !== null}
-                          aria-label={`${isActive ? "Deactivate" : "Activate"} ${user.username || "user"}`}
+                          aria-label={`${isActive ? "Vô hiệu hóa" : "Kích hoạt"} ${user.username || "người dùng"}`}
                           className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${
                             isActive
                               ? "bg-red-50 text-red-700 hover:bg-red-100"
@@ -499,7 +503,7 @@ function UserManagementPage() {
                           ) : (
                             <Check aria-hidden="true" size={14} />
                           )}
-                          {isActive ? "Deactivate" : "Activate"}
+                          {isActive ? "Vô hiệu hóa" : "Kích hoạt"}
                         </button>
                       </td>
                     </tr>
@@ -513,11 +517,11 @@ function UserManagementPage() {
         <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <p className="text-xs text-gray-500" aria-live="polite">
             {hasLocalFilter
-              ? `Showing ${filteredUsers.length} matching users on this page · ${formatCount(totalElements)} total accounts`
-              : `Showing ${formatCount(firstAccount)} to ${formatCount(lastAccount)} of ${formatCount(totalElements)} accounts`}
+              ? `Hiển thị ${filteredUsers.length} người dùng phù hợp trên trang này · tổng cộng ${formatCount(totalElements)} tài khoản`
+              : `Hiển thị ${formatCount(firstAccount)}–${formatCount(lastAccount)} trong ${formatCount(totalElements)} tài khoản`}
           </p>
 
-          <nav aria-label="User list pages" className="flex items-center gap-1 self-end sm:self-auto">
+          <nav aria-label="Các trang danh sách người dùng" className="flex items-center gap-1 self-end sm:self-auto">
             <button
               type="button"
               onClick={() => setPage((current) => Math.max(0, current - 1))}
@@ -525,7 +529,7 @@ function UserManagementPage() {
               className="inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300"
             >
               <ChevronLeft aria-hidden="true" size={16} />
-              <span className="hidden sm:inline">Prev</span>
+              <span className="hidden sm:inline">Trước</span>
             </button>
 
             {pageItems.map((item) =>
@@ -538,7 +542,7 @@ function UserManagementPage() {
                   onClick={() => setPage(item)}
                   disabled={loadingUsers}
                   aria-current={page === item ? "page" : undefined}
-                  aria-label={`Page ${item + 1}`}
+                  aria-label={`Trang ${item + 1}`}
                   className={`h-9 min-w-9 rounded-lg px-2 text-sm font-semibold transition-colors ${
                     page === item
                       ? "bg-chaybook-primary text-white shadow-sm"
@@ -556,14 +560,14 @@ function UserManagementPage() {
               disabled={page >= totalPages - 1 || loadingUsers}
               className="inline-flex h-9 items-center gap-1 rounded-lg px-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300"
             >
-              <span className="hidden sm:inline">Next</span>
+              <span className="hidden sm:inline">Sau</span>
               <ChevronRight aria-hidden="true" size={16} />
             </button>
           </nav>
         </div>
 
         <p className="px-4 pb-4 text-[11px] text-gray-400 sm:px-5 xl:hidden">
-          Search and status filter apply to the current page. Pagination is loaded from the server.
+          Tìm kiếm và lọc trạng thái áp dụng cho trang hiện tại. Phân trang được tải từ máy chủ.
         </p>
       </section>
     </div>

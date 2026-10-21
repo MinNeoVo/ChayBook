@@ -3,41 +3,46 @@ package com.chaybook.backend.admin.article.service;
 import com.chaybook.backend.admin.article.repository.AdminArticleRepository;
 import com.chaybook.backend.admin.article.service.impl.AdminArticleServiceImpl;
 import com.chaybook.backend.admin.category.repository.AdminCategoryRepository;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
+import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.util.Base64;
-import org.springframework.test.util.ReflectionTestUtils;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class AdminArticleIntegrationTest {
-    @TempDir Path temporaryImages;
-
-    @Test void storesValidatedImageUnderGeneratedNameAndReadsItWithoutUsingTheClientFilename() throws Exception {
+    @Test void uploadsArticleMediaToCloudinaryAfterCheckingAdministratorAccess() {
         var users = mock(UserRepository.class);
+        var mediaService = mock(MediaService.class);
         User admin = new User(); admin.setRole("ADMIN"); admin.setStatus("ACTIVE");
         when(users.findById(1)).thenReturn(Optional.of(admin));
-        var service = new AdminArticleImageService(users);
-        ReflectionTestUtils.setField(service, "directory", temporaryImages);
-        byte[] png = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB1sAAAAASUVORK5CYII=");
-        String url = service.upload(1, new MockMultipartFile("file", "../../cover.html", "text/html", png));
-        assertTrue(url.matches("/api/article-images/[a-f0-9-]{36}\\.png"));
-        String filename = url.substring(url.lastIndexOf('/') + 1);
-        assertArrayEquals(png, service.load(filename).getContentAsByteArray());
-        assertTrue(Files.isRegularFile(temporaryImages.resolve(filename)));
+        when(mediaService.upload(any())).thenReturn(
+                new MediaUploadResponse(
+                        "https://res.cloudinary.com/demo/video/upload/chaybook/cover.mp4",
+                        "video",
+                        "chaybook/cover"
+                )
+        );
+        var service = new AdminArticleImageService(users, mediaService);
+        var file = new MockMultipartFile("file", "cover.mp4", "video/mp4", new byte[]{1, 2, 3});
+
+        assertEquals(
+                "https://res.cloudinary.com/demo/video/upload/chaybook/cover.mp4",
+                service.upload(1, file)
+        );
+        verify(mediaService).upload(file);
+
         admin.setStatus("DISABLED");
         assertEquals(HttpStatus.FORBIDDEN, assertThrows(ResponseStatusException.class,
-                () -> service.upload(1, new MockMultipartFile("file", png))).getStatusCode());
+                () -> service.upload(1, file)).getStatusCode());
+        verifyNoMoreInteractions(mediaService);
     }
     @Test void oldestSortIsAppliedBeforeServerPaginationAndInvalidSortIsRejected() {
         var articles = mock(AdminArticleRepository.class);
@@ -54,15 +59,15 @@ class AdminArticleIntegrationTest {
         assertThrows(ResponseStatusException.class, () -> service.getArticles(1, "", null, null, 0, 6, "unknown"));
     }
 
-    @Test void imageUploadRejectsHtmlAndOversizedFilesWithoutWritingAnything() {
+    @Test void rejectsInvalidMediaAndInvalidLegacyImagePaths() {
         var users = mock(UserRepository.class);
+        var mediaService = mock(MediaService.class);
         User admin = new User(); admin.setRole("ADMIN"); admin.setStatus("ACTIVE");
         when(users.findById(1)).thenReturn(Optional.of(admin));
-        var service = new AdminArticleImageService(users);
+        var service = new AdminArticleImageService(users, mediaService);
         var fake = new MockMultipartFile("file", "cover.jpg", "image/jpeg", "<script>bad</script>".getBytes());
+        when(mediaService.upload(fake)).thenThrow(new IllegalArgumentException("Only images and videos are supported"));
         assertEquals(HttpStatus.BAD_REQUEST, assertThrows(ResponseStatusException.class, () -> service.upload(1, fake)).getStatusCode());
-        var big = new MockMultipartFile("file", "big.png", "image/png", new byte[5 * 1024 * 1024 + 1]);
-        assertEquals(HttpStatus.BAD_REQUEST, assertThrows(ResponseStatusException.class, () -> service.upload(1, big)).getStatusCode());
         assertEquals(HttpStatus.NOT_FOUND, assertThrows(ResponseStatusException.class, () -> service.load("../application.properties")).getStatusCode());
     }
 }

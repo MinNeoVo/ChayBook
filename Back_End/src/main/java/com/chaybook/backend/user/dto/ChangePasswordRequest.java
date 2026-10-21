@@ -13,6 +13,12 @@ public record ChangePasswordRequest(
                 max = 72,
                 message = "New password must contain 8 to 72 characters"
         )
-        String newPassword
+        String newPassword,
+
+        @Email(message = "Email must be valid")
+        String email,
+
+        @Size(max = 100, message = "OTP verification token is too long")
+        String resetToken
 ) {
 }

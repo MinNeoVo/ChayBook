@@ -11,10 +11,11 @@ import { createMealPlan, getMealPlans } from "../services/mealPlanServices";
 import { formatBmiValue, getBmiCategoryLabel } from "../utils/bmi";
 
 const goalOptions = [
-  { value: "WEIGHT_LOSS", label: "Weight loss" },
-  { value: "MAINTAIN", label: "Maintain current weight" },
-  { value: "WEIGHT_GAIN", label: "Weight gain" },
+  { value: "WEIGHT_LOSS", label: "Giảm cân" },
+  { value: "MAINTAIN", label: "Duy trì cân nặng" },
+  { value: "WEIGHT_GAIN", label: "Tăng cân" },
 ];
+const goalLabels = Object.fromEntries(goalOptions.map(({ value, label }) => [value, label]));
 
 function MealPlanPage() {
   const location = useLocation();
@@ -52,7 +53,7 @@ function MealPlanPage() {
       .catch((requestError) => {
         if (!controller.signal.aborted) {
           console.error("Failed to load meal plans:", requestError);
-          setError(requestError.message || "Could not load saved meal plans.");
+          setError(requestError.message || "Không thể tải thực đơn đã lưu.");
         }
       })
       .finally(() => {
@@ -121,7 +122,7 @@ function MealPlanPage() {
 
     try {
       if (!allergyStatus.ready || allergyStatus.loading || allergyStatus.saving) {
-        throw new Error("Wait for your allergy preferences to finish loading or saving.");
+        throw new Error("Vui lòng chờ tùy chọn dị ứng tải hoặc lưu xong.");
       }
       if (allergyStatus.isDirty) {
         await allergySelectorRef.current.save();
@@ -133,7 +134,7 @@ function MealPlanPage() {
       setSelectedPlanId(plan.mealPlanId);
     } catch (requestError) {
       console.error("Failed to generate meal plan:", requestError);
-      setError(requestError.message || "Could not generate your meal plan.");
+      setError(requestError.message || "Không thể tạo thực đơn.");
     } finally {
       setGenerating(false);
     }
@@ -144,14 +145,14 @@ function MealPlanPage() {
       <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-10">
         <header className="max-w-3xl">
           <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-chaybook-primary">
-            Your nutrition workspace
+            Không gian dinh dưỡng của bạn
           </p>
-          <h1 className="text-3xl font-bold sm:text-4xl">Meal Plan</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">Thực đơn</h1>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
           <div className="flex min-w-0 flex-col gap-4">
-            <h2 className="text-xl font-bold">Your latest BMI</h2>
+            <h2 className="text-xl font-bold">Chỉ số BMI gần nhất</h2>
             <BmiCalculator />
           </div>
 
@@ -161,16 +162,16 @@ function MealPlanPage() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Create a plan</h2>
+                <h2 className="text-xl font-bold">Tạo thực đơn</h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  Choose a goal and how many days to plan.
+                  Chọn mục tiêu và số ngày cho thực đơn.
                 </p>
               </div>
             </div>
 
             <form onSubmit={handleGenerate} className="flex flex-col gap-4">
               <label className="flex flex-col gap-2 text-sm font-semibold text-gray-800">
-                Health goal
+                Mục tiêu sức khỏe
                 <select
                   value={healthGoal}
                   onChange={(event) => setHealthGoal(event.target.value)}
@@ -185,7 +186,7 @@ function MealPlanPage() {
               </label>
 
               <label className="flex flex-col gap-2 text-sm font-semibold text-gray-800">
-                Plan duration
+                Thời lượng thực đơn
                 <select
                   value={durationDays}
                   onChange={(event) => setDurationDays(Number(event.target.value))}
@@ -193,7 +194,7 @@ function MealPlanPage() {
                 >
                   {[3, 7, 14].map((daysCount) => (
                     <option key={daysCount} value={daysCount}>
-                      {daysCount} days
+                      {daysCount} ngày
                     </option>
                   ))}
                 </select>
@@ -206,11 +207,11 @@ function MealPlanPage() {
               />
 
               {!bmiInitialized && (
-                <p className="text-sm text-gray-600">Loading your BMI…</p>
+                <p className="text-sm text-gray-600">Đang tải chỉ số BMI…</p>
               )}
               {bmiInitialized && !bmiRecord && (
                 <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-                  Calculate and save your BMI above before creating a meal plan.
+                  Hãy tính và lưu chỉ số BMI ở trên trước khi tạo thực đơn.
                 </p>
               )}
 
@@ -227,16 +228,16 @@ function MealPlanPage() {
                 className="mt-1 h-12 gap-2"
               >
                 <Sparkles className="h-4 w-4" />
-                {generating ? "Building your plan…" : "Generate meal plan"}
+                {generating ? "Đang tạo thực đơn…" : "Tạo thực đơn"}
               </Button>
             </form>
 
             <div className="mt-5 flex gap-3 rounded-xl bg-chaybook-container p-4 text-sm leading-6 text-gray-700">
               <Leaf className="mt-0.5 h-5 w-5 shrink-0 text-chaybook-primary" />
               <p>
-                Recipes are filtered using your saved allergies. Vegetarian or
-                vegan labels are not currently available in the recipe data, so
-                those preferences are not filtered.
+                Công thức được lọc theo thông tin dị ứng đã lưu. Dữ liệu công
+                thức hiện chưa có nhãn ăn chay hoặc thuần chay nên chưa thể lọc
+                theo các lựa chọn này.
               </p>
             </div>
           </section>
@@ -252,13 +253,13 @@ function MealPlanPage() {
           <div className="flex min-w-0 flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
               <p className="mb-1 text-sm font-semibold uppercase tracking-wide text-chaybook-primary">
-                Saved menus
+                Thực đơn đã lưu
               </p>
-              <h2 className="text-2xl font-bold">Your meal plans</h2>
+              <h2 className="text-2xl font-bold">Thực đơn của bạn</h2>
             </div>
             {plans.length > 0 && (
               <label className="flex min-w-0 flex-col gap-1 text-sm font-semibold text-gray-700 sm:w-72 sm:shrink-0">
-                Select a saved plan
+                Chọn thực đơn đã lưu
                 <select
                   value={selectedPlanId ?? ""}
                   onChange={(event) => {
@@ -269,7 +270,7 @@ function MealPlanPage() {
                 >
                   {plans.map((plan) => (
                     <option key={plan.mealPlanId} value={plan.mealPlanId}>
-                      {new Date(plan.generatedAt).toLocaleDateString()} · {plan.durationDays} days · {plan.healthGoal.replaceAll("_", " ")}
+                      {new Date(plan.generatedAt).toLocaleDateString("vi-VN")} · {plan.durationDays} ngày · {goalLabels[plan.healthGoal] || plan.healthGoal.replaceAll("_", " ")}
                     </option>
                   ))}
                 </select>
@@ -279,15 +280,15 @@ function MealPlanPage() {
 
           {loadingPlans ? (
             <p className="rounded-2xl bg-white p-6 text-sm text-gray-600 shadow-sm">
-              Loading your saved meal plans…
+              Đang tải thực đơn đã lưu…
             </p>
           ) : selectedPlan ? (
             <div className="flex min-w-0 flex-col gap-5">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-white p-5 text-sm text-gray-700 shadow-sm">
                 <span className="flex items-center gap-2 font-semibold text-chaybook-primary">
-                  <CalendarDays className="h-4 w-4" /> {selectedPlan.durationDays} days
+                  <CalendarDays className="h-4 w-4" /> {selectedPlan.durationDays} ngày
                 </span>
-                <span>Goal: {selectedPlan.healthGoal.replaceAll("_", " ").toLowerCase()}</span>
+                <span>Mục tiêu: {goalLabels[selectedPlan.healthGoal] || selectedPlan.healthGoal.replaceAll("_", " ").toLowerCase()}</span>
                 {selectedPlan.bmi && (
                   <span>BMI: {formatBmiValue(selectedPlan.bmi.bmi)} · {getBmiCategoryLabel(selectedPlan.bmi.category)}</span>
                 )}
@@ -304,9 +305,9 @@ function MealPlanPage() {
           ) : (
             <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
               <CalendarDays className="mx-auto mb-3 h-9 w-9 text-chaybook-primary" />
-              <h3 className="text-lg font-bold">No saved meal plan yet</h3>
+              <h3 className="text-lg font-bold">Chưa có thực đơn nào được lưu</h3>
               <p className="mt-2 text-sm text-gray-600">
-                Save your BMI, then generate a plan to see meals here.
+                Lưu chỉ số BMI rồi tạo thực đơn để xem các bữa ăn tại đây.
               </p>
             </div>
           )}

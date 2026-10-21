@@ -105,6 +105,7 @@ LoginResponse response = new LoginResponse(
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
+                user.getAvatarUrl(),
                 user.getRole()
         )
 );

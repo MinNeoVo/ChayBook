@@ -30,13 +30,13 @@ function LoginForm() {
     const newError = {};
 
     if (!formData.email.trim()) {
-      newError.email = "Email is required";
+      newError.email = "Vui lòng nhập email.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newError.email = "Email is invalid";
+      newError.email = "Email không hợp lệ.";
     }
 
     if (!formData.password) {
-      newError.password = "Password is required";
+      newError.password = "Vui lòng nhập mật khẩu.";
     }
 
     setError(newError);
@@ -80,15 +80,15 @@ function LoginForm() {
 
       if (error.status === 401) {
         setError({
-          general: "Incorrect email or password.",
+          general: "Email hoặc mật khẩu không chính xác.",
         });
       } else if (error.status === 403) {
         setError({
-          general: "Your account has been disabled.",
+          general: "Tài khoản của bạn đã bị vô hiệu hóa.",
         });
       } else {
         setError({
-          general: error.message || "Login failed.",
+          general: error.message || "Đăng nhập thất bại.",
         });
       }
     } finally {
@@ -103,7 +103,7 @@ function LoginForm() {
           label="Email"
           type="email"
           name="email"
-          placeholder="Enter your email"
+          placeholder="Nhập email của bạn"
           icon={Mail}
           value={formData.email}
           onChange={handleChange}
@@ -112,10 +112,10 @@ function LoginForm() {
 
         {/* Password */}
         <Input
-          label="Password"
+          label="Mật khẩu"
           type="password"
           name="password"
-          placeholder="Enter your password"
+          placeholder="Nhập mật khẩu"
           icon={Lock}
           value={formData.password}
           onChange={handleChange}
@@ -133,12 +133,12 @@ function LoginForm() {
 
         {/* Login */}
         <Button type="submit" size="md" className="w-full" disabled={isLoading}>
-          {isLoading ? "Logging in..." : "Login"}
+          {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>
       </form>
 
       <div className="mt-3 text-right">
-        <Link to="/forgot-password" className="text-sm font-medium text-chaybook-primary hover:underline">Forgot password?</Link>
+        <Link to="/forgot-password" className="text-sm font-medium text-chaybook-primary hover:underline">Quên mật khẩu?</Link>
       </div>
 
       {/* Google + Facebook */}
@@ -147,12 +147,12 @@ function LoginForm() {
       {/* Register */}
       <div className="mt-6 pt-6 border-t border-gray-200 text-center">
         <p className="text-sm text-gray-500">
-          Don't have an account?{" "}
+          Bạn chưa có tài khoản?{" "}
           <Link
             to="/register"
             className="text-chaybook-primary hover:underline font-medium"
           >
-            Register
+            Đăng ký
           </Link>
         </p>
       </div>

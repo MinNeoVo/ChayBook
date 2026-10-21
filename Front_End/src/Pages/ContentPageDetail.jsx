@@ -15,6 +15,7 @@ import {
 
 import { getArticleDetail, getArticles } from "../services/articleServices";
 import { getCategories } from "../services/categoryServices";
+import MediaRenderer from "../components/media/MediaRenderer";
 
 function formatArticleDate(value) {
   if (!value) {
@@ -57,7 +58,7 @@ function BackToContent() {
         className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#e7f5e9] px-4 py-2 text-sm font-semibold text-chaybook-primary transition-colors hover:bg-[#d9efdd]"
       >
         <ArrowLeft aria-hidden="true" size={17} />
-        Back to Content
+        Quay lại nội dung
       </Link>
     </div>
   );
@@ -80,7 +81,7 @@ function ArticleActions({ liked, saved, onLike, onSave, onShare }) {
           size={19}
           className={liked ? "fill-red-500 text-red-500" : "text-red-500"}
         />
-        {liked ? "Liked" : "Like"}
+        {liked ? "Đã thích" : "Thích"}
       </button>
       <button
         type="button"
@@ -130,12 +131,16 @@ function ArticleInfoRow({ Icon, label, value, isPublished = false }) {
 function ArticleInformation({ article, categoryName, categoryError }) {
   const isPublished = article.status?.toUpperCase() === "PUBLISHED";
   const author =
-    article.createdBy != null ? `User ${article.createdBy}` : "—";
+    article.createdBy != null ? `Người dùng ${article.createdBy}` : "—";
 
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2.5">
-        <FileText aria-hidden="true" size={20} className="text-chaybook-primary" />
+        <FileText
+          aria-hidden="true"
+          size={20}
+          className="text-chaybook-primary"
+        />
         <h2 className="text-lg font-bold text-[#181c1b]">Thông tin bài viết</h2>
       </div>
       <dl className="space-y-4">
@@ -170,7 +175,11 @@ function RelatedArticles({ articles, loading, error }) {
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="mb-4 flex items-center gap-2.5">
-        <FileText aria-hidden="true" size={20} className="text-chaybook-primary" />
+        <FileText
+          aria-hidden="true"
+          size={20}
+          className="text-chaybook-primary"
+        />
         <h2 className="text-lg font-bold text-[#181c1b]">Bài viết liên quan</h2>
       </div>
 
@@ -189,10 +198,13 @@ function RelatedArticles({ articles, loading, error }) {
               className="group flex min-w-0 items-center gap-3 rounded-xl p-1.5 transition-colors hover:bg-[#f7faf7]"
             >
               {relatedArticle.coverImage ? (
-                <img
+                <MediaRenderer
                   src={relatedArticle.coverImage}
                   alt={relatedArticle.title || ""}
-                  loading="lazy"
+                  controls={false}
+                  muted
+                  autoPlay
+                  loop
                   className="h-16 w-16 shrink-0 rounded-xl object-cover"
                 />
               ) : (
@@ -215,9 +227,7 @@ function RelatedArticles({ articles, loading, error }) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-[#6e7b6c]">
-          Chưa có bài viết liên quan.
-        </p>
+        <p className="text-sm text-[#6e7b6c]">Chưa có bài viết liên quan.</p>
       )}
     </section>
   );
@@ -231,8 +241,6 @@ function ArticleDetailView({
   relatedLoading,
   relatedError,
 }) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [actionFeedback, setActionFeedback] = useState("");
 
   const handleShare = async () => {
@@ -267,7 +275,9 @@ function ArticleDetailView({
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-chaybook-primary text-white">
                     <UserRound aria-hidden="true" size={18} />
                   </span>
-                  {article.createdBy != null ? `User ${article.createdBy}` : "—"}
+                  {article.createdBy != null
+                    ? `User ${article.createdBy}`
+                    : "—"}
                 </span>
                 <span className="hidden text-gray-300 sm:inline">|</span>
                 <span className="inline-flex items-center gap-2">
@@ -278,13 +288,7 @@ function ArticleDetailView({
             </header>
 
             <div className="mb-5">
-              <ArticleActions
-                liked={liked}
-                saved={saved}
-                onLike={() => setLiked((current) => !current)}
-                onSave={() => setSaved((current) => !current)}
-                onShare={handleShare}
-              />
+              <ArticleActions onShare={handleShare} />
               <p
                 aria-live="polite"
                 className="mt-2 min-h-5 text-xs text-[#6e7b6c]"
@@ -294,7 +298,7 @@ function ArticleDetailView({
             </div>
 
             {article.coverImage ? (
-              <img
+              <MediaRenderer
                 src={article.coverImage}
                 alt={article.title || "Article cover"}
                 className="mb-6 aspect-[16/7] w-full rounded-2xl object-cover"
@@ -305,7 +309,10 @@ function ArticleDetailView({
               </div>
             )}
 
-            <section aria-labelledby="article-content-heading" className="max-w-3xl">
+            <section
+              aria-labelledby="article-content-heading"
+              className="max-w-3xl"
+            >
               <h2
                 id="article-content-heading"
                 className="mb-3 text-xl font-bold text-[#181c1b]"
@@ -418,8 +425,13 @@ function ContentPageDetail() {
         const categoryRequestError =
           categoryResult.status === "rejected"
             ? categoryResult.reason
-            : new TypeError("The category service returned an invalid response.");
-        console.error("Error fetching article categories:", categoryRequestError);
+            : new TypeError(
+                "The category service returned an invalid response.",
+              );
+        console.error(
+          "Error fetching article categories:",
+          categoryRequestError,
+        );
         setCategoryError(true);
       }
 
@@ -448,7 +460,9 @@ function ContentPageDetail() {
         const articlesRequestError =
           articlesResult.status === "rejected"
             ? articlesResult.reason
-            : new TypeError("The article service returned an invalid response.");
+            : new TypeError(
+                "The article service returned an invalid response.",
+              );
         console.error("Error fetching related articles:", articlesRequestError);
         setRelatedError(true);
       }
@@ -466,13 +480,13 @@ function ContentPageDetail() {
   if (loading) {
     return (
       <section
-        aria-label="Loading article"
+        aria-label="Đang tải bài viết"
         aria-live="polite"
         className="flex min-h-[55vh] w-full items-center justify-center px-4 py-16"
       >
         <div className="flex items-center gap-3 text-sm text-[#6e7b6c]">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#d8e4da] border-t-chaybook-primary" />
-          Loading article detail...
+          Đang tải chi tiết bài viết...
         </div>
       </section>
     );
@@ -485,7 +499,7 @@ function ContentPageDetail() {
         className="mx-auto flex min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-16 text-center"
       >
         <h1 className="text-2xl font-bold text-[#181c1b]">
-          Error Loading Article
+          Không thể tải bài viết
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-6 text-[#6e7b6c]">
           {error}
@@ -504,9 +518,7 @@ function ContentPageDetail() {
   if (!article) {
     return (
       <section className="mx-auto flex min-h-[55vh] w-full max-w-7xl flex-col items-center justify-center px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-[#181c1b]">
-          Content Not Found
-        </h1>
+        <h1 className="text-2xl font-bold text-[#181c1b]">Content Not Found</h1>
         <p className="mt-3 text-sm text-[#6e7b6c]">
           The content you are looking for does not exist.
         </p>

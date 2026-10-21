@@ -41,7 +41,7 @@ function CommunityToolbar({
         >
           <span className="flex items-center gap-2">
             <Plus size={20} />
-            New Post
+            Tạo bài viết
           </span>
         </Button>
 
@@ -63,7 +63,7 @@ function CommunityToolbar({
         <div className="min-w-[200px] flex-1">
           <Input
             icon={Search}
-            placeholder="Search posts, recipes, ingredients..."
+            placeholder="Tìm bài viết, công thức, nguyên liệu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="
@@ -93,7 +93,7 @@ function CommunityToolbar({
     outline-none
   "
           >
-            <option value="all">All Posts</option>
+            <option value="all">Tất cả bài viết</option>
 
             {categories.map((item) => (
               <option key={item.categoryId} value={item.categoryId}>
@@ -135,11 +135,11 @@ function CommunityToolbar({
                             outline-none
                         "
           >
-            <option value="latest">Latest</option>
+            <option value="latest">Mới nhất</option>
 
-            <option value="top">Top Applauded</option>
+            <option value="top">Được yêu thích nhất</option>
 
-            <option value="discussed">Most Discussed</option>
+            <option value="discussed">Thảo luận nhiều nhất</option>
           </select>
 
           <SlidersHorizontal

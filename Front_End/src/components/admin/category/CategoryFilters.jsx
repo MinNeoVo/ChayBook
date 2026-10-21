@@ -36,10 +36,10 @@ export default function CategoryFilters({ onApply, disabled }) {
   return (
     <form onSubmit={submit}>
       <fieldset disabled={disabled} className="flex flex-wrap items-end gap-3">
-        <legend className="sr-only">Filter categories</legend>
+        <legend className="sr-only">Lọc danh mục</legend>
 
         <label className="grid gap-1 text-sm">
-          Search by name
+          Tìm theo tên
           <input
             name="q"
             type="search"
@@ -50,14 +50,14 @@ export default function CategoryFilters({ onApply, disabled }) {
         </label>
 
         <label className="grid gap-1 text-sm">
-          Type
+          Loại
           <select
             name="type"
             value={draft.type}
             onChange={update}
             className={controlClass}
           >
-            <option value="">All types</option>
+            <option value="">Tất cả loại</option>
 
             {CATEGORY_TYPES.map((item) => (
               <option key={item.value} value={item.value}>
@@ -68,25 +68,25 @@ export default function CategoryFilters({ onApply, disabled }) {
         </label>
 
         <label className="grid gap-1 text-sm">
-          Status
+          Trạng thái
           <select
             name="status"
             value={draft.status}
             onChange={update}
             className={controlClass}
           >
-            <option value="">All statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="DELETED">Deleted</option>
+            <option value="">Tất cả trạng thái</option>
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="DELETED">Đã xóa</option>
           </select>
         </label>
 
         <Button type="submit" size="sm">
-          Apply
+          Áp dụng
         </Button>
 
         <Button variant="outline" size="sm" onClick={reset}>
-          Reset
+          Đặt lại
         </Button>
       </fieldset>
     </form>

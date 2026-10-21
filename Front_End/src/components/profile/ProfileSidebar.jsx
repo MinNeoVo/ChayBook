@@ -14,7 +14,7 @@ function ProfileSidebar() {
       {/* Introduction */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Introduction</h2>
+          <h2 className="text-lg font-bold text-gray-900">Giới thiệu</h2>
 
           <Brain size={20} className="text-chaybook-primary" />
         </div>
@@ -35,25 +35,25 @@ function ProfileSidebar() {
         <div className="space-y-2 mb-6">
           <InfoItem
             icon={School}
-            label="Studies at"
+            label="Học tại"
             value="FPT University TP. HCM"
           />
 
           <InfoItem
             icon={MapPin}
-            label="Lives in"
+            label="Sống tại"
             value="Ho Chi Minh City, Vietnam"
           />
 
           <InfoItem
             icon={Sparkles}
-            label="Diet Philosophy"
+            label="Triết lý dinh dưỡng"
             value="100% Whole Food Plant-Based"
           />
 
           <InfoItem
             icon={CalendarCheck}
-            label="Community Onboarding"
+            label="Tham gia cộng đồng"
             value="March 14, 2024"
           />
         </div>
@@ -73,7 +73,7 @@ function ProfileSidebar() {
             transition-colors
           "
         >
-          Edit Introduction / Chỉnh sửa
+          Chỉnh sửa giới thiệu
         </button>
       </div>
 
@@ -89,23 +89,23 @@ function ProfileSidebar() {
           mb-4
         "
         >
-          Quick Actions & Storage
+          Truy cập nhanh & bộ sưu tập
         </h3>
 
         <div className="space-y-2">
           <QuickAction
             icon={Bookmark}
-            title="Saved Posts & Recipes"
-            badge="24 saved"
+            title="Bài viết & công thức đã lưu"
+            badge="24 mục đã lưu"
           />
 
           <QuickAction
             icon={Activity}
-            title="My Weekly Meal Plans"
-            badge="3 active"
+            title="Thực đơn tuần của tôi"
+            badge="3 thực đơn đang dùng"
           />
 
-          <QuickAction icon={Activity} title="BMI & Micronutrient Log" />
+          <QuickAction icon={Activity} title="Nhật ký BMI & vi chất" />
         </div>
 
         <div
@@ -126,12 +126,12 @@ function ProfileSidebar() {
 
           <div>
             <span className="text-xs font-semibold text-gray-800">
-              ChayBook Community Integrity
+              Tiêu chuẩn cộng đồng ChayBook
             </span>
 
             <p className="text-[11px] text-gray-600 leading-tight mt-0.5">
-              Shared plant-based meals are evaluated according to ChayBook's
-              content rules.
+              Các món ăn từ thực vật được đánh giá theo quy định nội dung của
+              ChayBook.
             </p>
           </div>
         </div>
@@ -158,7 +158,7 @@ function ProfileSidebar() {
             text-chaybook-primary
           "
           >
-            Cooking Habit
+            Thói quen nấu ăn
           </span>
 
           <span
@@ -172,7 +172,7 @@ function ProfileSidebar() {
             font-bold
           "
           >
-            5 Days Streak
+            Chuỗi 5 ngày
           </span>
         </div>
 

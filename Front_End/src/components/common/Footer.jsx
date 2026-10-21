@@ -3,45 +3,45 @@ import { Share2, MessageSquare, Mail } from "lucide-react";
 
 const footerSections = [
   {
-    title: "Explore",
+    title: "Khám phá",
     links: [
-      ["Nutrition Guides", "/content"],
-      ["Healthy Recipes", "/recipes"],
-      ["Video Tutorials", "/content"],
-      ["Meal Plans", "/meal-plan"],
+      ["Cẩm nang dinh dưỡng", "/content"],
+      ["Công thức lành mạnh", "/recipes"],
+      ["Video hướng dẫn", "/content"],
+      ["Thực đơn", "/meal-plan"],
     ],
   },
   {
-    title: "Interactive Tools",
+    title: "Công cụ tương tác",
     links: [
-      ["AI Nutrition Assistant", "/ai-assistant"],
-      ["BMI Calculator", "/bmi"],
-      ["Macro Analyzer", "/bmi"],
-      ["Daily Calorie Tracker", "/bmi"],
+      ["Trợ lý dinh dưỡng AI", "/ai-assistant"],
+      ["Tính chỉ số BMI", "/bmi"],
+      ["Phân tích dinh dưỡng", "/bmi"],
+      ["Theo dõi calo hằng ngày", "/bmi"],
     ],
   },
   {
-    title: "Community",
+    title: "Cộng đồng",
     links: [
-      ["Discussions", "/community"],
-      ["Member Stories", "/community"],
-      ["Dietary Guidelines", "/community"],
-      ["Weekly Challenges", "/community"],
+      ["Thảo luận", "/community"],
+      ["Câu chuyện thành viên", "/community"],
+      ["Hướng dẫn dinh dưỡng", "/community"],
+      ["Thử thách hằng tuần", "/community"],
     ],
   },
 ];
 
 const legalLinks = [
   ["contact@chaybook.com", "mailto:contact@chaybook.com"],
-  ["Privacy Policy", "#"],
-  ["Terms of Service", "#"],
+  ["Chính sách quyền riêng tư", "#"],
+  ["Điều khoản dịch vụ", "#"],
 ];
 
 const socialLinks = [
-  { label: "Share", icon: Share2, href: "#" },
-  { label: "Message", icon: MessageSquare, href: "#" },
+  { label: "Chia sẻ", icon: Share2, href: "#" },
+  { label: "Tin nhắn", icon: MessageSquare, href: "#" },
   {
-    label: "Contact Email",
+    label: "Email liên hệ",
     icon: Mail,
     href: "mailto:contact@chaybook.com",
   },
@@ -66,8 +66,8 @@ function Footer() {
             </Link>
 
             <p className="text-xs leading-relaxed text-gray-600">
-              Eat Better. Live Healthier. Your complete companion for a thriving
-              vegetarian lifestyle.
+              Ăn ngon hơn, sống khỏe hơn. Người bạn đồng hành trên hành trình
+              sống lành mạnh với chế độ ăn chay.
             </p>
 
             {/* Social Icons */}
@@ -110,7 +110,7 @@ function Footer() {
           {/* Contact & Legal */}
           <div className="flex flex-col gap-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-gray-800">
-              Contact & Legal
+              Liên hệ & pháp lý
             </h4>
 
             <ul className="flex flex-col gap-2 text-xs text-gray-600">
@@ -126,7 +126,7 @@ function Footer() {
               ))}
 
               <li className="pt-1 text-gray-400">
-                FPT University Capstone Initiative
+                Dự án tốt nghiệp FPT University
               </li>
             </ul>
           </div>
@@ -134,10 +134,10 @@ function Footer() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col items-center justify-between gap-4 pt-6 text-xs text-gray-500 sm:flex-row">
-          <p>© 2026 ChayBook. All rights reserved.</p>
+          <p>© 2026 ChayBook. Bảo lưu mọi quyền.</p>
 
           <div className="flex items-center gap-6">
-            {["Cookies", "Security", "Accessibility"].map((item) => (
+            {["Cookie", "Bảo mật", "Trợ năng"].map((item) => (
               <a
                 key={item}
                 href="#"
