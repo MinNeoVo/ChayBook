@@ -23,7 +23,7 @@ function formatMinutes(minutes) {
     return null;
   }
 
-  return `${minutes} min`;
+  return `${minutes} phút`;
 }
 
 function RecipeCard({ recipe }) {
@@ -38,30 +38,30 @@ function RecipeCard({ recipe }) {
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <Link
         to={`/recipes/${recipe.recipeId}`}
-        aria-label={`View recipe: ${recipe.name || "Recipe"}`}
+        aria-label={`Xem công thức: ${recipe.name || "Công thức"}`}
         className="flex h-full flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chaybook-primary"
       >
         <div className="relative aspect-16/10 overflow-hidden bg-chaybook-container">
           <RecipeImage
             imageUrl={recipe.imageUrl}
-            alt={recipe.name ? `${recipe.name} recipe` : "Recipe"}
+            alt={recipe.name ? `Công thức ${recipe.name}` : "Công thức"}
             className="h-full w-full transition-transform duration-500 group-hover:scale-105"
           />
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-chaybook-primary shadow-sm backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-chaybook-primary" />
-            Recipe
+            Công thức
           </span>
           {totalTime && (
             <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-[#2d3130]/85 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
               <Clock3 aria-hidden="true" size={14} />
-              {totalTime} total
+              {totalTime} tổng cộng
             </span>
           )}
         </div>
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
           <h2 className="mb-2 line-clamp-2 text-lg font-semibold leading-6 text-[#181c1b] transition-colors group-hover:text-chaybook-primary">
-            {recipe.name || "Untitled recipe"}
+            {recipe.name || "Công thức chưa đặt tên"}
           </h2>
           <p className="mb-5 line-clamp-3 text-sm leading-6 text-[#3e4a3d]">
             {recipe.description || ""}
@@ -71,19 +71,19 @@ function RecipeCard({ recipe }) {
             {prepTime && (
               <span className="inline-flex items-center gap-1.5">
                 <Clock3 aria-hidden="true" size={15} />
-                Prep {prepTime}
+                Chuẩn bị {prepTime}
               </span>
             )}
             {cookTime && (
               <span className="inline-flex items-center gap-1.5">
                 <ChefHat aria-hidden="true" size={15} />
-                Cook {cookTime}
+                Nấu {cookTime}
               </span>
             )}
           </div>
 
           <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 text-sm font-semibold text-chaybook-primary">
-            <span>View Recipe</span>
+            <span>Xem công thức</span>
             <ArrowRight
               aria-hidden="true"
               size={18}
@@ -99,7 +99,7 @@ function RecipeCard({ recipe }) {
 function RecipeLoadingState() {
   return (
     <section
-      aria-label="Loading recipes"
+      aria-label="Đang tải công thức"
       aria-live="polite"
       className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
     >
@@ -129,13 +129,13 @@ function RecipeStatus({ onRetry }) {
     >
       <CircleAlert aria-hidden="true" size={40} className="mb-4 text-red-600" />
       <h2 className="mb-2 text-xl font-semibold text-[#181c1b]">
-        Unable to load recipes.
+        Không thể tải công thức.
       </h2>
-      <p className="mb-5 text-sm text-[#3e4a3d]">Please try again.</p>
+      <p className="mb-5 text-sm text-[#3e4a3d]">Vui lòng thử lại.</p>
       <Button type="button" onClick={onRetry}>
         <span className="inline-flex items-center gap-2">
           <RefreshCcw aria-hidden="true" size={16} />
-          Try Again
+          Thử lại
         </span>
       </Button>
     </section>
@@ -211,14 +211,14 @@ function RecipesPage() {
         <header className="mb-10 flex flex-col items-center text-center sm:mb-12">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#92f5a4] px-3 py-1.5 text-xs font-semibold tracking-wide text-[#007233]">
             <ChefHat aria-hidden="true" size={16} />
-            ChayBook Recipes
+            Công thức ChayBook
           </span>
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-chaybook-primary sm:text-4xl lg:text-5xl">
-            Recipes
+            Công thức
           </h1>
           <p className="mb-7 max-w-2xl text-base leading-7 text-[#3e4a3d] sm:text-lg">
-            Discover healthy, delicious vegetarian recipes made for everyday
-            life.
+            Khám phá những công thức chay ngon miệng, lành mạnh cho bữa ăn
+            thường ngày.
           </p>
 
           <div className="flex w-full max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
@@ -228,7 +228,7 @@ function RecipesPage() {
               className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-100 bg-white p-1.5 shadow-sm focus-within:shadow-md"
             >
               <label className="sr-only" htmlFor="recipe-search">
-                Search recipes
+                Tìm công thức
               </label>
               <Search
                 aria-hidden="true"
@@ -238,13 +238,13 @@ function RecipesPage() {
               <input
                 id="recipe-search"
                 type="search"
-                placeholder="Search recipes..."
+                placeholder="Tìm công thức..."
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
               />
               <Button type="submit" className="shrink-0 px-5">
-                Search
+                Tìm kiếm
               </Button>
             </form>
 
@@ -293,16 +293,16 @@ function RecipesPage() {
               className="mb-4 text-[#6e7b6c]"
             />
             <h2 className="mb-2 text-xl font-semibold text-[#181c1b]">
-              No recipes found.
+              Không tìm thấy công thức.
             </h2>
             <p className="text-sm leading-6 text-[#3e4a3d]">
-              Try another keyword or category.
+              Hãy thử từ khóa hoặc danh mục khác.
             </p>
           </section>
         ) : (
           <>
             <section
-              aria-label="Recipes"
+              aria-label="Danh sách công thức"
               className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
               {recipes.map((recipe) => (

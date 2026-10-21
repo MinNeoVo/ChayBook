@@ -1,0 +1,11 @@
+.places-page .places-results-layout{align-items:start}
+.places-page .places-results-layout>.places-location-card,.places-page .places-results-layout>.places-list-column{min-width:0;align-self:start}
+.places-page .places-results-layout>.places-location-card{min-height:0;height:auto}
+.places-map-wrapper{position:relative;box-sizing:border-box;width:100%;height:600px;min-height:600px;max-height:600px;flex:0 0 auto;overflow:hidden;border-radius:10px}
+.places-interactive-map,.places-map-wrapper .leaflet-container{position:absolute;inset:0;width:100%;height:100%;min-height:0;background:#edf4ef}
+.places-map-error{display:flex;min-height:260px;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:10px;background:#fff6f4;padding:20px;color:#9b3324;text-align:center;font-size:11px;line-height:1.5}
+.places-map-error strong{font-size:12px}
+.places-map-error span{max-width:340px}
+.places-map-wrapper>.places-map-error{position:absolute;inset:12px;min-height:0;z-index:500}
+@media(max-width:768px){.places-map-wrapper{height:350px;min-height:350px;max-height:350px}}
+@media(min-width:768px) and (max-width:1024px){.places-map-wrapper{height:500px;min-height:500px;max-height:500px}}

@@ -1,7 +1,7 @@
 export const CATEGORY_TYPES = [
-  { value: "ARTICLE", label: "Article" },
-  { value: "RECIPE", label: "Recipe" },
-  { value: "POST", label: "Post" },
+  { value: "ARTICLE", label: "Bài viết" },
+  { value: "RECIPE", label: "Công thức" },
+  { value: "POST", label: "Bài đăng" },
 ];
 
 export const INITIAL_CATEGORY_FILTERS = {
@@ -28,13 +28,13 @@ export function validateCategory(payload) {
   const errors = {};
 
   if (!payload.name) {
-    errors.name = "Please enter a category name";
+    errors.name = "Vui lòng nhập tên danh mục.";
   } else if (payload.name.length > 255) {
-    errors.name = "Category name must not exceed 255 characters";
+    errors.name = "Tên danh mục không được vượt quá 255 ký tự.";
   }
 
   if (!CATEGORY_TYPES.some((item) => item.value === payload.type)) {
-    errors.type = "Please select a valid category type";
+    errors.type = "Vui lòng chọn loại danh mục hợp lệ.";
   }
 
   return errors;
@@ -46,46 +46,46 @@ export function getCategoryErrorMessage(error) {
   return (
     ERROR_TRANSLATIONS[message] ??
     HTTP_ERROR_MESSAGES[error?.status] ??
-    "Unable to process the request. Please try again."
+    "Không thể xử lý yêu cầu. Vui lòng thử lại."
   );
 }
 
 const ERROR_TRANSLATIONS = {
-  "Tên Category không được để trống": "Please enter a category name.",
+  "Tên Category không được để trống": "Vui lòng nhập tên danh mục.",
 
   "Tên Category tối đa 255 ký tự":
-    "Category name must not exceed 255 characters.",
+  "Tên danh mục không được vượt quá 255 ký tự.",
 
-  "Type không được để trống": "Please select a category type.",
+  "Type không được để trống": "Vui lòng chọn loại danh mục.",
 
   "Type phải là ARTICLE, RECIPE hoặc POST":
-    "Category type must be Article, Recipe, or Post.",
+  "Loại danh mục phải là bài viết, công thức hoặc bài đăng.",
 
   "Tên Category đã tồn tại trong type này":
-    "A category with this name already exists for this type.",
+  "Tên danh mục này đã tồn tại trong loại đã chọn.",
 
   "Category đang được nội dung sử dụng":
-    "This category is in use. Its type cannot be changed.",
+  "Danh mục đang được sử dụng nên không thể thay đổi loại.",
 
-  "Cannot update a deleted category": "A deleted category cannot be updated.",
+  "Cannot update a deleted category": "Không thể cập nhật danh mục đã xóa.",
 
   "Đang xử lý thao tác trước.":
-    "Another operation is in progress. Please wait.",
+  "Một thao tác khác đang được xử lý. Vui lòng chờ.",
 };
 
 const HTTP_ERROR_MESSAGES = {
-  400: "Invalid request. Please check the entered values.",
-  401: "Please sign in to continue.",
-  403: "You do not have permission to manage categories.",
-  404: "Category not found.",
-  409: "This change conflicts with the current category data.",
+  400: "Yêu cầu không hợp lệ. Vui lòng kiểm tra thông tin đã nhập.",
+  401: "Vui lòng đăng nhập để tiếp tục.",
+  403: "Bạn không có quyền quản lý danh mục.",
+  404: "Không tìm thấy danh mục.",
+  409: "Thay đổi này xung đột với dữ liệu danh mục hiện tại.",
 };
 
 export function getCategoryFieldErrors(error) {
   return Object.fromEntries(
     Object.entries(error?.data?.errors ?? {}).map(([field, message]) => [
       field,
-      ERROR_TRANSLATIONS[message] ?? "Invalid value. Please check this field.",
+      ERROR_TRANSLATIONS[message] ?? "Giá trị không hợp lệ. Vui lòng kiểm tra trường này.",
     ]),
   );
 }

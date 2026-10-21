@@ -18,6 +18,7 @@ public record PostResponse(
         long bookmarkCount,
         long commentCount,
         boolean likedByCurrentUser,
-        boolean bookmarkedByCurrentUser
+        boolean bookmarkedByCurrentUser,
+        String adminReason
 ) {
 }

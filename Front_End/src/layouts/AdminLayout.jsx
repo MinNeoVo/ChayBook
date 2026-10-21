@@ -24,33 +24,33 @@ function AdminLayout() {
 
   const menuItems = [
     {
-      name: "Dashboard",
+      name: "Bảng điều khiển",
       path: "/admin",
       end: true,
       icon: LayoutDashboard,
     },
     {
-      name: "Users",
+      name: "Người dùng",
       path: "/admin/users",
       icon: Users,
     },
     {
-      name: "Articles",
+      name: "Bài viết",
       path: "/admin/articles",
       icon: FileText,
     },
     {
-      name: "Recipe Management",
+      name: "Quản lý công thức",
       path: "/admin/recipes",
       icon: ChefHat,
     },
     {
-      name: "Post & Video",
+      name: "Bài viết & Video",
       path: "/admin/posts-videos",
       icon: Video,
     },
     {
-      name: "Categories",
+      name: "Danh mục",
       path: "/admin/categories",
       icon: Tags,
     },
@@ -62,7 +62,7 @@ function AdminLayout() {
       setSidebarOpen(false);
       navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Admin logout failed:", error);
+      console.error("Đăng xuất quản trị viên thất bại:", error);
     }
   };
 
@@ -71,7 +71,7 @@ function AdminLayout() {
       {sidebarOpen && (
         <button
           type="button"
-          aria-label="Close admin navigation"
+          aria-label="Đóng điều hướng quản trị"
           onClick={() => setSidebarOpen(false)}
           className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-[1px] md:hidden"
         />
@@ -96,13 +96,13 @@ function AdminLayout() {
               ChayBook
             </span>
             <span className="block text-xs font-medium text-white/75">
-              Admin Panel
+              Bảng quản trị
             </span>
           </Link>
         </div>
 
         <nav
-          aria-label="Admin navigation"
+          aria-label="Điều hướng quản trị"
           className="flex-1 space-y-1 overflow-y-auto p-4"
         >
           {menuItems.map((item) => {
@@ -135,7 +135,7 @@ function AdminLayout() {
             className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5 shrink-0" />
-            <span>Back to ChayBook</span>
+            <span>Quay lại ChayBook</span>
           </Link>
 
           <button
@@ -144,7 +144,7 @@ function AdminLayout() {
             className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white"
           >
             <LogOut className="h-5 w-5 shrink-0" />
-            <span>Logout</span>
+            <span>Đăng xuất</span>
           </button>
         </div>
       </aside>
@@ -153,7 +153,7 @@ function AdminLayout() {
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             type="button"
-            aria-label={sidebarOpen ? "Close admin menu" : "Open admin menu"}
+            aria-label={sidebarOpen ? "Đóng menu quản trị" : "Mở menu quản trị"}
             aria-expanded={sidebarOpen}
             onClick={() => setSidebarOpen((open) => !open)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition-colors hover:bg-slate-50"
@@ -166,7 +166,7 @@ function AdminLayout() {
           </button>
           <div>
             <p className="text-sm font-bold text-slate-900">ChayBook Admin</p>
-            <p className="text-xs text-slate-500">Administration</p>
+            <p className="text-xs text-slate-500">Quản trị</p>
           </div>
         </header>
         <main className="min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

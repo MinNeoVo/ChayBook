@@ -25,6 +25,17 @@ export async function updateProfile(userId, data) {
 }
 
 /**
+ * Change the authenticated user's password.
+ * PUT /api/users/{userId}/password
+ */
+export async function changePassword(userId, currentPassword, newPassword, email, resetToken) {
+  return apiFetch(`/users/${encodeURIComponent(userId)}/password`, {
+    method: "PUT",
+    body: { currentPassword, newPassword, email, resetToken },
+  });
+}
+
+/**
  * Upload ảnh avatar cho user đang đăng nhập.
  * POST /api/users/me/avatar
  * @param {File} file - File ảnh (JPEG/PNG/WebP, tối đa 5MB)

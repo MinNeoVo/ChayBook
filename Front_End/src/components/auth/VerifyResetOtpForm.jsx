@@ -24,7 +24,7 @@ export default function VerifyResetOtpForm() {
       const result = await verifyPasswordResetOtp(email, code);
       navigate("/reset-password", { replace: true, state: { email, resetToken: result.resetToken } });
     } catch (err) {
-      setError(err.message || "OTP is invalid or expired.");
+      setError(err.message || "Mã OTP không hợp lệ hoặc đã hết hạn.");
     } finally {
       setLoading(false);
     }
@@ -32,13 +32,13 @@ export default function VerifyResetOtpForm() {
 
   if (!email) return null;
   return <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-    <h1 className="mb-2 text-center text-3xl font-bold text-gray-800">Verify OTP</h1>
-    <p className="mb-6 text-center text-sm text-gray-500">Enter the 6-digit code sent to {email}. It expires in 10 minutes.</p>
+    <h1 className="mb-2 text-center text-3xl font-bold text-gray-800">Xác thực OTP</h1>
+    <p className="mb-6 text-center text-sm text-gray-500">Nhập mã gồm 6 chữ số đã gửi đến {email}. Mã có hiệu lực trong 10 phút.</p>
     {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
     <form className="space-y-4" onSubmit={submit}>
-      <Input label="6-digit OTP" type="text" name="otp" placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-      <Button type="submit" size="md" className="w-full" disabled={loading || code.length !== 6}>{loading ? "Verifying..." : "Verify OTP"}</Button>
+      <Input label="Mã OTP gồm 6 chữ số" type="text" name="otp" placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
+      <Button type="submit" size="md" className="w-full" disabled={loading || code.length !== 6}>{loading ? "Đang xác thực..." : "Xác thực OTP"}</Button>
     </form>
-    <p className="mt-6 text-center text-sm text-gray-500"><Link to="/forgot-password" className="font-medium text-chaybook-primary hover:underline">Back</Link></p>
+    <p className="mt-6 text-center text-sm text-gray-500"><Link to="/forgot-password" className="font-medium text-chaybook-primary hover:underline">Quay lại</Link></p>
   </div>;
 }
