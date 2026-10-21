@@ -12,6 +12,7 @@ import {
   Leaf,
   Menu,
   X,
+  Tags,
 } from "lucide-react";
 
 import { useAuth } from "../context/useAuth";
@@ -47,6 +48,11 @@ function AdminLayout() {
       name: "Post & Video",
       path: "/admin/posts-videos",
       icon: Video,
+    },
+    {
+      name: "Categories",
+      path: "/admin/categories",
+      icon: Tags,
     },
   ];
 

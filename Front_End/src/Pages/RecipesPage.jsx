@@ -12,7 +12,8 @@ import {
 import RecipeImage from "../components/recipes/RecipeImage";
 import RecipePagination from "../components/recipes/RecipePagination";
 import Button from "../components/common/Button";
-import { getCategories } from "../services/categoryServices";
+import CategorySelect from "../components/categories/CategorySelect";
+import { useCategoryOptions } from "../hooks/useCategoryOptions";
 import { getRecipes } from "../services/recipeServices";
 
 const PAGE_SIZE = 10;
@@ -146,8 +147,6 @@ function RecipesPage() {
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [page, setPage] = useState(0);
-  const [categories, setCategories] = useState([]);
-  const [categoryStatus, setCategoryStatus] = useState("loading");
   const [retryCount, setRetryCount] = useState(0);
   const requestKey = JSON.stringify([categoryId, keyword, page, retryCount]);
   const [result, setResult] = useState({
@@ -156,24 +155,12 @@ function RecipesPage() {
     data: null,
   });
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    getCategories("RECIPE", { signal: controller.signal })
-      .then((data) => {
-        if (controller.signal.aborted) return;
-        setCategories(data);
-        setCategoryStatus("success");
-      })
-      .catch((error) => {
-        if (!controller.signal.aborted) {
-          console.error("Failed to load recipe categories:", error);
-          setCategoryStatus("error");
-        }
-      });
-
-    return () => controller.abort();
-  }, []);
+  const {
+    categories,
+    isLoading: loadingCategories,
+    error: categoryError,
+    reload: reloadCategories,
+  } = useCategoryOptions("RECIPE");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -209,8 +196,8 @@ function RecipesPage() {
     setPage(0);
   };
 
-  const handleCategoryChange = (event) => {
-    setCategoryId(event.target.value);
+  const handleCategoryChange = (nextCategoryId) => {
+    setCategoryId(nextCategoryId);
     setPage(0);
   };
 
@@ -262,33 +249,32 @@ function RecipesPage() {
             </form>
 
             <div className="w-full sm:w-56 sm:shrink-0">
-              <label className="sr-only" htmlFor="recipe-category">
-                Filter recipes by category
-              </label>
-              <select
-                id="recipe-category"
-                aria-label="Filter recipes by category"
+              <CategorySelect
                 value={categoryId}
-                disabled={
-                  categoryStatus === "loading" || categoryStatus === "error"
-                }
+                categories={categories}
                 onChange={handleCategoryChange}
-                className="min-h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-[#3e4a3d] shadow-sm outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/20"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.categoryId} value={category.categoryId}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              {categoryStatus === "error" && (
-                <p
-                  role="status"
-                  className="mt-2 text-left text-xs text-red-600"
-                >
-                  Categories could not be loaded.
+                disabled={loadingCategories || Boolean(categoryError)}
+              />
+
+              {loadingCategories && (
+                <p role="status" className="mt-2 text-xs text-slate-500">
+                  Đang tải danh mục...
                 </p>
+              )}
+
+              {categoryError && (
+                <div role="alert" className="mt-2 space-y-2">
+                  <p className="text-xs text-red-700">
+                    Không tải được danh mục.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={reloadCategories}
+                  >
+                    Thử lại
+                  </Button>
+                </div>
               )}
             </div>
           </div>

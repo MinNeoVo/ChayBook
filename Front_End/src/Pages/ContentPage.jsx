@@ -13,7 +13,7 @@ import {
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import { getArticles } from "../services/articleServices";
-import { getCategories } from "../services/categoryServices";
+import { useCategoryOptions } from "../hooks/useCategoryOptions";
 
 // =========================
 // CATEGORY FILTER
@@ -290,12 +290,17 @@ function ContentPage() {
   const [activeCategoryId, setActiveCategoryId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [articles, setArticles] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [retryCount, setRetryCount] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const {
+    categories,
+    isLoading: loadingCategories,
+    error: categoryError,
+    reload: reloadCategories,
+  } = useCategoryOptions("ARTICLE");
 
   const itemsPerPage = 6;
 
@@ -308,33 +313,6 @@ function ContentPage() {
       ]),
     );
   }, [categories]);
-
-  // Fetch categories
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchCategories() {
-      try {
-        const data = await getCategories("ARTICLE");
-
-        if (!cancelled) {
-          setCategories(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-
-        if (!cancelled) {
-          setCategories([]);
-        }
-      }
-    }
-
-    fetchCategories();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Fetch articles when category, page, or retry changes
   useEffect(() => {
@@ -495,11 +473,26 @@ function ContentPage() {
               </Button>
             </form>
 
-            <CategoryFilter
-              activeCategoryId={activeCategoryId}
-              categories={categories}
-              onCategoryChange={handleCategoryChange}
-            />
+            {loadingCategories ? (
+              <p role="status" className="text-center text-sm text-slate-500">
+                Loading categories...
+              </p>
+            ) : categoryError ? (
+              <div role="alert" className="flex flex-col items-center gap-2">
+                <p className="text-sm text-red-700">
+                  Categories could not be loaded.
+                </p>
+                <Button variant="outline" size="sm" onClick={reloadCategories}>
+                  Try again
+                </Button>
+              </div>
+            ) : (
+              <CategoryFilter
+                activeCategoryId={activeCategoryId}
+                categories={categories}
+                onCategoryChange={handleCategoryChange}
+              />
+            )}
           </section>
 
           {/* Posts */}

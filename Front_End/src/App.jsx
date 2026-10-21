@@ -30,13 +30,17 @@ import AdminDashboardPage from "./Pages/admin/AdminDashboardPage";
 import AdminUsers from "./Pages/admin/AdminUsers";
 import AdminPostVideoPage from "./Pages/admin/AdminPostVideoPage";
 import AdminRecipeManagement, {
-  AdminRecipeListPage, AdminRecipeCreatePage, AdminRecipeDetailPage, AdminRecipeEditPage,
+  AdminRecipeListPage,
+  AdminRecipeCreatePage,
+  AdminRecipeDetailPage,
+  AdminRecipeEditPage,
 } from "./Pages/admin/AdminRecipeManagement";
 import AdminArticleManagement, {
   AdminArticleCreatePage,
   AdminArticleDetailPage,
   AdminArticleListPage,
 } from "./Pages/admin/AdminArticleManagement";
+import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
 
 function App() {
   return (
@@ -77,6 +81,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="categories" element={<AdminCategoryPage />} />
           <Route path="recipes" element={<AdminRecipeManagement />}>
             <Route index element={<AdminRecipeListPage />} />
             <Route path="new" element={<AdminRecipeCreatePage />} />
