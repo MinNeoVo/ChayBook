@@ -4,9 +4,13 @@ import { CalendarDays, FileText, Heart, Plus, Edit3 } from "lucide-react";
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 import EditProfileModal from "./EditProfileModal";
+import ChangePasswordModal from "./ChangePasswordModal";
+import { resolveMediaUrl } from "../../services/app";
+import { Link } from "react-router-dom";
 
 function ProfileHeader({ profile, onProfileUpdated }) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const username = profile?.username || "ChayBook User";
   const fullName = profile?.fullName || username;
@@ -33,11 +37,7 @@ function ProfileHeader({ profile, onProfileUpdated }) {
     role === "ADMIN" ? "Administrator" : "Plant-based Food Enthusiast";
 
   // Resolve avatar URL (relative → absolute)
-  const API_ORIGIN = "http://localhost:8080";
-  const resolvedAvatarUrl =
-    avatarUrl && !avatarUrl.startsWith("http")
-      ? `${API_ORIGIN}${avatarUrl.startsWith("/") ? "" : "/"}${avatarUrl}`
-      : avatarUrl;
+  const resolvedAvatarUrl = resolveMediaUrl(avatarUrl);
 
   function handleSaved(updatedUser) {
     onProfileUpdated?.(updatedUser);
@@ -269,12 +269,14 @@ function ProfileHeader({ profile, onProfileUpdated }) {
                   </span>
                 </Button>
 
+                <Button type="button" size="sm" className="flex-1 md:flex-none" onClick={() => setShowPassword(true)}>Change Password</Button>
+                <Link to="/community">
                 <Button type="button" size="sm" className="flex-1 md:flex-none">
                   <span className="flex items-center justify-center gap-1.5">
                     <Plus size={18} />
                     Create Post
                   </span>
-                </Button>
+                </Button></Link>
               </div>
             </div>
           </div>
@@ -282,6 +284,7 @@ function ProfileHeader({ profile, onProfileUpdated }) {
       </section>
 
       {/* ── Edit Profile Modal ── */}
+      {showPassword && <ChangePasswordModal userId={profile.userId} onClose={() => setShowPassword(false)} />}
       {showEditModal && (
         <EditProfileModal
           profile={profile}

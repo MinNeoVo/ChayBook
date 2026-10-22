@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
   Ban,
@@ -13,11 +13,9 @@ import {
   Eye,
   FileImage,
   Info,
-  ListFilter,
   RefreshCw,
   Search,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Video,
   X,
@@ -69,16 +67,9 @@ const STAT_CARDS = [
 ];
 
 const GUIDELINES = [
-  "Review that the post or video relates to plant-based food or the ChayBook community.",
-  "Check that images, music, and other media appear appropriate to share.",
-  "These examples are for this UI demonstration and are not official ChayBook policies.",
-];
-
-const FILTER_RULES = [
-  { name: "Repeated links", detail: "Flag posts that contain repeated external links." },
-  { name: "Sensitive words", detail: "Send configured words to a moderator for review." },
-  { name: "Duplicate submissions", detail: "Highlight submissions with a matching title and creator." },
-  { name: "Media review", detail: "Keep video submissions in the review queue until approved." },
+  "Pending submissions can be approved or rejected. Approved submissions can be rejected or removed.",
+  "A rejection requires an Admin reason. The AI assessment is displayed separately for reference.",
+  "Rejected submissions can be approved after review. Removed and author-deleted submissions leave the queue and cannot be restored here.",
 ];
 
 function formatNumber(value) {
@@ -88,12 +79,14 @@ function formatNumber(value) {
 function toRecord(item) {
   const submitted = item.submittedAt ? new Date(item.submittedAt) : null;
   const validDate = submitted && !Number.isNaN(submitted.getTime());
+  const reviewed = item.reviewedAt ? new Date(item.reviewedAt) : null;
   return {
     ...item,
     thumbnailUrl: resolveAdminMediaUrl(item.thumbnailUrl),
     videoUrl: resolveAdminMediaUrl(item.mediaUrl),
     submittedDate: validDate ? submitted.toLocaleDateString("en-GB") : "—",
     submittedTime: validDate ? submitted.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "—",
+    reviewedDateTime: reviewed && !Number.isNaN(reviewed.getTime()) ? reviewed.toLocaleString("en-GB") : "—",
   };
 }
 
@@ -301,6 +294,8 @@ function ModerationDialog({
   onApprove,
   onReject,
   onRemove,
+  rejectionReason,
+  onRejectionReasonChange,
   busy,
   error,
 }) {
@@ -339,7 +334,7 @@ function ModerationDialog({
         footer={closeButton}
       >
         <p className="mb-4 text-sm leading-6 text-slate-600">
-          Example guidance for this local UI demonstration.
+          Review each submission and record your moderation decision.
         </p>
         <ul className="space-y-3">
           {GUIDELINES.map((guideline) => (
@@ -349,32 +344,6 @@ function ModerationDialog({
             </li>
           ))}
         </ul>
-      </ModalShell>
-    );
-  }
-
-  if (kind === "rules") {
-    return (
-      <ModalShell
-        title="Auto-Filter Rules"
-        icon={ListFilter}
-        onClose={onClose}
-        footer={closeButton}
-      >
-        <p className="mb-4 text-sm leading-6 text-slate-600">
-          Example rules shown for demonstration. They do not run automatic moderation.
-        </p>
-        <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
-          {FILTER_RULES.map((rule) => (
-            <div key={rule.name} className="flex gap-3 p-3.5">
-              <Sparkles aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-emerald-700" />
-              <div>
-                <p className="text-sm font-semibold text-slate-800">{rule.name}</p>
-                <p className="mt-0.5 text-xs leading-5 text-slate-500">{rule.detail}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </ModalShell>
     );
   }
@@ -401,15 +370,27 @@ function ModerationDialog({
     return (
       <ModalShell title="Reject submission" icon={CircleAlert} onClose={onClose}>
         <p className="mb-4 text-sm leading-6 text-slate-600">
-          Confirm rejection of this submission. Rejection feedback is currently unavailable.
+          Explain why this submission is being rejected. A rejection reason is required.
         </p>
         <ContentSummary record={record} />
-        <div className="mt-4">
+        <form className="mt-4" onSubmit={(event) => { event.preventDefault(); onReject(); }}>
+          <label htmlFor="admin-rejection-reason" className="block text-sm font-semibold text-slate-800">
+            Rejection reason <span aria-hidden="true" className="text-red-600">*</span>
+          </label>
+          <textarea
+            id="admin-rejection-reason"
+            required
+            rows={4}
+            value={rejectionReason}
+            onChange={(event) => onRejectionReasonChange(event.target.value)}
+            disabled={busy}
+            className="mb-4 mt-2 w-full rounded-lg border border-slate-300 p-3 text-sm focus:border-emerald-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+          />
           <div className="flex flex-wrap justify-end gap-2 border-t border-slate-100 pt-4">
             {closeButton}
-            {primaryButton("Confirm rejection", onReject, "red")}
+            {primaryButton("Confirm rejection", onReject, "red", "submit")}
           </div>
-        </div>
+        </form>
       </ModalShell>
     );
   }
@@ -427,7 +408,7 @@ function ModerationDialog({
         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-lg font-bold text-slate-900">{record.title}</p>
-            <p className="mt-1 text-sm text-slate-600">by @{record.creator}</p>
+            <p className="mt-1 text-sm text-slate-600">Creator: @{record.creator}</p>
           </div>
           <StatusBadge status={record.status} />
         </div>
@@ -442,7 +423,28 @@ function ModerationDialog({
             <dt className="text-xs font-medium text-slate-500">Content type</dt>
             <dd className="mt-1 font-semibold text-slate-800">{mediaType}</dd>
           </div>
+          <div>
+            <dt className="text-xs font-medium text-slate-500">Reviewer</dt>
+            <dd className="mt-1 font-semibold text-slate-800">{record.reviewer || (record.reviewerId ? `Admin #${record.reviewerId}` : "Not reviewed")}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-slate-500">Reviewed at</dt>
+            <dd className="mt-1 font-semibold text-slate-800">{record.reviewedDateTime}</dd>
+          </div>
         </dl>
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold text-slate-700">AI moderation assessment</p>
+          <p className="mt-1 text-xs text-slate-500">
+            {record.moderationStatus || "No AI assessment"}{record.aiResult ? ` · ${record.aiResult}` : ""}
+          </p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm text-slate-800">{record.aiReason || "No AI reason recorded."}</p>
+        </div>
+        {record.status === "REJECTED" && (
+          <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-4">
+            <p className="text-xs font-semibold text-red-700">Admin rejection reason</p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm text-red-900">{record.adminReason || "No rejection reason recorded."}</p>
+          </div>
+        )}
       </ModalShell>
     );
   }
@@ -454,7 +456,7 @@ function ModerationDialog({
         <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Feedback to creator</p>
           <p className="mt-2 text-sm leading-6 text-red-900">
-            {record.rejectionReason || "No reason was saved for this item."}
+            {record.adminReason || "No reason was saved for this item."}
           </p>
         </div>
       </ModalShell>
@@ -551,8 +553,15 @@ function ModerationRow({ record, onOpenDialog }) {
         <span className="block text-xs text-slate-600">{record.submittedDate}</span>
         <span>{record.submittedTime} ICT</span>
       </td>
-      <td className="whitespace-nowrap px-2 py-3.5">
+      <td className="px-2 py-3.5 text-xs text-slate-600 sm:px-3">
+        <span className="block font-semibold">{record.reviewer || (record.reviewerId ? `Admin #${record.reviewerId}` : "Not reviewed")}</span>
+        <span className="mt-1 block text-[10px] text-slate-500">{record.reviewedDateTime}</span>
+      </td>
+      <td className="px-2 py-3.5">
         <StatusBadge status={record.status} />
+        {record.status === "REJECTED" && <p className="mt-2 max-w-xs whitespace-pre-wrap break-words text-xs text-red-700">
+          <span className="font-semibold">Admin reason: </span>{record.adminReason || "No rejection reason recorded."}
+        </p>}
       </td>
       <td className="px-2 py-3.5 sm:px-3">
         <div className="flex min-w-[172px] flex-wrap items-center gap-1">
@@ -634,7 +643,9 @@ function AdminPostVideoPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [dialog, setDialog] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const actionInFlight = useRef(false);
   const [actionError, setActionError] = useState("");
   const [notice, setNotice] = useState("");
   const load = useCallback((signal) => getAdminSubmissions({
@@ -705,23 +716,30 @@ function AdminPostVideoPage() {
   };
 
   const openDialog = (kind, record = null) => {
-    if (busy) return;
+    if (actionInFlight.current) return;
     setActionError("");
+    setRejectionReason("");
     setDialog({ kind, record, loading: kind === "detail" });
   };
 
   const closeDialog = () => {
-    if (busy) return;
+    if (actionInFlight.current) return;
     setDialog(null);
     setActionError("");
   };
 
   const updateSelectedStatus = async (status) => {
-    if (!dialog?.record || busy) return;
+    if (!dialog?.record || actionInFlight.current) return;
+    const reason = rejectionReason.trim();
+    if (status === "REJECTED" && !reason) {
+      setActionError("Please enter a rejection reason.");
+      return;
+    }
+    actionInFlight.current = true;
     setBusy(true);
     setActionError("");
     try {
-      await updateAdminSubmissionStatus(dialog.record.type, dialog.record.id, status);
+      await updateAdminSubmissionStatus(dialog.record.type, dialog.record.id, status, reason);
       setDialog(null);
       setNotice("Submission updated successfully.");
       resource.retry();
@@ -734,6 +752,7 @@ function AdminPostVideoPage() {
         statistics.retry();
       }
     } finally {
+      actionInFlight.current = false;
       setBusy(false);
     }
   };
@@ -772,14 +791,7 @@ function AdminPostVideoPage() {
             <BookOpen aria-hidden="true" size={15} />
             Guidelines
           </button>
-          <button
-            type="button"
-            onClick={() => openDialog("rules")}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-chaybook-primary px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-chaybook-hover"
-          >
-            <ListFilter aria-hidden="true" size={15} />
-            Auto-Filter Rules
-          </button>
+
         </div>
       </header>
       {notice && <p role="status" className="rounded-lg bg-emerald-50 p-3 text-emerald-800">{notice}</p>}
@@ -854,13 +866,14 @@ function AdminPostVideoPage() {
 
         <AdminRequestState {...resource} onRetry={resource.retry} />
         <div className="w-full overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left">
+          <table className="w-full min-w-[1100px] border-collapse text-left">
             <thead className="bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th scope="col" className="whitespace-nowrap px-3 py-3 sm:px-4">Post ID</th>
                 <th scope="col" className="px-2 py-3">Type</th>
                 <th scope="col" className="px-2 py-3 sm:px-3">Content &amp; Creator</th>
                 <th scope="col" className="whitespace-nowrap px-2 py-3 sm:px-3">Submitted</th>
+                <th scope="col" className="px-2 py-3 sm:px-3">Reviewer / Reviewed at</th>
                 <th scope="col" className="px-2 py-3">Status</th>
                 <th scope="col" className="px-2 py-3 sm:px-3">Moderation Actions</th>
               </tr>
@@ -868,7 +881,7 @@ function AdminPostVideoPage() {
             <tbody>
               {resource.loading || resource.error ? null : visibleRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-14 text-center">
+                  <td colSpan={7} className="px-6 py-14 text-center">
                     <div className="mx-auto flex max-w-sm flex-col items-center">
                       <Search aria-hidden="true" size={23} className="text-slate-300" />
                       <p className="mt-2 text-sm font-semibold text-slate-700">No submissions found</p>
@@ -930,6 +943,8 @@ function AdminPostVideoPage() {
         onApprove={() => updateSelectedStatus("APPROVED")}
         onReject={() => updateSelectedStatus("REJECTED")}
         onRemove={() => updateSelectedStatus("REMOVED")}
+        rejectionReason={rejectionReason}
+        onRejectionReasonChange={(value) => { setRejectionReason(value); setActionError(""); }}
         busy={busy}
         error={actionError}
       />

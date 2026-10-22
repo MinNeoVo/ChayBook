@@ -63,7 +63,8 @@ function CommunityToolbar({
         <div className="min-w-[200px] flex-1">
           <Input
             icon={Search}
-            placeholder="Search posts, recipes, ingredients..."
+            label="Search loaded posts"
+            placeholder="Search posts already loaded..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="
@@ -76,6 +77,7 @@ function CommunityToolbar({
 
         <div className="relative">
           <select
+            aria-label="Post category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={categoryLoading}
@@ -119,6 +121,7 @@ function CommunityToolbar({
 
         <div className="relative">
           <select
+            aria-label="Sort posts"
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             className="

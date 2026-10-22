@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import AuthContext from "./AuthContext";
 import { getCurrentUser, logoutUser } from "../services/authServices";
@@ -6,6 +6,8 @@ import { getCurrentUser, logoutUser } from "../services/authServices";
 function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [logoutMessage, setLogoutMessage] = useState("");
+  const clearLogoutMessage = useCallback(() => setLogoutMessage(""), []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -27,13 +29,15 @@ function AuthProvider({ children }) {
   const isLoggedIn = user !== null;
 
   const login = (userData) => {
+    setLogoutMessage("");
     setUser(userData);
   };
 
-  const logout = async () => {
+  const logout = async (message) => {
     try {
       await logoutUser();
     } finally {
+      setLogoutMessage(typeof message === "string" ? message : "");
       setUser(null);
     }
   };
@@ -46,6 +50,8 @@ function AuthProvider({ children }) {
         loading,
         login,
         logout,
+        logoutMessage,
+        clearLogoutMessage,
       }}
     >
       {children}

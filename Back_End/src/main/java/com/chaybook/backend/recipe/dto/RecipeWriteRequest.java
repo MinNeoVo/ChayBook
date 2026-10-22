@@ -21,14 +21,17 @@ public record RecipeWriteRequest(
 
         @NotNull
         @PositiveOrZero
+        @tools.jackson.databind.annotation.JsonDeserialize(using = WholeIntegerDeserializer.class)
         Integer prepTime,
 
         @NotNull
         @PositiveOrZero
+        @tools.jackson.databind.annotation.JsonDeserialize(using = WholeIntegerDeserializer.class)
         Integer cookTime,
 
         @NotNull
         @Positive
+        @tools.jackson.databind.annotation.JsonDeserialize(using = WholeIntegerDeserializer.class)
         Integer servings,
 
         @NotBlank

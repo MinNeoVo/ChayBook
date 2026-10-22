@@ -22,7 +22,13 @@ public class GeminiClient {
     @Value("${gemini.api.url}")
     private String apiUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public GeminiClient() {
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000); factory.setReadTimeout(30000);
+        restTemplate = new RestTemplate(factory);
+    }
 
     public String generateContent(String promptText) {
 
@@ -113,20 +119,9 @@ public class GeminiClient {
 
         } catch (Exception e) {
 
-            System.err.println(
-                    "========== LỖI TẠI GEMINI CLIENT =========="
-            );
-
-            e.printStackTrace();
-
-            System.err.println(
-                    "==========================================="
-            );
-
-            throw new RuntimeException(
-                    "Lỗi khi gọi Gemini API: " + e.getMessage(),
-                    e
-            );
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_GATEWAY,
+                    "AI provider is unavailable. Please try again later.", e);
         }
     }
 }

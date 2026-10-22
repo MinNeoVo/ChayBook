@@ -177,7 +177,7 @@ class AdminSqlApiTests(unittest.TestCase):
         page, _ = self.check(self.admin, "GET", "/api/admin/recipes?page=1&size=10&keyword=IT%20Recipe")
         self.assertEqual(12, page["totalElements"])
         self.assertEqual(2, len(page["items"]))
-        body = {"categoryId": 2, "name": "SQL test recipe", "description": "Test", "imageUrl": "/uploads/posts/fixture.png", "prepTime": 5, "cookTime": 10, "instructions": "Cook", "ingredients": [{"ingredientId": 1, "quantity": 100, "unit": "g"}, {"ingredientId": 2, "quantity": 50, "unit": "g"}]}
+        body = {"categoryId": 2, "name": "SQL test recipe", "description": "Test", "imageUrl": "/uploads/posts/fixture.png", "prepTime": 5, "cookTime": 10, "servings": 2, "difficulty": "Easy", "calories": 200, "protein": 15, "carbs": 20, "fat": 8, "instructions": "Cook", "ingredients": [{"ingredientId": 1, "quantity": 100, "unit": "g"}, {"ingredientId": 2, "quantity": 50, "unit": "g"}]}
         self.check(self.admin, "POST", "/api/admin/recipes", 400, body={**body, "prepTime": -1})
         self.check(self.admin, "POST", "/api/admin/recipes", 400, body={**body, "ingredients": [body["ingredients"][0]] * 2})
         self.check(self.admin, "POST", "/api/admin/recipes", 404, body={**body, "ingredients": [{"ingredientId": 99999, "quantity": 1, "unit": "g"}]})
@@ -209,11 +209,11 @@ class AdminSqlApiTests(unittest.TestCase):
         post, _ = self.check(self.admin, "GET", "/api/admin/posts-videos/POST/1")
         self.assertEqual("APPROVED", video["status"])
         self.assertEqual("PENDING", post["status"])
-        self.check(self.admin, "PATCH", "/api/admin/posts-videos/POST/1/status", 204, body={"status": "REJECTED"})
+        self.check(self.admin, "PATCH", "/api/admin/posts-videos/POST/1/status", 204, body={"status": "REJECTED", "reason": "Admin integration test feedback"})
         fresh, _ = login(MANIFEST["adminEmail"])
         post, _ = self.check(fresh, "GET", "/api/admin/posts-videos/POST/1")
         self.assertEqual("REJECTED", post["status"])
-        self.check(self.admin, "PATCH", "/api/admin/posts-videos/POST/1/status", 409, body={"status": "REJECTED"})
+        self.check(self.admin, "PATCH", "/api/admin/posts-videos/POST/1/status", 409, body={"status": "REJECTED", "reason": "Admin integration test feedback"})
         self.check(self.admin, "PATCH", "/api/admin/posts-videos/POST/1/status", 400, body={"status": "INVALID"})
         self.check(self.admin, "GET", "/api/admin/posts-videos/ARTICLE/1", 400)
         self.check(self.admin, "GET", "/api/admin/posts-videos/POST/99999", 404)

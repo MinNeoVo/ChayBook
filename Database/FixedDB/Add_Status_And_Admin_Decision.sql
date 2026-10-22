@@ -2,9 +2,23 @@
 GO
 
 SET XACT_ABORT ON;
+SET NOCOUNT ON;
 
 BEGIN TRY
     BEGIN TRANSACTION;
+
+    -- Legacy sample videos used PUBLISHED for live content. Preserve that meaning
+    -- without fabricating a reviewer, reason or historical Admin decision.
+    UPDATE dbo.VIDEO SET status = N'APPROVED' WHERE UPPER(status) = N'PUBLISHED';
+
+    IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID(N'dbo.POST') AND name = N'CK_POST_MODERATION_STATUS')
+        ALTER TABLE dbo.POST WITH CHECK ADD CONSTRAINT CK_POST_MODERATION_STATUS
+            CHECK (status IS NOT NULL AND status IN (N'PENDING', N'APPROVED', N'REJECTED', N'REMOVED', N'DELETED'));
+    IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID(N'dbo.VIDEO') AND name = N'CK_VIDEO_MODERATION_STATUS')
+        ALTER TABLE dbo.VIDEO WITH CHECK ADD CONSTRAINT CK_VIDEO_MODERATION_STATUS
+            CHECK (status IS NOT NULL AND status IN (N'PENDING', N'APPROVED', N'REJECTED', N'REMOVED', N'DELETED'));
+    ALTER TABLE dbo.POST WITH CHECK CHECK CONSTRAINT CK_POST_MODERATION_STATUS;
+    ALTER TABLE dbo.VIDEO WITH CHECK CHECK CONSTRAINT CK_VIDEO_MODERATION_STATUS;
 
     -- Thêm moderation_status nếu chưa có.
     IF COL_LENGTH(N'dbo.AI_MODERATION', N'moderation_status') IS NULL
@@ -16,15 +30,18 @@ BEGIN TRY
     -- Biên dịch các câu dùng cột mới sau khi cột đã được thêm.
     EXEC sys.sp_executesql N'
         UPDATE dbo.AI_MODERATION
-        SET moderation_status = N''COMPLETED''
+        SET moderation_status = CASE
+            WHEN NULLIF(LTRIM(RTRIM(result)), N'''') IS NOT NULL THEN N''COMPLETED''
+            ELSE N''FAILED'' END
         WHERE moderation_status IS NULL;
+        ALTER TABLE dbo.AI_MODERATION ALTER COLUMN moderation_status NVARCHAR(20) NOT NULL;
     ';
 
     IF NOT EXISTS (
         SELECT 1
         FROM sys.default_constraints
         WHERE parent_object_id = OBJECT_ID(N'dbo.AI_MODERATION')
-          AND name = N'DF_AI_MODERATION_moderation_status'
+          AND parent_column_id = COLUMNPROPERTY(OBJECT_ID(N'dbo.AI_MODERATION'), N'moderation_status', 'ColumnId')
     )
     BEGIN
         EXEC sys.sp_executesql N'
@@ -43,11 +60,13 @@ BEGIN TRY
     BEGIN
         EXEC sys.sp_executesql N'
             ALTER TABLE dbo.AI_MODERATION
-            ADD CONSTRAINT CK_AI_MODERATION_moderation_status
+            WITH CHECK ADD CONSTRAINT CK_AI_MODERATION_moderation_status
                 CHECK (moderation_status IN
                     (N''PROCESSING'', N''COMPLETED'', N''FAILED''));
         ';
     END;
+
+    EXEC sys.sp_executesql N'ALTER TABLE dbo.AI_MODERATION WITH CHECK CHECK CONSTRAINT CK_AI_MODERATION_moderation_status;';
 
     -- Tạo bảng lịch sử quyết định admin nếu chưa có.
     IF OBJECT_ID(N'dbo.ADMIN_CONTENT_DECISION', N'U') IS NULL
@@ -98,6 +117,24 @@ BEGIN TRY
                 )
         );
     END;
+
+    -- Refuse an incompatible pre-existing audit table instead of silently using it.
+    IF (SELECT COUNT(*) FROM sys.columns
+        WHERE object_id = OBJECT_ID(N'dbo.ADMIN_CONTENT_DECISION')
+          AND name IN (N'decision_id',N'post_id',N'video_id',N'admin_id',N'previous_status',N'decision',N'reason',N'decided_at')) <> 8
+        THROW 51000, 'ADMIN_CONTENT_DECISION has an incompatible schema. No changes committed.', 1;
+
+    IF (SELECT COUNT(*) FROM sys.foreign_keys
+        WHERE parent_object_id = OBJECT_ID(N'dbo.ADMIN_CONTENT_DECISION')
+          AND name IN (N'FK_ADMIN_CONTENT_DECISION_POST',N'FK_ADMIN_CONTENT_DECISION_VIDEO',N'FK_ADMIN_CONTENT_DECISION_ADMIN')) <> 3
+        THROW 51001, 'ADMIN_CONTENT_DECISION is missing required foreign keys. No changes committed.', 1;
+
+    IF (SELECT COUNT(*) FROM sys.check_constraints
+        WHERE parent_object_id = OBJECT_ID(N'dbo.ADMIN_CONTENT_DECISION')
+          AND name IN (N'CK_ADMIN_CONTENT_DECISION_ONE_CONTENT',N'CK_ADMIN_CONTENT_DECISION_VALUE',N'CK_ADMIN_CONTENT_DECISION_REJECT_REASON')) <> 3
+        THROW 51002, 'ADMIN_CONTENT_DECISION is missing required checks. No changes committed.', 1;
+
+    ALTER TABLE dbo.ADMIN_CONTENT_DECISION WITH CHECK CHECK CONSTRAINT ALL;
 
     -- Tạo index nếu chưa có.
     IF NOT EXISTS (

@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
+  build: {
+    rolldownOptions: {
+      output: { codeSplitting: { groups: [{ name: 'vendor', test: /[\\/]node_modules[\\/]/ }] } },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

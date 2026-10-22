@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getNearbyShopRecommendations } from "../services/shopServices";
 import "./PlacesPage.css";
+import useAdminResource from "../hooks/useAdminResource";
 
 const DEFAULT_RADIUS = 10000;
 
@@ -59,40 +60,23 @@ function PlacesPage() {
   const [location, setLocation] = useState(null);
   const [locationState, setLocationState] = useState("loading");
   const [locationError, setLocationError] = useState("");
-  const [shops, setShops] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
+  const load = useCallback((signal) => location ? getNearbyShopRecommendations({
+    ...location, radiusMeters, dietaryMode, limit: 10,
+  }, { signal }) : Promise.resolve({ items: [] }), [location, radiusMeters, dietaryMode]);
+  const resource = useAdminResource(load);
+  const shops = resource.data?.items;
+  const loading = Boolean(location) && resource.loading;
+  const error = resource.error;
+  const hasSearched = Boolean(location);
   const [sort, setSort] = useState("distance");
   const locationRequested = useRef(false);
 
   const orderedShops = useMemo(() => {
-    const results = [...shops];
+    const results = [...(shops || [])];
     if (sort === "name") results.sort((a, b) => a.name.localeCompare(b.name));
     else results.sort((a, b) => a.distanceMeters - b.distanceMeters);
     return results;
   }, [shops, sort]);
-
-  const searchNearby = useCallback(async (coords, mode, radius) => {
-    setLoading(true);
-    setError("");
-    setHasSearched(true);
-    try {
-      const response = await getNearbyShopRecommendations({
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        radiusMeters: radius,
-        dietaryMode: mode,
-        limit: 10,
-      });
-      setShops(Array.isArray(response?.items) ? response.items : []);
-    } catch (requestError) {
-      setShops([]);
-      setError(requestError.message || "Could not load nearby places. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -125,9 +109,7 @@ function PlacesPage() {
     requestLocation();
   }, [requestLocation]);
 
-  useEffect(() => {
-    if (location) searchNearby(location, dietaryMode, radiusMeters);
-  }, [location, dietaryMode, radiusMeters, searchNearby]);
+
 
   return (
     <main className="places-page">
@@ -169,7 +151,7 @@ function PlacesPage() {
           <div className="places-search-foot"><span>Your location is used to find and sort nearby places.</span><span>Up to 10 results · Sorted by distance</span></div>
         </section>
 
-        {(locationError || error) && <div className="places-alert"><AlertCircle size={17} /><span>{locationError || error}</span></div>}
+        {(locationError || error) && <div role="alert" className="places-alert"><AlertCircle size={17} /><span>{locationError || error}</span></div>}
 
         <section className="places-results-layout">
           <div className="places-location-card">
@@ -196,7 +178,7 @@ function PlacesPage() {
               <label>Sort <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="distance">Closest</option><option value="name">Name</option></select><ChevronDown size={13} /></label>
             </div>
             {loading ? <div className="places-state-card"><span className="places-spinner" /><strong>Finding vegetarian places nearby…</strong><span>This may take a few seconds.</span></div>
-              : error ? <div className="places-state-card"><AlertCircle size={24} /><strong>We couldn’t load places</strong><span>{error}</span><button className="places-retry-button" onClick={() => location && searchNearby(location, dietaryMode, radiusMeters)}>Try again</button></div>
+              : error ? <div className="places-state-card"><AlertCircle size={24} /><strong>We couldn’t load places</strong><span>{error}</span><button className="places-retry-button" onClick={resource.retry}>Try again</button></div>
                 : !location ? <div className="places-state-card"><div className="places-state-icon"><LocateFixed size={22} /></div><strong>Share your location to begin</strong><span>Allow location access, then nearby vegetarian and vegan restaurants will load automatically.</span><button className="places-retry-button" onClick={requestLocation}>Use my location</button></div>
                   : orderedShops.length === 0 ? <div className="places-state-card"><div className="places-state-icon"><MapPin size={22} /></div><strong>No places found within {radiusMeters / 1000} km</strong><span>Try a larger radius, or switch to vegan-only results if you prefer a narrower dietary category.</span></div>
                     : <div className="places-shop-list">{orderedShops.map((shop, index) => <ShopCard key={shop.placeId || `${shop.name}-${index}`} shop={shop} index={index} />)}</div>}

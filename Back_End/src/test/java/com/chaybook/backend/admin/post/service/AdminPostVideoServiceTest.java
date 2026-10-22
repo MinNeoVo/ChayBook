@@ -8,7 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,36 +24,78 @@ class AdminPostVideoServiceTest {
 
     @BeforeEach void setup() {
         admin = new User(); admin.setRole("ADMIN"); admin.setStatus("ACTIVE");
+        ReflectionTestUtils.setField(admin, "userId", 1);
         when(users.findById(1)).thenReturn(Optional.of(admin));
     }
 
     @ParameterizedTest
-    @CsvSource({"PENDING,APPROVED", "PENDING,REJECTED", "APPROVED,REJECTED", "APPROVED,REMOVED", "REJECTED,APPROVED"})
-    void writesAllowedTransitionsUsingBothTypeAndId(String current, String next) {
-        when(repository.findStatus("VIDEO", 7)).thenReturn(current);
-        when(repository.updateStatus("VIDEO", 7, current, next)).thenReturn(1);
+    @CsvSource({
+            "POST,PENDING,APPROVED", "POST,PENDING,REJECTED", "POST,APPROVED,REJECTED",
+            "POST,APPROVED,REMOVED", "POST,REJECTED,APPROVED",
+            "VIDEO,PENDING,APPROVED", "VIDEO,PENDING,REJECTED", "VIDEO,APPROVED,REJECTED",
+            "VIDEO,APPROVED,REMOVED", "VIDEO,REJECTED,APPROVED"
+    })
+    void writesAllowedTransitionsUsingBothTypeAndId(String type, String current, String next) {
+        when(repository.findStatus(type, 7)).thenReturn(current);
+        when(repository.updateStatus(type, 7, current, next)).thenReturn(1);
+        String reason = "REJECTED".equals(next) ? "Lý do thử nghiệm" : null;
         service.updateStatus(
                 1,
-                "VIDEO",
+                type,
                 7,
                 next,
-                "REJECTED".equals(next) ? "Lý do thử nghiệm" : null
-        );        verify(repository).updateStatus("VIDEO", 7, current, next);
-        verify(repository, never()).updateStatus(eq("POST"), anyInt(), anyString(), anyString());
+                reason
+        );
+        verify(repository).updateStatus(type, 7, current, next);
+        verify(repository).insertDecision(type, 7, 1, current, next, reason);
+        verify(repository).markLatestModerationReviewed(type, 7, 1);
+        verify(repository, never()).updateStatus(eq("POST".equals(type) ? "VIDEO" : "POST"), anyInt(), anyString(), anyString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "VIDEO"})
+    void rejectsMissingOrWhitespaceReasonBeforeWriting(String type) {
+        for (String reason : java.util.Arrays.asList(null, "", "  \n\t ")) {
+            assertStatus(HttpStatus.BAD_REQUEST, () -> service.updateStatus(1, type, 7, "REJECTED", reason));
+        }
+        verifyNoInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "VIDEO"})
+    void trimsAdminReasonAndUsesAuthenticatedReviewer(String type) {
+        when(repository.findStatus(type, 7)).thenReturn("PENDING");
+        when(repository.updateStatus(type, 7, "PENDING", "REJECTED")).thenReturn(1);
+        service.updateStatus(1, type, 7, "REJECTED", "  Nội dung không phù hợp  ");
+        verify(repository).insertDecision(type, 7, 1, "PENDING", "REJECTED", "Nội dung không phù hợp");
+        verify(repository).markLatestModerationReviewed(type, 7, 1);
     }
 
     @Test void refusesInvalidTransitionsWithoutWriting() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
-// Case chuyển POST sang REMOVED:
-        service.updateStatus(1, "POST", 7, "REMOVED", null);
+        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "REMOVED", null));
         verify(repository, never()).updateStatus(anyString(), anyInt(), anyString(), anyString());
+        verify(repository, never()).insertDecision(anyString(), anyInt(), anyInt(), anyString(), anyString(), any());
     }
 
     @Test void detectsConcurrentModeration() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
         when(repository.updateStatus("POST", 7, "PENDING", "APPROVED")).thenReturn(0);
-// Case chuyển POST sang APPROVED:
-        service.updateStatus(1, "POST", 7, "APPROVED", null);    }
+        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "APPROVED", null));
+        verify(repository, never()).insertDecision(anyString(), anyInt(), anyInt(), anyString(), anyString(), any());
+        verify(repository, never()).markLatestModerationReviewed(anyString(), anyInt(), anyInt());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"POST,REMOVED", "POST,DELETED", "VIDEO,REMOVED", "VIDEO,DELETED"})
+    void terminalStatesCannotBeRestoredOrModerated(String type, String current) {
+        when(repository.findStatus(type, 7)).thenReturn(current);
+        for (String next : java.util.List.of("APPROVED", "REJECTED", "REMOVED")) {
+            assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, type, 7, next, "Reason"));
+        }
+        verify(repository, never()).updateStatus(anyString(), anyInt(), anyString(), anyString());
+        verify(repository, never()).insertDecision(anyString(), anyInt(), anyInt(), anyString(), anyString(), any());
+    }
 
     @Test void rejectsInvalidFiltersAndOverflowBeforeQuerying() {
         assertStatus(HttpStatus.BAD_REQUEST, () -> service.getSubmissions(1, "ARTICLE", "ALL", "", 0, 7));

@@ -7,12 +7,14 @@ import Button from "../components/common/Button";
 import ProfileHeader from "../components/profile/ProfileHeader";
 
 import PostCard from "../components/post/PostCard";
+import PostEditModal from "../components/profile/PostEditModal";
 import PostCommentModal from "../components/community/PostCommentModal";
 
 import { getMyProfile } from "../services/userServices";
 import {
   addPostInteraction,
   removePostInteraction,
+  deletePost,
 } from "../services/postServices";
 
 function ProfilePage() {
@@ -21,6 +23,10 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [postNotice, setPostNotice] = useState("");
+  const [postError, setPostError] = useState("");
+  const [deletingPost, setDeletingPost] = useState(false);
 
   const handleCommentCountChange = useCallback(
     (targetPostId, newTotalCount) => {
@@ -135,7 +141,7 @@ function ProfilePage() {
     ALL: posts.length,
     APPROVED: posts.filter((p) => p.status === "APPROVED").length,
     PENDING: posts.filter((p) => p.status === "PENDING").length,
-    DENIED: posts.filter((p) => p.status === "DENIED").length,
+    REJECTED: posts.filter((p) => p.status === "REJECTED").length,
   };
 
   // 3. Chuẩn hóa post data cho PostCard
@@ -265,19 +271,27 @@ function ProfilePage() {
   };
 
   const handleMore = (post) => {
-    console.log("More:", post.postId ?? post.id);
+    handleEdit(post);
   };
 
   const handleEdit = (post) => {
-    console.log("Edit:", post.postId ?? post.id);
+    if (["REMOVED", "DELETED"].includes(post.status)) return;
+    setPostError(""); setEditingPost(post);
   };
 
-  const handleDelete = (post) => {
-    console.log("Delete:", post.postId ?? post.id);
+  const handleDelete = async (post) => {
+    if (deletingPost || ["REMOVED", "DELETED"].includes(post.status) || !window.confirm(`Delete post "${post.title}"?`)) return;
+    setDeletingPost(true); setPostError("");
+    try {
+      await deletePost(post.postId ?? post.id);
+      setSelectedPostForComments(null);
+      await fetchProfile(); setPostNotice("Post deleted successfully.");
+    } catch (e) { setPostError(e.message); }
+    finally { setDeletingPost(false); }
   };
 
   const handleWithdraw = (post) => {
-    console.log("Withdraw:", post.postId ?? post.id);
+    handleDelete(post);
   };
 
   // Loading state
@@ -339,6 +353,11 @@ function ProfilePage() {
           profile={profile}
           onProfileUpdated={handleProfileUpdated}
         />
+        {postNotice && <p role="status" className="mx-auto max-w-3xl p-4 text-emerald-800">{postNotice}</p>}
+        {postError && <p role="alert" className="mx-auto max-w-3xl p-4 text-red-700">{postError}</p>}
+        {deletingPost && <p role="status" className="text-center">Deleting post…</p>}
+        {editingPost && <PostEditModal key={editingPost.postId ?? editingPost.id} post={editingPost}
+          onClose={() => setEditingPost(null)} onSaved={async () => { await fetchProfile(); setEditingPost(null); setPostNotice("Post saved for review."); }} />}
 
         {/* ================= MAIN CONTENT ================= */}
         <section
@@ -468,10 +487,10 @@ function ProfilePage() {
                   />
 
                   <StatusFilter
-                    label={`Denied (${statusCount.DENIED})`}
-                    active={activeStatus === "DENIED"}
+                    label={`Rejected (${statusCount.REJECTED})`}
+                    active={activeStatus === "REJECTED"}
                     color="red"
-                    onClick={() => setActiveStatus("DENIED")}
+                    onClick={() => setActiveStatus("REJECTED")}
                   />
                 </div>
               </div>

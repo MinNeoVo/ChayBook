@@ -21,14 +21,14 @@ const NUTRITION_FIELDS = [
 
 function validateAdditionalFields(values) {
   const errors = {};
-  if (!values.servings.trim() || !Number.isSafeInteger(Number(values.servings)) || Number(values.servings) < 1) {
+  if (!values.servings.trim() || !Number.isSafeInteger(Number(values.servings)) || Number(values.servings) < 1 || Number(values.servings) > 2147483647) {
     errors.servings = "Servings must be a whole number of at least 1.";
   }
-  if (!DIFFICULTIES.includes(values.difficulty)) {
-    errors.difficulty = "Choose Easy, Medium or Hard.";
+  if (!values.difficulty.trim() || values.difficulty.length > 50) {
+    errors.difficulty = "Choose a difficulty of up to 50 characters.";
   }
   NUTRITION_FIELDS.forEach(([field, label, unit]) => {
-    if (!values[field].trim() || !Number.isFinite(Number(values[field])) || Number(values[field]) < 0) {
+    if (values[field].trim() && (!Number.isFinite(Number(values[field])) || Number(values[field]) < 0)) {
       errors[field] = `${label} must be a finite number of at least 0 ${unit}.`;
     }
   });
@@ -173,7 +173,8 @@ function initialValues(recipe) {
     description: recipe?.description ?? "", imageUrl: recipe?.imageUrl ?? "",
     prepTime: String(recipe?.prepTime ?? 0), cookTime: String(recipe?.cookTime ?? 0),
     instructions: recipe?.instructions ?? "",
-    ...(recipe ? {} : { servings: "1", difficulty: "Easy", calories: "", protein: "", carbs: "", fat: "" }),
+    servings: String(recipe?.servings ?? (recipe ? "" : 1)), difficulty: recipe?.difficulty ?? (recipe ? "" : "Easy"),
+    ...Object.fromEntries(NUTRITION_FIELDS.map(([field]) => [field, String(recipe?.[field] ?? "")])),
     ingredients: recipe?.ingredients?.map((item) => ({ ingredientId: String(item.ingredientId), quantity: String(item.quantity), unit: item.unit })) ?? [{ ingredientId: "", quantity: "", unit: "" }],
   };
 }
@@ -207,19 +208,17 @@ function RecipeForm({ recipe }) {
     event.preventDefault();
     if (saving || ingredients.loading || ingredients.error) return;
     setError("");
-    if (!recipe) {
-      const errors = validateAdditionalFields(values);
-      setFieldErrors(errors);
-      if (Object.keys(errors).length) return;
-    }
+    const errors = validateAdditionalFields(values);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
     const ids = values.ingredients.map((item) => Number(item.ingredientId));
     if (new Set(ids).size !== ids.length) { setError("Choose each ingredient only once."); return; }
     if (!values.name.trim() || !values.instructions.trim() || values.ingredients.some((item) => !item.unit.trim() || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) {
       setError("Enter a name, instructions, and valid ingredient quantities and units."); return;
     }
     const body = {
-      // The current write API does not accept servings, difficulty or nutrition.
-      // Keep an explicit allowlist so these form-only values are never sent.
+      servings: Number(values.servings), difficulty: values.difficulty,
+      ...Object.fromEntries(NUTRITION_FIELDS.map(([field]) => [field, values[field].trim() === "" ? null : Number(values[field])])),
       name: values.name.trim(), categoryId: Number(values.categoryId),
       description: values.description, imageUrl: values.imageUrl, instructions: values.instructions,
       prepTime: Number(values.prepTime), cookTime: Number(values.cookTime),
@@ -251,13 +250,13 @@ function RecipeForm({ recipe }) {
         <label className="block text-sm font-medium">Image URL<input className={FIELD} maxLength={255} value={values.imageUrl} onChange={(event) => change("imageUrl", event.target.value)} placeholder="Image URL or server path" /></label>
         <RecipeImage imageUrl={values.imageUrl} name={values.name} />
         <div className="grid gap-4 sm:grid-cols-2">{[["prepTime", "Preparation time (minutes)"], ["cookTime", "Cooking time (minutes)"]].map(([field, label]) => <label key={field} className="text-sm font-medium">{label} *<input className={FIELD} type="number" min={0} max={2147483647} step={1} required value={values[field]} onChange={(event) => change(field, event.target.value)} /></label>)}</div>
-        {!recipe && <>
+        {<>
           <fieldset className="min-w-0 space-y-3">
             <legend className="mb-3 font-bold">Recipe Information</legend>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="recipe-servings" className="block text-sm font-medium">Servings (servings) *</label>
-                <input id="recipe-servings" name="servings" className={FIELD} type="number" min={1} step={1} required
+                <input id="recipe-servings" name="servings" className={FIELD} type="number" min={1} max={2147483647} step={1} required
                   value={values.servings} onChange={(event) => change("servings", event.target.value)}
                   onBlur={() => validateField("servings")} onInvalid={() => validateField("servings")}
                   aria-invalid={Boolean(fieldErrors.servings)} aria-describedby={fieldErrors.servings ? "recipe-servings-error" : undefined} />
@@ -269,7 +268,8 @@ function RecipeForm({ recipe }) {
                   onChange={(event) => change("difficulty", event.target.value)} onBlur={() => validateField("difficulty")}
                   onInvalid={() => validateField("difficulty")} aria-invalid={Boolean(fieldErrors.difficulty)}
                   aria-describedby={fieldErrors.difficulty ? "recipe-difficulty-error" : undefined}>
-                  {DIFFICULTIES.map((difficulty) => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
+                  <option value="">Choose difficulty</option>
+                  {[...new Set([...DIFFICULTIES, ...(recipe?.difficulty ? [recipe.difficulty] : [])])].map((difficulty) => <option key={difficulty} value={difficulty}>{difficulty}</option>)}
                 </select>
                 {fieldErrors.difficulty && <p id="recipe-difficulty-error" role="alert" className="mt-1 text-sm text-red-600">{fieldErrors.difficulty}</p>}
               </div>
@@ -279,8 +279,8 @@ function RecipeForm({ recipe }) {
             <legend className="mb-3 font-bold">Nutrition Information</legend>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {NUTRITION_FIELDS.map(([field, label, unit]) => <div key={field}>
-                <label htmlFor={`recipe-${field}`} className="block text-sm font-medium">{label} ({unit}) *</label>
-                <input id={`recipe-${field}`} name={field} className={FIELD} type="number" min={0} step="any" required
+                <label htmlFor={`recipe-${field}`} className="block text-sm font-medium">{label} ({unit})</label>
+                <input id={`recipe-${field}`} name={field} className={FIELD} type="number" min={0} step="any"
                   value={values[field]} onChange={(event) => change(field, event.target.value)}
                   onBlur={() => validateField(field)} onInvalid={() => validateField(field)}
                   aria-invalid={Boolean(fieldErrors[field])} aria-describedby={fieldErrors[field] ? `recipe-${field}-error` : undefined} />

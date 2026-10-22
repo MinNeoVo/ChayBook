@@ -1,4 +1,5 @@
 import LoginForm from "../components/auth/LoginForm";
+import { useAuth } from "../context/useAuth";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -6,7 +7,8 @@ function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const successMessage = location.state?.successMessage || "";
+  const { logoutMessage, clearLogoutMessage } = useAuth();
+  const successMessage = location.state?.successMessage || logoutMessage || "";
 
   useEffect(() => {
     if (!successMessage) {
@@ -14,6 +16,7 @@ function LoginPage() {
     }
 
     const timer = setTimeout(() => {
+      clearLogoutMessage();
       navigate("/login", {
         replace: true,
         state: null,
@@ -21,7 +24,7 @@ function LoginPage() {
     }, 4000);
 
     return () => clearTimeout(timer);
-  }, [successMessage, navigate]);
+  }, [successMessage, navigate, clearLogoutMessage]);
 
   return (
     <div className="flex w-full flex-col items-center justify-center p-4">

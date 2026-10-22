@@ -1,5 +1,7 @@
 import { apiFetch } from "./api";
 
+export const changePassword = (id, body) => apiFetch(`/users/${id}/password`, { method: "PUT", body });
+
 /**
  * Lấy thông tin profile + danh sách bài viết của user đang đăng nhập.
  * GET /api/users/me/profile

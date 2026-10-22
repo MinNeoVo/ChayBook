@@ -1,4 +1,8 @@
 -- Run once on an existing ChayBook_Project database before starting the updated backend.
+SET XACT_ABORT ON;
+SET NOCOUNT ON;
+BEGIN TRY
+BEGIN TRANSACTION;
 IF OBJECT_ID('AUTH_OTP_CHALLENGE', 'U') IS NULL
 BEGIN
     CREATE TABLE AUTH_OTP_CHALLENGE (
@@ -16,4 +20,18 @@ BEGIN
         CONSTRAINT CK_AUTH_OTP_PURPOSE CHECK (purpose IN ('REGISTER', 'PASSWORD_RESET'))
     );
 END;
+IF (SELECT COUNT(*) FROM sys.columns WHERE object_id=OBJECT_ID('dbo.AUTH_OTP_CHALLENGE')
+    AND name IN ('challenge_id','email','purpose','otp_hash','expires_at','attempts','verified','username','password_hash','full_name')) <> 10
+    THROW 51020, 'AUTH_OTP_CHALLENGE has an incompatible schema.', 1;
+IF NOT EXISTS (SELECT 1 FROM sys.key_constraints WHERE parent_object_id=OBJECT_ID('dbo.AUTH_OTP_CHALLENGE') AND name='UQ_AUTH_OTP_EMAIL_PURPOSE')
+    THROW 51021, 'AUTH_OTP_CHALLENGE is missing its email/purpose unique constraint.', 1;
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE parent_object_id=OBJECT_ID('dbo.AUTH_OTP_CHALLENGE') AND name='CK_AUTH_OTP_PURPOSE')
+    THROW 51022, 'AUTH_OTP_CHALLENGE is missing its purpose check constraint.', 1;
+ALTER TABLE dbo.AUTH_OTP_CHALLENGE WITH CHECK CHECK CONSTRAINT ALL;
+COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    THROW;
+END CATCH;
 GO

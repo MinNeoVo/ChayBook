@@ -37,6 +37,7 @@ function CommunityPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isFetching, setIsFetching] = useState(false);
   const sentinelRef = useRef(null);
+  const activePostsRequest = useRef(null);
 
   // Modal tạo bài viết
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
@@ -48,6 +49,12 @@ function CommunityPage() {
   // 1. Tải danh sách bài viết từ backend với phân trang
   const fetchPosts = useCallback(
     async (page, showLoading = true, options = {}) => {
+      activePostsRequest.current?.abort();
+      const requestController = new AbortController();
+      activePostsRequest.current = requestController;
+      const abort = () => requestController.abort();
+      options.signal?.addEventListener("abort", abort, { once: true });
+      if (options.signal?.aborted) requestController.abort();
       if (showLoading && page === 0) {
         setLoading(true);
       }
@@ -58,7 +65,9 @@ function CommunityPage() {
       try {
         const categoryId = category === "all" ? null : Number(category);
 
-        const response = await getPosts(categoryId, page, 10, options);
+        const response = await getPosts(categoryId, page, 10, { ...options, sort, signal: requestController.signal });
+
+        if (requestController.signal.aborted) return false;
 
         // Assuming response is PageResponse: { items, page, size, totalElements, totalPages }
         if (!response || !Array.isArray(response.items)) {
@@ -77,16 +86,18 @@ function CommunityPage() {
 
         return response;
       } catch (err) {
+        if (requestController.signal.aborted || err.name === "AbortError") return false;
         console.error("Không thể tải bài viết:", err);
 
         setError("Không thể kết nối đến máy chủ để tải bài viết.");
 
         return false;
       } finally {
-        if (showLoading && page === 0) {
+        options.signal?.removeEventListener("abort", abort);
+        if (!requestController.signal.aborted && showLoading && page === 0) {
           setLoading(false);
         }
-        if (page > 0) {
+        if (!requestController.signal.aborted) {
           setIsFetching(false);
         }
       }
@@ -160,8 +171,9 @@ function CommunityPage() {
 
     return () => {
       abortController.abort();
+      activePostsRequest.current?.abort();
     };
-  }, [category]);
+  }, [fetchPosts]);
 
   // Lọc bài viết theo từ khóa tìm kiếm (trên tiêu đề và nội dung)
   // const filteredPosts = useMemo(() => {
@@ -341,13 +353,14 @@ function CommunityPage() {
       }
     } catch (err) {
       console.error("Lỗi khi Like bài viết:", err);
+      setSelectedPostForComments((current) => current && (current.postId ?? current.id) === postId ? { ...current, likedByCurrentUser: targetPost.likedByCurrentUser, likeCount: currentLikes, stats: { ...current.stats, likes: currentLikes } } : current);
 
       showFeedback(
         "error",
         "Không thể cập nhật lượt thích. Đang tải lại dữ liệu.",
       );
 
-      await fetchPosts(false);
+      await fetchPosts(0, false);
     }
   };
 
@@ -395,13 +408,14 @@ function CommunityPage() {
       }
     } catch (err) {
       console.error("Lỗi khi Bookmark bài viết:", err);
+      setSelectedPostForComments((current) => current && (current.postId ?? current.id) === postId ? { ...current, bookmarkedByCurrentUser: targetPost.bookmarkedByCurrentUser } : current);
 
       showFeedback(
         "error",
         "Không thể cập nhật bài viết đã lưu. Đang tải lại dữ liệu.",
       );
 
-      await fetchPosts(false);
+      await fetchPosts(0, false);
     }
   };
 

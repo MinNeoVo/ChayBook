@@ -3,8 +3,10 @@ package com.chaybook.backend.assistant.controller;
 import com.chaybook.backend.assistant.dto.ChatMessageRequest;
 import com.chaybook.backend.assistant.dto.ChatMessageResponse;
 import com.chaybook.backend.assistant.service.ChatbotService;
-import com.chaybook.backend.assistant.util.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+import org.springframework.http.ResponseCookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,8 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import com.chaybook.backend.assistant.dto.ChatConversationResponse;
 import com.chaybook.backend.assistant.dto.ChatHistoryMessageResponse;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -63,9 +63,8 @@ public class ChatbotController {
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ChatMessageResponse> sendMessage(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestHeader(value = "X-Guest-Id", required = false) String guestIdHeader,
             @RequestBody ChatMessageRequest payload,
-            HttpServletRequest request) {
+            HttpServletRequest request, HttpServletResponse response) {
 
         // 1. Trích xuất User từ JWT (Bảo mật - Không truyền qua URL)
         Integer userId = null;
@@ -78,10 +77,20 @@ public class ChatbotController {
         }
 
         // 2. Định danh Guest nếu không có JWT
-        String guestId = guestIdHeader;
-        if (guestId == null || guestId.trim().isEmpty()) {
-            guestId = IpUtil.getClientIp(request);
+        String guestToken = null;
+        if (request.getCookies() != null) for (Cookie cookie : request.getCookies()) {
+            if ("CHAYBOOK_GUEST".equals(cookie.getName()) && cookie.getValue().matches("[a-f0-9]{64}")) guestToken = cookie.getValue();
         }
+        if (guestToken == null) {
+            byte[] random = new byte[32]; new java.security.SecureRandom().nextBytes(random);
+            guestToken = java.util.HexFormat.of().formatHex(random);
+            response.addHeader("Set-Cookie", ResponseCookie.from("CHAYBOOK_GUEST",guestToken)
+                    .httpOnly(true).secure(request.isSecure()).sameSite("Lax").path("/api/chatbot")
+                    .maxAge(java.time.Duration.ofDays(30)).build().toString());
+        }
+        String guestId;
+        try { guestId = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(guestToken.getBytes(java.nio.charset.StandardCharsets.UTF_8))); }
+        catch (java.security.NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
 
         if (userId == null && (guestId == null || guestId.trim().isEmpty())) {
             throw new ResponseStatusException(

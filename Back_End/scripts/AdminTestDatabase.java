@@ -26,7 +26,7 @@ public class AdminTestDatabase {
         String username = config.getProperty("spring.datasource.username");
         String password = config.getProperty("spring.datasource.password");
         if (args.length > 0) {
-            if (args.length != 1 || !Set.of("stale-admin-active", "stale-admin-disabled").contains(args[0])) {
+            if (args.length != 1 || !Set.of("stale-admin-active", "stale-admin-disabled", "pagination-fixtures").contains(args[0])) {
                 throw new IllegalArgumentException("Only named synthetic-admin fixture operations are supported");
             }
             String ownedDatabase = Files.readString(ARTIFACTS.resolve("latest-test-db.txt")).strip();
@@ -34,6 +34,17 @@ public class AdminTestDatabase {
             String ownedUrl = originalUrl.replaceFirst("(?i)(;databaseName=)[^;]+", "$1" + ownedDatabase);
             try (var connection = DriverManager.getConnection(ownedUrl, username, password)) {
                 if (!ownedDatabase.equals(connection.getCatalog())) throw new IllegalStateException("Fixture database mismatch");
+                if (args[0].equals("pagination-fixtures")) {
+                    try (var statement = connection.createStatement(); var rows=statement.executeQuery("SELECT COUNT(*) FROM POST WHERE title LIKE 'IT Page Post %'")) {
+                        rows.next(); if(rows.getInt(1)!=0) throw new IllegalStateException("Pagination fixtures already exist");
+                    }
+                    for (int i=1; i<=6; i++) {
+                        execute(connection,"INSERT INTO POST(user_id,category_id,title,content,status) VALUES(2,3,?,N'Pagination content','PENDING')", "IT Page Post "+i);
+                        execute(connection,"INSERT INTO VIDEO(created_by,category_id,title,description,video_url,status) VALUES(2,3,?,N'Pagination video','/uploads/posts/fixture.webm','PENDING')", "IT Page Video "+i);
+                    }
+                    System.out.println("PAGINATION_FIXTURES="+ownedDatabase);
+                    return;
+                }
                 try (var statement = connection.prepareStatement("UPDATE [USER] SET status=? WHERE user_id=4 AND email='stale@admin-api-it.invalid' AND role='ADMIN'")) {
                     statement.setString(1, args[0].endsWith("-disabled") ? "DISABLED" : "ACTIVE");
                     if (statement.executeUpdate() != 1) throw new IllegalStateException("Synthetic admin fixture not found");
@@ -74,12 +85,18 @@ public class AdminTestDatabase {
             for (String batch : batches(migrations)) {
                 if (batch.toUpperCase(Locale.ROOT).startsWith("IF NOT EXISTS")) execute(connection, batch);
             }
+            String moderationMigration = Files.readString(Path.of("..", "Database", "FixedDB", "Add_Status_And_Admin_Decision.sql"));
+            for (String batch : batches(moderationMigration)) {
+                // Keep the existing test connection; never execute the migration's USE application DB.
+                if (!batch.toUpperCase(Locale.ROOT).startsWith("USE ")) execute(connection, batch);
+            }
             String hash = BCrypt.hashpw(testPassword, BCrypt.gensalt());
             addUser(connection, "it_admin_" + run.substring(0, 8), email, hash, "ADMIN", "ACTIVE");
             addUser(connection, "it_user", "user@admin-api-it.invalid", hash, "USER", "ACTIVE");
             addUser(connection, "it_disabled", "disabled@admin-api-it.invalid", hash, "USER", "DISABLED");
             addUser(connection, "it_stale_admin", "stale@admin-api-it.invalid", hash, "ADMIN", "ACTIVE");
             for (int index = 5; index <= 16; index++) addUser(connection, "it_member_" + index, "member" + index + "@admin-api-it.invalid", hash, "USER", "ACTIVE");
+            execute(connection, "UPDATE [USER] SET full_name=CASE user_id WHEN 1 THEN N'IT Reviewer One' WHEN 2 THEN N'IT Creator' WHEN 4 THEN N'IT Reviewer Two' END WHERE user_id IN (1,2,4)");
             execute(connection, "INSERT INTO CATEGORY(name,type,status) VALUES (N'IT Articles','ARTICLE','ACTIVE'),(N'IT Recipes','RECIPE','ACTIVE'),(N'IT Posts','POST','ACTIVE')");
             execute(connection, "INSERT INTO INGREDIENT(name,description) VALUES (N'IT Tofu',N'Test ingredient'),(N'IT Mushroom',N'Test ingredient')");
             for (int index = 1; index <= 8; index++) execute(connection,
@@ -89,10 +106,11 @@ public class AdminTestDatabase {
                 execute(connection, "INSERT INTO RECIPE(category_id,created_by,name,description,image_url,prep_time,cook_time,servings,instructions,calories,protein,carbs,fat,status) VALUES(2,1,?,N'Test soup','/uploads/posts/fixture.png',5,10,2,N'Cook gently',200,15,20,8,'ACTIVE')", "IT Recipe " + index);
                 execute(connection, "INSERT INTO RECIPE_INGREDIENT(recipe_id,ingredient_id,quantity,unit) VALUES(?,1,100,N'g')", index);
             }
-            for (String status : List.of("PENDING", "APPROVED", "REJECTED", "REMOVED")) {
+            for (String status : List.of("PENDING", "APPROVED", "REJECTED", "REMOVED", "DELETED")) {
                 execute(connection, "INSERT INTO POST(user_id,category_id,title,content,image_url,status) VALUES(2,3,?,?,?,?)", "IT Post " + status, "Nội dung đầy đủ tiếng Việt. ".repeat(40), "/uploads/posts/fixture.png", status);
                 execute(connection, "INSERT INTO VIDEO(category_id,created_by,title,description,video_url,thumbnail_url,status) VALUES(3,2,?,?,?, ?,?)", "IT Video " + status, "Mô tả đầy đủ. ".repeat(60), "/uploads/posts/fixture.webm", "/uploads/posts/fixture.png", status);
             }
+            execute(connection, "INSERT INTO AI_MODERATION(post_id,result,reason,confidence,moderation_status) VALUES(1,N'SAFE',N'AI-only assessment; not an admin rejection reason',0.95,N'COMPLETED')");
             execute(connection, "INSERT INTO POST_INTERACTION(post_id,user_id,type) VALUES(2,2,'LIKE'),(2,5,'BOOKMARK')");
             execute(connection, "INSERT INTO [COMMENT](post_id,user_id,content,status) VALUES(2,2,N'IT comment','ACTIVE')");
             execute(connection, "INSERT INTO AI_CONVERSATION(user_id,title) VALUES(2,N'IT conversation')");
@@ -110,19 +128,27 @@ public class AdminTestDatabase {
     }
 
     static List<String> batches(String sql) {
-        String clean = sql.replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("(?m)^\\s*--.*$", "");
+        String clean = sql.replace("\uFEFF", "").replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("(?m)^\\s*--.*$", "");
         return Arrays.stream(clean.split("(?im)^\\s*GO\\s*$")).map(String::trim).filter(value -> !value.isBlank()).toList();
     }
     static void addUser(Connection c, String name, String email, String hash, String role, String status) throws SQLException {
         execute(c, "INSERT INTO [USER](username,email,password_hash,full_name,role,status) VALUES(?,?,?,N'Integration test',?,?)", name, email, hash, role, status);
     }
     static void execute(Connection connection, String sql, Object... parameters) throws SQLException {
+        if (parameters.length == 0) {
+            try (var statement = connection.createStatement()) {
+                statement.execute(sql);
+                while (statement.getMoreResults() || statement.getUpdateCount() != -1) { /* surface errors in later SQL batches */ }
+            }
+            return;
+        }
         try (var statement = connection.prepareStatement(sql)) {
             for (int index = 0; index < parameters.length; index++) {
                 Object value = parameters[index];
                 if (value instanceof String text) statement.setNString(index + 1, text); else statement.setObject(index + 1, value);
             }
             statement.execute();
+            while (statement.getMoreResults() || statement.getUpdateCount() != -1) { /* drain all results */ }
         }
     }
     static String json(String value) { return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""; }

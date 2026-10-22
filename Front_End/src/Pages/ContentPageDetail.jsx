@@ -402,7 +402,7 @@ function ContentPageDetail() {
 
       const [categoryResult, articlesResult] = await Promise.allSettled([
         getCategories("ARTICLE"),
-        getArticles(null, { status: "PUBLISHED" }),
+        getArticles(null, 0, 10, "PUBLISHED"),
       ]);
 
       if (cancelled) {
@@ -425,9 +425,9 @@ function ContentPageDetail() {
 
       if (
         articlesResult.status === "fulfilled" &&
-        Array.isArray(articlesResult.value)
+        Array.isArray(articlesResult.value?.content)
       ) {
-        const publishedArticles = articlesResult.value.filter(
+        const publishedArticles = articlesResult.value.content.filter(
           (item) =>
             item.status?.toUpperCase() === "PUBLISHED" &&
             Number(item.articleId) !== Number(id),

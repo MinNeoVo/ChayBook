@@ -6,9 +6,10 @@ export function getNearbyShopRecommendations({
   radiusMeters = 10000,
   dietaryMode = "VEGETARIAN",
   limit = 10,
-}) {
+}, { signal } = {}) {
   return apiFetch("/shops/recommendations", {
     method: "POST",
+    signal,
     body: {
       source: "SEARCH",
       // The current backend request still requires a non-empty query for SEARCH.

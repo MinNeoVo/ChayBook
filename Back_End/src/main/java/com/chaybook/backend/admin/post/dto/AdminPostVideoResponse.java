@@ -17,7 +17,10 @@ public record AdminPostVideoResponse(
         String aiReason,
         Double aiConfidence,
         String moderationStatus,
-        String adminReason
+        String adminReason,
+        Integer reviewerId,
+        String reviewer,
+        LocalDateTime reviewedAt
 ) {
     public record Statistics(
             long totalSubmission,

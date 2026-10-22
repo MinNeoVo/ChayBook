@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClient;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(
@@ -25,7 +26,8 @@ public class GeoapifyConfig {
 
     @Bean
     public ShopSearchProvider geoapifyPlacesSearchProvider(
-            GeoapifyProperties properties
+            GeoapifyProperties properties,
+            @Value("${chaybook.geoapify.base-url:https://api.geoapify.com}") String baseUrl
     ) {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(
@@ -41,7 +43,7 @@ public class GeoapifyConfig {
         );
 
         RestClient restClient = RestClient.builder()
-                .baseUrl("https://api.geoapify.com")
+                .baseUrl(baseUrl)
                 .requestFactory(requestFactory)
                 .defaultHeader(
                         HttpHeaders.ACCEPT,

@@ -185,6 +185,7 @@ async function main() {
     fs.writeFileSync(targetVideo, validVideo);
     await page.getByRole("button", { name: "Close dialog", exact: true }).click();
     await row.getByRole("button", { name: "Reject IT Video REJECTED", exact: true }).click();
+    await page.getByLabel("Rejection reason", { exact: false }).fill("Admin browser integration test feedback");
     await page.getByRole("button", { name: "Confirm rejection", exact: true }).click();
     await page.getByText("Submission updated successfully.", { exact: true }).waitFor();
     await page.reload(); await page.locator("#post-video-status-filter").selectOption("ALL");

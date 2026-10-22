@@ -1,14 +1,11 @@
-import { useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Bookmark,
   Bot,
   Calculator,
   CheckCircle,
-  Clock3,
   Dumbbell,
-  Heart,
   MessageCircle,
   Send,
   Sparkles,
@@ -21,127 +18,45 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import BmiCalculator from "../components/bmi/BmiCalculator";
 
-import { posts } from "../data/contentData";
+import { getArticles } from "../services/articleServices";
+import { sendAIMessage } from "../services/aiAssistantService";
+import { resolveMediaUrl } from "../services/app";
+import useAdminResource from "../hooks/useAdminResource";
+import { useCategoryOptions } from "../hooks/useCategoryOptions";
 
 /* =========================================================
    FEATURED CONTENT
 ========================================================= */
 
-const featuredCategories = [
-  { id: "all", label: "All" },
-  { id: "recipes", label: "Recipes" },
-  { id: "nutrition", label: "Nutrition" },
-  { id: "lifestyle", label: "Lifestyle" },
-  { id: "tips", label: "Tips" },
-];
-
-/* =========================================================
-   FEATURED CARD
-========================================================= */
-
 function FeaturedCard({ post }) {
-  return (
-    <article className="group flex flex-col justify-between overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div>
-        {/* Image */}
-        <div className="relative h-56 w-full overflow-hidden bg-chaybook-container">
-          <img
-            src={post.image}
-            alt={post.imageAlt}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-
-          {/* Category + duration */}
-          <div className="absolute left-3.5 top-3.5 flex items-center gap-1.5">
-            <span className="rounded-md bg-white/90 px-2.5 py-1 text-xs font-bold text-chaybook-primary shadow-sm backdrop-blur-md">
-              {post.categoryLabel}
-            </span>
-
-            {post.duration && (
-              <span className="flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-gray-800 shadow-sm backdrop-blur-md">
-                <Clock3 className="h-3.5 w-3.5 text-gray-500" />
-                {post.duration}
-              </span>
-            )}
-          </div>
-
-          {/* Bookmark */}
-          <button
-            type="button"
-            aria-label="Bookmark"
-            className="absolute right-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-sm backdrop-blur-md transition-colors hover:text-chaybook-primary"
-          >
-            <Bookmark className="h-[18px] w-[18px]" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex flex-col gap-2 p-6">
-          <h3 className="line-clamp-2 text-lg font-bold leading-7 text-gray-900 transition-colors group-hover:text-chaybook-primary">
-            {post.title}
-          </h3>
-
-          <p className="line-clamp-2 text-sm leading-6 text-gray-600">
-            {post.description}
-          </p>
-        </div>
-      </div>
-
-      {/* Author */}
-      <div className="mt-2 flex items-center justify-between border-t border-gray-200/70 px-6 pb-6 pt-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chaybook-secondary-container text-xs font-bold text-chaybook-primary">
-            {post.initials}
-          </div>
-
-          <div className="flex flex-col">
-            <span className="text-xs font-semibold text-gray-900">
-              {post.author}
-            </span>
-
-            <span className="text-[11px] text-gray-500">{post.authorRole}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          {post.calories && (
-            <span className="flex items-center gap-1">
-              <Heart className="h-3.5 w-3.5" />
-              {post.calories}
-            </span>
-          )}
-
-          <span className="flex items-center gap-1">
-            <MessageCircle className="h-3.5 w-3.5" />
-            {post.comments}
-          </span>
-        </div>
-      </div>
-    </article>
-  );
+  return <article className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <Link to={`/content/${post.id}`}>
+      {post.image && <img src={post.image} alt={post.title} className="h-56 w-full object-cover" />}
+      <div className="space-y-2 p-6"><h3 className="text-lg font-bold">{post.title}</h3><p className="line-clamp-3 text-sm text-gray-600">{post.description}</p></div>
+    </Link>
+  </article>;
 }
-
-/* =========================================================
-   AI QUICK ASSISTANT
-========================================================= */
 
 function AiQuickAssistant() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [conversationId, setConversationId] = useState(null);
 
-  const handleAskAi = (e) => {
+  const handleAskAi = async (e) => {
     e.preventDefault();
 
     const value = prompt.trim();
 
-    if (!value) {
-      setResponse("Try entering ingredients or a dietary goal.");
-      return;
-    }
+    if (!value || busy) return;
+    setBusy(true); setError(""); setResponse("");
+    try {
+      const reply = await sendAIMessage(value, conversationId);
+      setResponse(reply.content); setConversationId(reply.conversationId);
+    } catch (requestError) { setError(requestError.message); }
+    finally { setBusy(false); }
 
-    setResponse(
-      `Based on "${value}", try pan-seared ginger tofu with steamed broccoli over brown rice.`,
-    );
   };
 
   return (
@@ -165,7 +80,8 @@ function AiQuickAssistant() {
         className="relative mt-1 flex w-full items-center"
       >
         <Input
-          type="text"
+          label="Ask nutrition AI"
+          type="text" required maxLength={4000} disabled={busy}
           placeholder="e.g. Tofu, broccoli and brown rice..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
@@ -173,14 +89,15 @@ function AiQuickAssistant() {
         />
 
         <button
-          type="submit"
+          type="submit" disabled={busy}
           className="absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1 rounded-lg bg-chaybook-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-chaybook-hover"
         >
-          Ask AI
+          {busy ? "Asking?" : "Ask AI"}
           <Send className="h-4 w-4" />
         </button>
       </form>
 
+      {error && <p role="alert" className="text-red-700">{error}</p>}
       {response && (
         <div className="flex items-start gap-2.5 rounded-xl bg-white p-4 text-sm shadow-sm">
           <CheckCircle className="h-5 w-5 shrink-0 text-chaybook-primary" />
@@ -200,18 +117,12 @@ function AiQuickAssistant() {
 function HomePage() {
   const [activeCategory, setActiveCategory] = useState("all");
 
-  /*
-   * Lấy data trực tiếp từ contentData.js
-   * nên HomePage và ContentPage dùng chung dữ liệu.
-   */
-  const featuredPosts = useMemo(() => {
-    const filtered =
-      activeCategory === "all"
-        ? posts
-        : posts.filter((post) => post.category === activeCategory);
-
-    return filtered.slice(0, 3);
-  }, [activeCategory]);
+  const { categories } = useCategoryOptions("ARTICLE");
+  const load = useCallback((signal) => getArticles(activeCategory === "all" ? null : Number(activeCategory), 0, 3, "PUBLISHED", { signal }), [activeCategory]);
+  const resource = useAdminResource(load);
+  const posts = (resource.data?.content || []).map((article) => ({ id: article.articleId, title: article.title, description: article.content, image: resolveMediaUrl(article.coverImage) }));
+  const featuredPosts = posts;
+  const featuredCategories = [{ id: "all", label: "All" }, ...categories.map((c) => ({ id: String(c.categoryId), label: c.name }))];
 
   return (
     <div className="min-h-screen bg-chaybook-bg font-sans text-gray-900 antialiased">
@@ -327,7 +238,7 @@ function HomePage() {
                 <div className="overflow-hidden rounded-2xl bg-white p-2 shadow-xl">
                   <div className="relative h-[420px] overflow-hidden rounded-xl sm:h-[460px]">
                     <img
-                      src={posts[0]?.image}
+                      src={posts[0]?.image || "/home-background.png"}
                       alt={posts[0]?.imageAlt || "Healthy vegetarian meal"}
                       className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                     />
@@ -548,7 +459,7 @@ function HomePage() {
                 </span>
 
                 <h2 className="mt-1 text-3xl font-bold tracking-tight text-gray-900">
-                  Featured Content & Recipes
+                  Featured Articles
                 </h2>
 
                 <p className="pt-2 text-sm leading-6 text-gray-600">
@@ -583,7 +494,7 @@ function HomePage() {
             </div>
 
             {/* Cards */}
-            {featuredPosts.length > 0 ? (
+            {resource.loading ? <p role="status">Loading featured articles?</p> : resource.error ? <div role="alert">{resource.error}<button type="button" onClick={resource.retry}>Retry</button></div> : featuredPosts.length > 0 ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {featuredPosts.map((post) => (
                   <FeaturedCard key={post.id} post={post} />
@@ -605,7 +516,7 @@ function HomePage() {
                   variant="secondary"
                   className="flex h-12 items-center gap-2 px-8"
                 >
-                  View All Recipes & Articles
+                  View All Articles
                   <ArrowRight className="h-[18px] w-[18px]" />
                 </Button>
               </Link>

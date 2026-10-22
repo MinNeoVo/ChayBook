@@ -9,15 +9,19 @@ import com.chaybook.backend.admin.dashboard.service.AdminDashboardStatisticsServ
 import com.chaybook.backend.admin.post.controller.AdminPostVideoController;
 import com.chaybook.backend.admin.post.service.AdminPostVideoService;
 import com.chaybook.backend.admin.recipe.controller.AdminRecipeController;
-import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
+import com.chaybook.backend.admin.recipe.service.impl.AdminRecipeServiceImpl;
 import com.chaybook.backend.admin.user.controller.AdminUserController;
 import com.chaybook.backend.admin.user.service.AdminUserService;
 import com.chaybook.backend.common.exception.GlobalExceptionHandler;
 import com.chaybook.backend.config.SecurityConfig;
 import com.chaybook.backend.config.CorsConfig;
+import com.chaybook.backend.user.repository.UserRepository;
+import com.chaybook.backend.user.entity.User;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.context.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -46,6 +50,8 @@ class AdminApiSecurityTest {
                 "jwt.secret=admin-api-test-only-signing-key-not-used-by-the-application-1234567890");
         context.register(Fixture.class);
         context.refresh();
+        User active = new User(); active.setStatus("ACTIVE"); active.setRole("ADMIN");
+        when(context.getBean(UserRepository.class).findById(1)).thenReturn(java.util.Optional.of(active));
         mvc = MockMvcBuilders.webAppContextSetup(context)
                 .addFilters((Filter) context.getBean("springSecurityFilterChain")).build();
     }
@@ -107,6 +113,16 @@ class AdminApiSecurityTest {
         verify(context.getBean(AdminPostVideoService.class)).updateStatus(1, "VIDEO", 7, "APPROVED", null);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "VIDEO"})
+    void rejectionPassesReasonAndUsesAuthenticatedAdminInsteadOfClientReviewer(String type) throws Exception {
+        mvc.perform(patch("/api/admin/posts-videos/" + type + "/7/status").cookie(token("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":\"REJECTED\",\"reason\":\"Admin feedback\",\"reviewerId\":999}"))
+                .andExpect(status().isNoContent());
+        verify(context.getBean(AdminPostVideoService.class)).updateStatus(1, type, 7, "REJECTED", "Admin feedback");
+    }
+
     @Test void defaultCorsAllowsTheExistingFrontendAndRejectsOtherOrigins() throws Exception {
         mvc.perform(options("/api/admin/articles/images")
                 .header("Origin", "http://localhost:5173")
@@ -129,12 +145,13 @@ class AdminApiSecurityTest {
             AdminPostVideoController.class, AdminRecipeController.class, AdminUserController.class,
             GlobalExceptionHandler.class})
     static class Fixture {
+        @Bean UserRepository accountUsers() { return mock(UserRepository.class); }
         @Bean AdminArticleService articles() { return mock(AdminArticleService.class); }
         @Bean AdminArticleImageService images() { return mock(AdminArticleImageService.class); }
         @Bean AdminCategoryService categories() { return mock(AdminCategoryService.class); }
         @Bean AdminDashboardStatisticsService dashboard() { return mock(AdminDashboardStatisticsService.class); }
         @Bean AdminPostVideoService posts() { return mock(AdminPostVideoService.class); }
-        @Bean AdminRecipeService recipes() { return mock(AdminRecipeService.class); }
+        @Bean AdminRecipeServiceImpl recipes() { return mock(AdminRecipeServiceImpl.class); }
         @Bean AdminUserService users() { return mock(AdminUserService.class); }
     }
 }

@@ -55,7 +55,7 @@ function PostCard({
   const postDescription = description || content;
 
   const isApproved = !status || status === "APPROVED";
-  const isDenied = status === "DENIED";
+  const isRejected = status === "REJECTED";
   const isPending = status === "PENDING";
 
   return (
@@ -91,8 +91,13 @@ function PostCard({
         {status && <PostStatusBadge status={status} />}
       </div>
 
+      {isApproved && onEdit && <div className="flex justify-end gap-3 text-sm">
+        <button type="button" onClick={() => onEdit(post)}>Edit Post</button>
+        <button type="button" onClick={() => onDelete?.(post)} className="text-red-700">Delete Post</button>
+      </div>}
+
       {/* ================= DENIED FEEDBACK ================= */}
-      {isDenied && moderationFeedback && (
+      {isRejected && moderationFeedback && (
         <div className="flex items-start gap-3 rounded-xl bg-red-50 p-4">
           <AlertCircle size={20} className="mt-0.5 shrink-0 text-red-600" />
 
@@ -298,7 +303,7 @@ function PostCard({
       )}
 
       {/* ================= DENIED ACTIONS ================= */}
-      {isDenied && (
+      {isRejected && (
         <div
           className="
             flex

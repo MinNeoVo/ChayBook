@@ -375,13 +375,12 @@ private String savePostImage(MultipartFile image) {
         Post post = requirePostForWrite(postId);
 
         boolean owner = isPostOwner(post, currentUser);
-        boolean admin = "ADMIN".equalsIgnoreCase(currentUser.getRole());
-
-        // Chủ bài được xóa bài của mình; ADMIN được xóa mọi bài.
-        if (!owner && !admin) {
+        // DELETED is an author action. Admin removals use the moderation API
+        // so its transition checks and decision history cannot be bypassed.
+        if (!owner) {
             throw new PostException(
                     HttpStatus.FORBIDDEN,
-                    "You can only delete your own posts"
+                    "You can only delete your own posts; use moderation to remove other posts"
             );
         }
 
@@ -407,8 +406,9 @@ private String savePostImage(MultipartFile image) {
                         "Post not found"
                 ));
 
-        // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if ("DELETED".equalsIgnoreCase(post.getStatus())) {
+        // Terminal states must never be edited back into the moderation queue.
+        if ("DELETED".equalsIgnoreCase(post.getStatus())
+                || "REMOVED".equalsIgnoreCase(post.getStatus())) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"

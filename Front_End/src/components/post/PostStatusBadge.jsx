@@ -12,8 +12,8 @@ function PostStatusBadge({ status }) {
       className: "bg-surface-container-high text-tertiary",
     },
 
-    DENIED: {
-      label: "Denied",
+    REJECTED: {
+      label: "Rejected",
       dot: "bg-error",
       className: "bg-error-container text-on-error-container",
     },

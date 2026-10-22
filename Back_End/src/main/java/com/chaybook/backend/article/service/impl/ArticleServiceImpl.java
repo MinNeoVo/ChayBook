@@ -41,7 +41,7 @@ public Page<ArticleResponse> getArticles(
         int page,
         int size
 ) {
-    if (page < 0 || size < 1 || size > 10) {
+    if (page < 0 || size < 1 || size > 10 || (long) page * size > Integer.MAX_VALUE) {
         throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Page phải từ 0; size phải từ 1 đến 10"
@@ -65,34 +65,25 @@ public Page<ArticleResponse> getArticles(
 
     Page<Article> articles;
 
-    if (categoryId != null && normalizedStatus != null) {
+    if ("DRAFT".equals(normalizedStatus)) return Page.empty(pageable);
+
+    if (categoryId != null) {
 
         articles = articleRepository
                 .findByCategory_CategoryIdAndStatus(
                         categoryId,
-                        normalizedStatus,
-                        pageable
-                );
-
-    } else if (categoryId != null) {
-
-        articles = articleRepository
-                .findByCategory_CategoryId(
-                        categoryId,
-                        pageable
-                );
-
-    } else if (normalizedStatus != null) {
-
-        articles = articleRepository
-                .findByStatus(
-                        normalizedStatus,
+                        "PUBLISHED",
                         pageable
                 );
 
     } else {
 
-        articles = articleRepository.findAll(pageable);
+        articles = articleRepository
+                .findByStatus(
+                        "PUBLISHED",
+                        pageable
+                );
+
     }
 
     return articles.map(this::toResponse);
@@ -116,7 +107,7 @@ public Page<ArticleResponse> getArticles(
             );
         }
 
-        return articleRepository.findById(articleId)
+        return articleRepository.findByArticleIdAndStatus(articleId, "PUBLISHED")
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Article not found"

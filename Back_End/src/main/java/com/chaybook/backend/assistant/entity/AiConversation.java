@@ -20,6 +20,12 @@ public class AiConversation {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "guest_key", length = 64)
+    private String guestKey;
+
+    public String getGuestKey() { return guestKey; }
+    public void setGuestKey(String guestKey) { this.guestKey = guestKey; }
+
     @Column(name = "title", length = 255)
     private String title;
 

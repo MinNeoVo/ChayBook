@@ -15,25 +15,8 @@ import { updateProfile, uploadAvatar } from "../../services/userServices";
 import { getCurrentUser } from "../../services/authServices";
 import { useAuth } from "../../context/useAuth";
 
-const API_ORIGIN = "http://localhost:8080";
+import { resolveMediaUrl } from "../../services/app";
 
-/**
- * Chuẩn hóa avatar URL – nếu là relative path thì thêm origin.
- */
-function resolveAvatarUrl(url) {
-  if (!url) return null;
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  return `${API_ORIGIN}${url.startsWith("/") ? "" : "/"}${url}`;
-}
-
-/**
- * Modal chỉnh sửa thông tin cá nhân.
- *
- * Props:
- *   profile  – object profile hiện tại (userId, username, fullName, avatarUrl, …)
- *   onClose  – callback khi đóng modal
- *   onSaved  – callback(updatedUserData) sau khi lưu thành công
- */
 function EditProfileModal({ profile, onClose, onSaved }) {
   /* ── form state ── */
   const [username, setUsername] = useState(profile?.username ?? "");
@@ -41,7 +24,7 @@ function EditProfileModal({ profile, onClose, onSaved }) {
 
   /* ── avatar state ── */
   const [avatarPreview, setAvatarPreview] = useState(
-    resolveAvatarUrl(profile?.avatarUrl)
+    resolveMediaUrl(profile?.avatarUrl)
   );
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -54,6 +37,9 @@ function EditProfileModal({ profile, onClose, onSaved }) {
   const [globalError, setGlobalError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const { login } = useAuth();
+  useEffect(() => () => {
+    if (avatarPreview?.startsWith("blob:")) URL.revokeObjectURL(avatarPreview);
+  }, [avatarPreview]);
 
   /* ── close on Escape ── */
   useEffect(() => {
@@ -251,18 +237,7 @@ function EditProfileModal({ profile, onClose, onSaved }) {
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
                 <div className="h-24 w-24 rounded-full overflow-hidden ring-4 ring-[#caead6] shadow-md">
-                  {avatarPreview ? (
-                    <img
-                      src={avatarPreview}
-                      alt="Avatar preview"
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <Avatar size="xl" className="h-full w-full" />
-                  )}
+                  <Avatar src={avatarPreview} alt="Avatar preview" size="xl" className="h-full w-full" />
                 </div>
 
                 {/* Overlay on hover */}

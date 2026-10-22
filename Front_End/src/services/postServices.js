@@ -1,5 +1,8 @@
 import { apiFetch } from "./api";
 
+export const updatePost = (id, body) => apiFetch(`/posts/${id}`, { method: "PUT", body });
+export const deletePost = (id) => apiFetch(`/posts/${id}`, { method: "DELETE" });
+
 /**
  * Lấy danh sách bài viết đã duyệt với phân trang
  * @param {number|string|null} categoryId - ID danh mục (nếu có)

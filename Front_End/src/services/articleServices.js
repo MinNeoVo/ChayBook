@@ -1,4 +1,5 @@
 import { apiFetch } from "./api";
+import { resolveMediaUrl } from "./app";
 
 /**
  * Lấy danh sách bài viết với phân trang
@@ -25,10 +26,11 @@ export async function getArticles(categoryId = null, page = 0, size = 10, status
   const queryString = query.toString();
   const endpoint = `/articles${queryString ? `?${queryString}` : ""}`;
 
-  return apiFetch(endpoint, {
+  const result = await apiFetch(endpoint, {
     method: "GET",
     signal,
   });
+  return { ...result, content: (result.content || []).map((article) => ({ ...article, coverImage: resolveMediaUrl(article.coverImage) })) };
 }
 
 /**
@@ -36,7 +38,8 @@ export async function getArticles(categoryId = null, page = 0, size = 10, status
  * @param {number} articleId - ID bài viết
  */
 export async function getArticleDetail(articleId) {
-  return apiFetch(`/articles/${articleId}`, {
+  const article = await apiFetch(`/articles/${articleId}`, {
     method: "GET",
   });
+  return { ...article, coverImage: resolveMediaUrl(article.coverImage) };
 }

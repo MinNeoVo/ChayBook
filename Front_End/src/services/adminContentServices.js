@@ -102,9 +102,9 @@ export function getAdminSubmission(type, id, { signal } = {}) {
   return apiFetch(`/admin/posts-videos/${encodeURIComponent(type)}/${encodeURIComponent(id)}`, { signal });
 }
 
-export function updateAdminSubmissionStatus(type, id, status) {
+export function updateAdminSubmissionStatus(type, id, status, reason) {
   return apiFetch(`/admin/posts-videos/${encodeURIComponent(type)}/${encodeURIComponent(id)}/status`, {
-    method: "PATCH", body: { status },
+    method: "PATCH", body: status === "REJECTED" ? { status, reason: reason?.trim() } : { status },
   });
 }
 

@@ -1,4 +1,7 @@
+import { useId } from "react";
+
 function Input({
+  id,
   label,
   type = "text",
   placeholder,
@@ -10,10 +13,12 @@ function Input({
   className = "",
   ...props
 }) {
+  const generatedId = useId();
+  const inputId = id || generatedId;
   return (
     <div className="space-y-1 w-full">
       {label && (
-        <label className="block text-sm font-semibold text-gray-700">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-gray-700">
           {label}
         </label>
       )}
@@ -26,6 +31,9 @@ function Input({
         )}
 
         <input
+          id={inputId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${inputId}-error` : undefined}
           type={type}
           name={name}
           value={value}
@@ -58,7 +66,7 @@ function Input({
       </div>
 
       {/* Error message */}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p id={`${inputId}-error`} className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }

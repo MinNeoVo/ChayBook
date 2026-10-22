@@ -8,5 +8,6 @@ import java.util.List;
 
 @Repository
 public interface AiMessageRepository extends JpaRepository<AiMessage, Integer> {
-    List<AiMessage> findByConversationConversationIdOrderByCreatedAtAsc(Integer conversationId);
+    List<AiMessage> findByConversationConversationIdOrderByCreatedAtAscMessageIdAsc(Integer conversationId);
+    List<AiMessage> findTop12ByConversationConversationIdOrderByMessageIdDesc(Integer conversationId);
 }

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -22,6 +21,9 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.chaybook.backend.security.CookieBearerTokenResolver;
 import com.chaybook.backend.security.JwtAuthenticationConverter;
+import com.chaybook.backend.security.ActiveAccountFilter;
+import com.chaybook.backend.user.repository.UserRepository;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 @Configuration
@@ -59,7 +61,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            BearerTokenResolver bearerTokenResolver) throws Exception {
+            BearerTokenResolver bearerTokenResolver,
+            UserRepository userRepository) throws Exception {
 
         http
 
@@ -122,6 +125,7 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(
                                 new JwtAuthenticationConverter())));
 
+        http.addFilterAfter(new ActiveAccountFilter(userRepository), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 }

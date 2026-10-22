@@ -33,7 +33,10 @@ public class AdminPostVideoRepository {
             ai.reason AS ai_reason,
             ai.confidence AS ai_confidence,
             ai.moderation_status AS moderation_status,
-            admin_decision.reason AS admin_reason
+            CASE WHEN UPPER(p.status) = 'REJECTED' THEN admin_decision.reason END AS admin_reason,
+            admin_decision.admin_id AS reviewer_id,
+            COALESCE(NULLIF(LTRIM(RTRIM(reviewer.full_name)), ''), reviewer.username) AS reviewer,
+            admin_decision.decided_at AS reviewed_at
         FROM POST p
         LEFT JOIN [USER] u ON u.user_id = p.user_id
         OUTER APPLY (
@@ -47,13 +50,13 @@ public class AdminPostVideoRepository {
             ORDER BY am.created_at DESC, am.moderation_id DESC
         ) ai
         OUTER APPLY (
-            SELECT TOP 1 d.reason
+            SELECT TOP 1 d.reason, d.admin_id, d.decided_at
             FROM ADMIN_CONTENT_DECISION d
             WHERE d.post_id = p.post_id
-              AND d.decision = 'REJECTED'
-              AND UPPER(p.status) = 'REJECTED'
+              AND d.decision = UPPER(p.status)
             ORDER BY d.decided_at DESC, d.decision_id DESC
         ) admin_decision
+        LEFT JOIN [USER] reviewer ON reviewer.user_id = admin_decision.admin_id
 
         UNION ALL
 
@@ -71,7 +74,10 @@ public class AdminPostVideoRepository {
             ai.reason AS ai_reason,
             ai.confidence AS ai_confidence,
             ai.moderation_status AS moderation_status,
-            admin_decision.reason AS admin_reason
+            CASE WHEN UPPER(v.status) = 'REJECTED' THEN admin_decision.reason END AS admin_reason,
+            admin_decision.admin_id AS reviewer_id,
+            COALESCE(NULLIF(LTRIM(RTRIM(reviewer.full_name)), ''), reviewer.username) AS reviewer,
+            admin_decision.decided_at AS reviewed_at
         FROM VIDEO v
         LEFT JOIN [USER] u ON u.user_id = v.created_by
         OUTER APPLY (
@@ -85,19 +91,19 @@ public class AdminPostVideoRepository {
             ORDER BY am.created_at DESC, am.moderation_id DESC
         ) ai
         OUTER APPLY (
-            SELECT TOP 1 d.reason
+            SELECT TOP 1 d.reason, d.admin_id, d.decided_at
             FROM ADMIN_CONTENT_DECISION d
             WHERE d.video_id = v.video_id
-              AND d.decision = 'REJECTED'
-              AND UPPER(v.status) = 'REJECTED'
+              AND d.decision = UPPER(v.status)
             ORDER BY d.decided_at DESC, d.decision_id DESC
         ) admin_decision
+        LEFT JOIN [USER] reviewer ON reviewer.user_id = admin_decision.admin_id
         """;
 
     private static final String FILTERED_CONTENT = """
             SELECT *
             FROM (%s) content
-            WHERE UPPER(COALESCE(content.status, '')) <> 'REMOVED'
+            WHERE UPPER(COALESCE(content.status, '')) NOT IN ('REMOVED', 'DELETED')
               AND (:contentType = 'ALL' OR content.content_type = :contentType)
               AND (:status = 'ALL' OR UPPER(content.status) = :status)
               AND (
@@ -127,7 +133,6 @@ public class AdminPostVideoRepository {
 
         long totalElements = ((Number) countQuery.getSingleResult()).longValue();
         int offset = page * size;
-        String searchPattern = "%" + normalizedKeyword + "%";
 
         Query dataQuery = entityManager.createNativeQuery("""
                 SELECT
@@ -144,7 +149,10 @@ public class AdminPostVideoRepository {
                     ai_reason,
                     ai_confidence,
                     moderation_status,
-                    admin_reason
+                    admin_reason,
+                    reviewer_id,
+                    reviewer,
+                    reviewed_at
                 FROM (%s) filtered
                 ORDER BY submitted_at DESC, content_type ASC, content_id DESC
                 OFFSET :offset ROWS FETCH NEXT :size ROWS ONLY
@@ -186,7 +194,7 @@ public class AdminPostVideoRepository {
                     UNION ALL
                     SELECT status FROM VIDEO
                 ) submissions
-                WHERE UPPER(COALESCE(status, '')) <> 'REMOVED'
+                WHERE UPPER(COALESCE(status, '')) NOT IN ('REMOVED', 'DELETED')
                 """).getSingleResult();
 
         return new AdminPostVideoResponse.Statistics(
@@ -200,18 +208,21 @@ public class AdminPostVideoRepository {
     public AdminPostVideoResponse findDetail(String type, Integer id) {
         Query query = entityManager.createNativeQuery("""
                 SELECT content_id, content_type, title, description, creator,
-                       submitted_at, 
-                       status, 
-                       thumbnail_url, 
+                       submitted_at,
+                       status,
+                       thumbnail_url,
                        media_url,
                        ai_result,
                        ai_reason,
-                     ai_confidence,
-                  moderation_status,
-                     admin_reason
+                       ai_confidence,
+                       moderation_status,
+                       admin_reason,
+                       reviewer_id,
+                       reviewer,
+                       reviewed_at
                 FROM (%s) content
                 WHERE content_type = :type AND content_id = :id
-                  AND UPPER(COALESCE(status, '')) <> 'REMOVED'
+                  AND UPPER(COALESCE(status, '')) NOT IN ('REMOVED', 'DELETED')
                 """.formatted(CONTENT_UNION));
         query.setParameter("type", type);
         query.setParameter("id", id);
@@ -289,7 +300,10 @@ public class AdminPostVideoRepository {
                 stringValue(row[10]),
                 doubleValue(row[11]),
                 stringValue(row[12]),
-                stringValue(row[13])
+                stringValue(row[13]),
+                row[14] == null ? null : ((Number) row[14]).intValue(),
+                stringValue(row[15]),
+                dateValue(row[16])
         );
     }
 
