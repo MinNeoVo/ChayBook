@@ -25,7 +25,7 @@ import {
 import API_BASE_URL from "../../services/app";
 
 const API_ORIGIN = new URL(API_BASE_URL).origin;
-const NUMBER_FORMAT = new Intl.NumberFormat("en-US");
+const NUMBER_FORMAT = new Intl.NumberFormat("vi-VN");
 const PERCENT_FORMAT = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 });
@@ -36,9 +36,9 @@ const CHART_RIGHT = 12;
 const CHART_TOP = 18;
 const CHART_BOTTOM = 220;
 const CHART_SERIES = [
-  { key: "likeCount", label: "Likes", color: "#10b981" },
-  { key: "bookmarkCount", label: "Bookmarks", color: "#6366f1" },
-  { key: "commentCount", label: "Comments", color: "#f59e0b" },
+  { key: "likeCount", label: "Lượt thích", color: "#10b981" },
+  { key: "bookmarkCount", label: "Lượt lưu", color: "#6366f1" },
+  { key: "commentCount", label: "Bình luận", color: "#f59e0b" },
 ];
 
 const initialResources = {
@@ -160,7 +160,7 @@ function normalizeInteractionRate(response) {
     count: ratePercent,
     empty: denominator === 0,
     emptyValue: "—",
-    emptyReason: "No approved posts are available to calculate a rate.",
+    emptyReason: "Chưa có bài viết được duyệt để tính tỷ lệ.",
     detail:
       formatCount(numerator) +
       " of " +
@@ -181,7 +181,7 @@ function normalizeAiMessageCount(response) {
 
   return {
     count,
-    detail: "Includes saved " + includedSenders + " messages.",
+    detail: `Bao gồm ${includedSenders} tin nhắn đã lưu.`,
   };
 }
 
@@ -272,9 +272,9 @@ function StatCard({
   const isEmpty = resourceStatus === "success" && resource.data?.empty === true;
   const displayStatus = isEmpty ? "empty" : resourceStatus;
 
-  let value = "Unavailable";
+  let value = "Chưa có dữ liệu";
   if (displayStatus === "loading") value = "";
-  if (displayStatus === "error") value = "Could not load";
+  if (displayStatus === "error") value = "Không thể tải";
   if (displayStatus === "success" || displayStatus === "empty") {
     value =
       resource.data.count === null || resource.data.count === undefined
@@ -285,13 +285,13 @@ function StatCard({
   let supportingText = resource?.data?.detail || detail;
   if (displayStatus === "empty") {
     supportingText =
-      resource.data.emptyReason || "No records found yet.";
+      resource.data.emptyReason || "Chưa tìm thấy dữ liệu.";
   }
   if (displayStatus === "unavailable") {
-    supportingText = unavailableReason || "Statistics are not available yet.";
+    supportingText = unavailableReason || "Chưa có thống kê.";
   }
   if (displayStatus === "error") {
-    supportingText = "The request failed. Retry to load this statistic.";
+    supportingText = "Yêu cầu thất bại. Hãy thử lại để tải thống kê này.";
   }
 
   return (
@@ -306,7 +306,7 @@ function StatCard({
           </p>
           {displayStatus === "loading" ? (
             <div
-              aria-label={"Loading " + title}
+              aria-label={"Đang tải " + title}
               className="mt-3 h-8 w-28 animate-pulse rounded-md bg-slate-100"
             />
           ) : (
@@ -332,7 +332,7 @@ function StatCard({
           <button
             type="button"
             onClick={onRetry}
-            aria-label={"Retry loading " + title}
+            aria-label={"Thử tải lại " + title}
             className="shrink-0 rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-emerald-700"
           >
             <RefreshCw aria-hidden="true" size={15} />
@@ -377,7 +377,7 @@ function PostThumbnail({ imageUrl, title }) {
     return (
       <div className="flex h-full min-h-24 w-full items-center justify-center bg-slate-100 text-slate-400">
         <ImageOff aria-hidden="true" size={21} />
-        <span className="sr-only">No post image available</span>
+        <span className="sr-only">Không có ảnh bài viết</span>
       </div>
     );
   }
@@ -496,7 +496,7 @@ function PostRow({ post }) {
             </span>
           </div>
           <div
-            aria-label="Post interactions"
+            aria-label="Tương tác bài viết"
             className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-500"
           >
             {likes !== null && (
@@ -518,7 +518,7 @@ function PostRow({ post }) {
               </span>
             )}
             {likes === null && comments === null && bookmarks === null && (
-              <span>Interaction counts unavailable</span>
+              <span>Không có số liệu tương tác</span>
             )}
           </div>
         </div>
@@ -585,7 +585,7 @@ function LatestPosts({ resource, onRetry }) {
         {resource.status === "error" && (
           <SectionMessage
             Icon={MessageSquareText}
-            title="Posts could not be loaded"
+            title="Không thể tải bài viết"
             action={
               <button
                 type="button"
@@ -602,7 +602,7 @@ function LatestPosts({ resource, onRetry }) {
         {resource.status === "unavailable" && (
           <SectionMessage
             Icon={MessageSquareText}
-            title="Posts are unavailable"
+            title="Bài viết hiện không khả dụng"
           >
             The community posts endpoint is not available right now.
           </SectionMessage>
@@ -701,7 +701,7 @@ function InteractionChart({ resource, days, onDaysChange, onRetry }) {
           </p>
         </div>
         <div
-          aria-label="Chart period filters"
+          aria-label="Bộ lọc khoảng thời gian biểu đồ"
           className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1"
         >
           <button
@@ -735,7 +735,7 @@ function InteractionChart({ resource, days, onDaysChange, onRetry }) {
       <div className="pt-5">
         {resource?.status === "loading" && (
           <div
-            aria-label="Loading interaction chart"
+            aria-label="Đang tải biểu đồ tương tác"
             className="h-64 animate-pulse rounded-xl bg-slate-50"
           />
         )}
@@ -789,7 +789,7 @@ function InteractionChart({ resource, days, onDaysChange, onRetry }) {
                     </p>
                   ))}
                   <p className="mt-1 flex justify-between gap-4 border-t border-slate-100 pt-1 font-semibold text-slate-800">
-                    <span>Total</span>
+                    <span>Tổng</span>
                     <span>{formatCount(hoveredItem.totalCount)}</span>
                   </p>
                 </div>
@@ -967,7 +967,7 @@ function TopContributors({ resource, onRetry }) {
         </p>
       </div>
       {resource?.status === "loading" && (
-        <div className="space-y-3 py-1" aria-label="Loading top contributors">
+        <div className="space-y-3 py-1" aria-label="Đang tải thành viên đóng góp nhiều nhất">
           {[0, 1, 2, 3, 4].map((item) => (
             <div key={item} className="flex animate-pulse items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-slate-100" />
@@ -1007,7 +1007,7 @@ function TopContributors({ resource, onRetry }) {
         </SectionMessage>
       )}
       {resource?.status === "success" && resource.data.items.length === 0 && (
-        <SectionMessage Icon={Users} title="No contributors yet">
+        <SectionMessage Icon={Users} title="Chưa có thành viên đóng góp">
           No active USER account has an approved post.
         </SectionMessage>
       )}
@@ -1029,7 +1029,7 @@ function TopContributors({ resource, onRetry }) {
                 <p className="truncate text-sm font-semibold text-slate-800">
                   {contributor.displayName}
                 </p>
-                <p className="text-xs text-slate-400">Approved posts</p>
+                <p className="text-xs text-slate-400">Bài viết đã duyệt</p>
               </div>
               <span className="shrink-0 text-sm font-bold tabular-nums text-slate-900">
                 {formatCount(contributor.contributionCount)}
@@ -1213,44 +1213,44 @@ function AdminDashboardPage() {
       <DashboardHeader onRefresh={refresh} isLoading={isLoading} />
 
       <section
-        aria-label="Platform statistics"
+        aria-label="Thống kê nền tảng"
         className="mb-6 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5"
       >
         <StatCard
-          title="Total Users"
+          title="Tổng số người dùng"
           Icon={Users}
           resource={resources.users}
-          detail="Registered USER accounts."
+          detail="Tài khoản người dùng đã đăng ký."
           onRetry={refresh}
         />
         <StatCard
-          title="Approved Posts"
+          title="Bài viết đã duyệt"
           Icon={MessageSquareText}
           resource={resources.posts}
-          detail="Only approved posts returned by the community API."
-          unavailableReason="Post statistics are not available yet."
+          detail="Chỉ tính bài viết đã duyệt do API cộng đồng trả về."
+          unavailableReason="Chưa có thống kê bài viết."
           onRetry={refresh}
         />
         <StatCard
-          title="Total Articles"
+          title="Tổng số bài viết"
           Icon={FileText}
           resource={resources.articles}
-          detail="Articles returned by the admin article API."
+          detail="Số bài viết do API quản trị trả về."
           onRetry={refresh}
         />
         <StatCard
-          title="Interaction Rate"
+          title="Tỷ lệ tương tác"
           Icon={Activity}
           resource={resources.interactionRate}
           valueFormatter={formatPercent}
-          detail="Share of approved posts with at least one like, bookmark, or comment."
+          detail="Tỷ lệ bài viết đã duyệt có lượt thích, lưu hoặc bình luận."
           onRetry={refresh}
         />
         <StatCard
-          title="Total AI Messages"
+          title="Tổng tin nhắn AI"
           Icon={MessageCircle}
           resource={resources.aiMessages}
-          detail="Includes saved user prompts and AI replies."
+          detail="Bao gồm câu hỏi người dùng và câu trả lời AI đã lưu."
           onRetry={refresh}
         />
       </section>

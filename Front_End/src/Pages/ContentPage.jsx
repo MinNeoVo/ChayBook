@@ -12,6 +12,7 @@ import {
 
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
+import MediaRenderer from "../components/media/MediaRenderer";
 import { getArticles } from "../services/articleServices";
 import { useCategoryOptions } from "../hooks/useCategoryOptions";
 
@@ -33,7 +34,7 @@ function CategoryFilter({ activeCategoryId, categories, onCategoryChange }) {
             : "rounded-full bg-white px-4 py-1 text-sm text-black hover:bg-chaybook-primary hover:text-white"
         }
       >
-        All
+        Tất cả
       </Button>
 
       {categories.map((category) => {
@@ -80,7 +81,7 @@ function PostCard({ post, categoriesMap }) {
     });
   };
 
-  const categoryName = categoriesMap.get(Number(post.categoryId)) || "Category";
+  const categoryName = categoriesMap.get(Number(post.categoryId)) || "Danh mục";
 
   return (
     <article className="group flex flex-col justify-between overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl">
@@ -88,14 +89,18 @@ function PostCard({ post, categoriesMap }) {
         {/* Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-[#ebefec]">
           {post.coverImage ? (
-            <img
+            <MediaRenderer
               src={post.coverImage}
-              alt={post.title || "Article"}
+              alt={post.title || "Bài viết"}
+              controls={false}
+              muted
+              autoPlay
+              loop
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[#ebefec] text-[#6e7b6c]">
-              No Image
+              Chưa có ảnh
             </div>
           )}
 
@@ -113,7 +118,7 @@ function PostCard({ post, categoriesMap }) {
         {/* Content */}
         <div className="p-6 pb-2">
           <h2 className="mb-2 line-clamp-2 text-lg font-semibold leading-6 text-[#181c1b] transition-colors group-hover:text-chaybook-primary">
-            {post.title || "Untitled Article"}
+            {post.title || "Bài viết chưa có tiêu đề"}
           </h2>
 
           {post.content ? (
@@ -124,7 +129,7 @@ function PostCard({ post, categoriesMap }) {
             </p>
           ) : (
             <p className="mb-4 line-clamp-2 text-[13px] leading-5 text-[#3e4a3d]">
-              No content available
+              Chưa có nội dung
             </p>
           )}
         </div>
@@ -140,9 +145,9 @@ function PostCard({ post, categoriesMap }) {
 
             <div>
               <p className="text-xs font-semibold text-[#181c1b]">
-                ChayBook Team
+                Đội ngũ ChayBook
               </p>
-              <p className="text-[11px] font-medium text-[#3e4a3d]">Author</p>
+              <p className="text-[11px] font-medium text-[#3e4a3d]">Tác giả</p>
             </div>
           </div>
         </div>
@@ -156,7 +161,7 @@ function PostCard({ post, categoriesMap }) {
             to={`/content/${post.articleId}`}
             className="inline-flex items-center gap-1 text-sm font-semibold text-chaybook-primary transition-colors hover:text-chaybook-hover"
           >
-            Read Article
+            Đọc bài viết
             <ArrowRight
               size={18}
               className="transition-transform group-hover:translate-x-0.5"
@@ -438,16 +443,16 @@ function ContentPage() {
           <section className="relative z-10 mb-12 flex flex-col items-center text-center sm:mb-16">
             <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#92f5a4] px-3 py-1 text-xs font-semibold tracking-wide text-[#007233]">
               <Leaf size={16} fill="currentColor" />
-              Curated Plant-Based Living
+              Góc sống thuần thực vật
             </span>
 
             <h1 className="mb-2 max-w-2xl text-[28px] font-bold leading-9 tracking-tight text-chaybook-primary sm:text-[36px] sm:leading-11">
-              Explore Our Posts
+              Khám phá bài viết
             </h1>
 
             <p className="mb-8 max-w-xl text-base leading-7 text-[#3e4a3d] sm:text-lg">
-              Discover healthy recipes, nutrition tips, and inspiration for a
-              better vegetarian lifestyle.
+              Khám phá công thức lành mạnh, mẹo dinh dưỡng và cảm hứng cho lối
+              sống ăn chay khỏe mạnh.
             </p>
 
             {/* Search */}
@@ -458,7 +463,7 @@ function ContentPage() {
               <Input
                 type="search"
                 icon={Search}
-                placeholder="Search posts, recipes, tips..."
+                placeholder="Tìm bài viết, công thức, mẹo hay..."
                 value={searchQuery}
                 onChange={(event) => handleSearchChange(event.target.value)}
                 className="border-none bg-transparent shadow-none focus:ring-0"
@@ -469,21 +474,21 @@ function ContentPage() {
                 size="md"
                 className="shrink-0 bg-chaybook-primary px-6 hover:bg-chaybook-hover"
               >
-                Search
+                Tìm kiếm
               </Button>
             </form>
 
             {loadingCategories ? (
               <p role="status" className="text-center text-sm text-slate-500">
-                Loading categories...
+                Đang tải danh mục...
               </p>
             ) : categoryError ? (
               <div role="alert" className="flex flex-col items-center gap-2">
                 <p className="text-sm text-red-700">
-                  Categories could not be loaded.
+                  Không thể tải danh mục.
                 </p>
                 <Button variant="outline" size="sm" onClick={reloadCategories}>
-                  Try again
+                  Thử lại
                 </Button>
               </div>
             ) : (
@@ -500,7 +505,7 @@ function ContentPage() {
             <section className="mb-12 flex min-h-75 flex-col items-center justify-center rounded-xl bg-white p-8 text-center shadow-sm">
               <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-chaybook-primary" />
               <p className="mt-4 text-[15px] leading-6 text-[#3e4a3d]">
-                Loading articles...
+                Đang tải bài viết...
               </p>
             </section>
           ) : error ? (
@@ -512,7 +517,7 @@ function ContentPage() {
               />
 
               <h2 className="mb-2 text-[22px] font-semibold">
-                Error loading articles
+                Đã xảy ra lỗi khi tải bài viết
               </h2>
 
               <p className="max-w-md text-[15px] leading-6 text-[#3e4a3d]">
@@ -526,12 +531,12 @@ function ContentPage() {
                 onClick={handleRetry}
                 className="mt-5 bg-chaybook-primary hover:bg-chaybook-hover"
               >
-                Try again
+                Thử lại
               </Button>
             </section>
           ) : paginatedPosts.length > 0 ? (
             <section
-              aria-label="Posts"
+              aria-label="Các bài viết"
               className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
               {paginatedPosts.map((post) => (
@@ -550,10 +555,10 @@ function ContentPage() {
                 strokeWidth={1.5}
               />
 
-              <h2 className="mb-2 text-[22px] font-semibold">No posts found</h2>
+              <h2 className="mb-2 text-[22px] font-semibold">Không tìm thấy bài viết</h2>
 
               <p className="max-w-md text-[15px] leading-6 text-[#3e4a3d]">
-                Try another search keyword or select a different category.
+                Hãy thử từ khóa khác hoặc chọn danh mục khác.
               </p>
 
               <Button

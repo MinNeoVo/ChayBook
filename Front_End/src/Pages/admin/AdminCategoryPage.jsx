@@ -35,15 +35,15 @@ export default function AdminCategoryPage() {
     await saveCategory(editor.category?.categoryId ?? null, payload);
 
     setEditor(null);
-    setNotice("Category saved successfully!");
+    setNotice("Lưu danh mục thành công!");
     setActionError("");
   }
 
   async function remove(category) {
     const confirmed = window.confirm(
-      'Delete category "' +
+      'Xóa danh mục "' +
         category.name +
-        '"?\n\nThis action cannot be undone.',
+        '"?\n\nBạn không thể hoàn tác thao tác này.',
     );
 
     if (!confirmed) return;
@@ -58,7 +58,7 @@ export default function AdminCategoryPage() {
         setEditor(null);
       }
 
-      setNotice("Category deleted successfully!");
+      setNotice("Xóa danh mục thành công!");
     } catch (requestError) {
       setActionError(getCategoryErrorMessage(requestError));
     }
@@ -69,16 +69,16 @@ export default function AdminCategoryPage() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Manage Categories
+            Quản lý danh mục
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Manage categories for articles, recipes, and posts
+            Quản lý danh mục bài viết, công thức và bài đăng
           </p>
         </div>
 
         <Button disabled={isMutating} onClick={() => openEditor()}>
-          Add Category
+          Thêm danh mục
         </Button>
       </header>
 
@@ -112,11 +112,11 @@ export default function AdminCategoryPage() {
         onClick={reload}
         disabled={isLoading || isMutating}
       >
-        Reload
+        Tải lại
       </Button>
 
       {isLoading ? (
-        <p role="status">Loading categories...</p>
+        <p role="status">Đang tải danh mục...</p>
       ) : error ? (
         <p role="alert" className="text-red-700">
           {getCategoryErrorMessage(error)}

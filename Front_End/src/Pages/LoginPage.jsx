@@ -38,11 +38,11 @@ function LoginPage() {
       {/* LOGIN CARD */}
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
         <h1 className="mb-2 text-center text-3xl font-bold text-gray-800">
-          Welcome Back!
+          Chào mừng bạn trở lại!
         </h1>
 
         <p className="mb-6 text-center text-sm text-gray-500">
-          Please enter your details to sign in
+          Vui lòng nhập thông tin để đăng nhập
         </p>
 
         <LoginForm />

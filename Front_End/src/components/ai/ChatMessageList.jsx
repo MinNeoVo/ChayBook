@@ -13,7 +13,7 @@ function ChatMessageList({
   guestTrialExhausted = false,
   onRetry,
   onSelectSuggestion,
-  userName = "You",
+  userName = "Bạn",
 }) {
   const chatContainerRef = useRef(null);
 
@@ -66,7 +66,7 @@ function ChatMessageList({
 
             <div>
               <span>
-                {error.message || "Sorry, I couldn't process your request."}
+                {error.message || "Xin lỗi, hiện chưa thể xử lý yêu cầu của bạn."}
               </span>
               {error.status === 429 && (
                 <Link
@@ -86,7 +86,7 @@ function ChatMessageList({
               className="inline-flex items-center gap-1 font-semibold text-red-700 hover:text-red-900 underline cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>Try again</span>
+              <span>Thử lại</span>
             </button>
           )}
         </div>

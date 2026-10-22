@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { CalendarDays, FileText, Heart, Plus, Edit3 } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  Heart,
+  Plus,
+  Edit3,
+  KeyRound,
+} from "lucide-react";
 
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 import EditProfileModal from "./EditProfileModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { resolveMediaUrl } from "../../services/app";
-import { Link } from "react-router-dom";
 
-function ProfileHeader({ profile, onProfileUpdated }) {
+function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   const username = profile?.username || "ChayBook User";
   const fullName = profile?.fullName || username;
@@ -33,8 +39,7 @@ function ProfileHeader({ profile, onProfileUpdated }) {
     : "Chưa xác định";
 
   // Role badge
-  const roleLabel =
-    role === "ADMIN" ? "Administrator" : "Plant-based Food Enthusiast";
+  const roleLabel = role === "ADMIN" ? "Administrator" : "User";
 
   // Resolve avatar URL (relative → absolute)
   const resolvedAvatarUrl = resolveMediaUrl(avatarUrl);
@@ -219,7 +224,10 @@ function ProfileHeader({ profile, onProfileUpdated }) {
                         text-xs text-gray-600
                       "
                     >
-                      <CalendarDays size={15} className="text-chaybook-primary" />
+                      <CalendarDays
+                        size={15}
+                        className="text-chaybook-primary"
+                      />
                       Thành viên từ {memberSince}
                     </span>
 
@@ -258,6 +266,19 @@ function ProfileHeader({ profile, onProfileUpdated }) {
               <div className="flex w-full items-center gap-2 md:w-auto">
                 <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 md:flex-none"
+                  onClick={() => setShowChangePasswordModal(true)}
+                  disabled={!profile?.userId || !profile?.email}
+                >
+                  <span className="flex items-center justify-center gap-1.5">
+                    <KeyRound size={17} />
+                    Đổi mật khẩu
+                  </span>
+                </Button>
+                <Button
+                  type="button"
                   variant="secondary"
                   size="sm"
                   className="flex-1 md:flex-none"
@@ -265,18 +286,21 @@ function ProfileHeader({ profile, onProfileUpdated }) {
                 >
                   <span className="flex items-center justify-center gap-1.5">
                     <Edit3 size={17} />
-                    Edit Profile
+                    Chỉnh sửa hồ sơ
                   </span>
                 </Button>
 
-                <Button type="button" size="sm" className="flex-1 md:flex-none" onClick={() => setShowPassword(true)}>Change Password</Button>
-                <Link to="/community">
-                <Button type="button" size="sm" className="flex-1 md:flex-none">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="flex-1 md:flex-none"
+                  onClick={onCreatePost}
+                >
                   <span className="flex items-center justify-center gap-1.5">
                     <Plus size={18} />
-                    Create Post
+                    Tạo bài viết
                   </span>
-                </Button></Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -284,12 +308,17 @@ function ProfileHeader({ profile, onProfileUpdated }) {
       </section>
 
       {/* ── Edit Profile Modal ── */}
-      {showPassword && <ChangePasswordModal userId={profile.userId} onClose={() => setShowPassword(false)} />}
       {showEditModal && (
         <EditProfileModal
           profile={profile}
           onClose={() => setShowEditModal(false)}
           onSaved={handleSaved}
+        />
+      )}
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          profile={profile}
+          onClose={() => setShowChangePasswordModal(false)}
         />
       )}
     </>

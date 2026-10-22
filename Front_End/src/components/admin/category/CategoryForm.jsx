@@ -60,13 +60,13 @@ export default function CategoryForm({ category, busy, onSubmit, onCancel }) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold">
-        {category ? "Edit category" : "Add new category"}
+        {category ? "Chỉnh sửa danh mục" : "Thêm danh mục mới"}
       </h2>
 
       <form onSubmit={submit} noValidate>
         <fieldset disabled={busy} className="space-y-4">
           <label className="block space-y-1 text-sm">
-            <span>Category name *</span>
+            <span>Tên danh mục *</span>
 
             <input
               name="name"
@@ -90,7 +90,7 @@ export default function CategoryForm({ category, busy, onSubmit, onCancel }) {
           </label>
 
           <label className="block space-y-1 text-sm">
-            <span>Type *</span>
+            <span>Loại *</span>
 
             <select
               name="type"
@@ -119,7 +119,7 @@ export default function CategoryForm({ category, busy, onSubmit, onCancel }) {
           </label>
 
           <label className="block space-y-1 text-sm">
-            <span>Description</span>
+            <span>Mô tả</span>
 
             <textarea
               name="description"
@@ -152,11 +152,11 @@ export default function CategoryForm({ category, busy, onSubmit, onCancel }) {
 
           <div className="flex gap-3">
             <Button type="submit">
-              {busy ? "Saving..." : "Save category"}
+              {busy ? "Đang lưu..." : "Lưu danh mục"}
             </Button>
 
             <Button variant="outline" onClick={onCancel}>
-              Cancle
+              Hủy
             </Button>
           </div>
         </fieldset>

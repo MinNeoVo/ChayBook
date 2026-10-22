@@ -6,6 +6,8 @@ import com.chaybook.backend.community.entity.Post;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
 import com.chaybook.backend.moderation.service.AiModerationService;
+import com.chaybook.backend.media.service.MediaService;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.mock.web.MockMultipartFile;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,8 +25,9 @@ class PostModerationStateTest {
     private final PostRepository posts = mock(PostRepository.class);
     private final UserRepository users = mock(UserRepository.class);
     private final AiModerationService ai = mock(AiModerationService.class);
+    private final MediaService media = mock(MediaService.class);
     private final PostService service = new PostService(posts, mock(PostInteractionRepository.class),
-            mock(CommentRepository.class), users, mock(CategoryRepository.class), ai);
+            mock(CommentRepository.class), users, mock(CategoryRepository.class), ai, media);
     private final User owner = new User();
     private final Post post = new Post();
 
@@ -81,5 +85,38 @@ class PostModerationStateTest {
                 () -> service.deletePost(1,1)).getStatus());
         assertEquals("APPROVED", post.getStatus());
         verify(posts, never()).saveAndFlush(any());
+    }
+
+    @Test void uploadedPostUsesCloudinaryAndTheExistingModerationServiceExactlyOnce() {
+        var file = new MockMultipartFile("image", "post.png", "image/png", new byte[]{1, 2, 3});
+        when(media.upload(file)).thenReturn(new MediaUploadResponse("https://res.cloudinary.com/test/image.png", "image", "test"));
+        when(posts.saveAndFlush(any(Post.class))).thenAnswer(invocation -> {
+            Post saved = invocation.getArgument(0);
+            ReflectionTestUtils.setField(saved, "postId", 3);
+            return saved;
+        });
+
+        service.createPost(2, null, "Vegetarian meal", "Fresh vegetables", file, null);
+
+        var saved = org.mockito.ArgumentCaptor.forClass(Post.class);
+        verify(posts).saveAndFlush(saved.capture());
+        assertEquals("PENDING", saved.getValue().getStatus());
+        assertEquals("https://res.cloudinary.com/test/image.png", saved.getValue().getImageUrl());
+        verify(media).upload(file);
+        verify(ai).moderatePost(saved.getValue());
+        verifyNoMoreInteractions(media, ai);
+    }
+
+    @Test void preuploadedCloudinaryMediaIsNotUploadedAgainBeforeModeration() {
+        when(posts.saveAndFlush(any(Post.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createPost(2, null, "Vegetarian meal", "Fresh vegetables", null,
+                "https://res.cloudinary.com/test/video.mp4");
+
+        verifyNoInteractions(media);
+        verify(ai).moderatePost(argThat(saved ->
+                "https://res.cloudinary.com/test/video.mp4".equals(saved.getImageUrl())
+                        && "PENDING".equals(saved.getStatus())));
+        verifyNoMoreInteractions(ai);
     }
 }

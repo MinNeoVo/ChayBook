@@ -33,16 +33,16 @@ function BmiCalculator() {
           </div>
 
           <h4 className="text-lg font-bold text-gray-900">
-            Quick BMI Calculator
+            Tính BMI nhanh
           </h4>
         </div>
 
-        <span className="text-xs text-gray-500">WHO Standard</span>
+        <span className="text-xs text-gray-500">Tiêu chuẩn WHO</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <Input
-          label="Height (cm)"
+          label="Chiều cao (cm)"
           type="number"
           value={height}
           onChange={(event) => setHeight(event.target.value)}
@@ -52,7 +52,7 @@ function BmiCalculator() {
         />
 
         <Input
-          label="Weight (kg)"
+          label="Cân nặng (kg)"
           type="number"
           value={weight}
           onChange={(event) => setWeight(event.target.value)}
@@ -69,7 +69,7 @@ function BmiCalculator() {
         className="flex h-11 items-center justify-center gap-2"
       >
         <Calculator className="h-[18px] w-[18px]" />
-        {loading ? "Saving BMI..." : "Calculate Health Status"}
+        {loading ? "Đang lưu BMI..." : "Tính chỉ số sức khỏe"}
       </Button>
 
       {error && (
@@ -84,20 +84,20 @@ function BmiCalculator() {
             to="/login"
             className="font-semibold text-chaybook-primary hover:underline"
           >
-            Log in
+            Đăng nhập
           </Link>{" "}
-          to save and sync your BMI.
+          để lưu và đồng bộ chỉ số BMI.
         </p>
       )}
 
       <div className="flex items-center justify-between rounded-xl bg-chaybook-container p-4">
         <div className="flex flex-col">
-          <span className="text-xs text-gray-500">Your BMI Result</span>
+          <span className="text-xs text-gray-500">Kết quả BMI của bạn</span>
 
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-chaybook-primary">
               {loading && !bmiRecord
-                ? "Loading..."
+                ? "Đang tải..."
                 : formatBmiValue(bmiRecord?.bmi)}
             </span>
 
@@ -111,7 +111,7 @@ function BmiCalculator() {
           to="/bmi"
           className="flex items-center gap-1 text-xs font-semibold text-chaybook-primary hover:underline"
         >
-          Full Analysis
+          Xem phân tích chi tiết
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>

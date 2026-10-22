@@ -63,16 +63,16 @@ function AiQuickAssistant() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-chaybook-primary">
         <Sparkles className="h-[18px] w-[18px]" />
-        <span>Immediate Meal Inspiration</span>
+        <span>Gợi ý bữa ăn nhanh</span>
       </div>
 
       <h3 className="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">
-        Need an immediate healthy dinner idea?
+        Bạn cần gợi ý bữa tối lành mạnh ngay lúc này?
       </h3>
 
       <p className="text-sm leading-6 text-gray-600 md:text-base">
-        Type your available ingredients or dietary goals. Our AI can suggest
-        plant-based meal combinations based on your needs.
+        Nhập nguyên liệu bạn có hoặc mục tiêu dinh dưỡng. AI sẽ gợi ý những món
+        ăn từ thực vật phù hợp với nhu cầu của bạn.
       </p>
 
       <form
@@ -80,9 +80,9 @@ function AiQuickAssistant() {
         className="relative mt-1 flex w-full items-center"
       >
         <Input
-          label="Ask nutrition AI"
+          label="Hỏi AI về dinh dưỡng"
           type="text" required maxLength={4000} disabled={busy}
-          placeholder="e.g. Tofu, broccoli and brown rice..."
+          placeholder="Ví dụ: đậu phụ, bông cải và gạo lứt..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="h-13 pr-28"
@@ -92,7 +92,7 @@ function AiQuickAssistant() {
           type="submit" disabled={busy}
           className="absolute right-1.5 top-1.5 bottom-1.5 flex items-center gap-1 rounded-lg bg-chaybook-primary px-4 text-xs font-semibold text-white transition-colors hover:bg-chaybook-hover"
         >
-          {busy ? "Asking?" : "Ask AI"}
+          {busy ? "Đang hỏi…" : "Hỏi AI"}
           <Send className="h-4 w-4" />
         </button>
       </form>
@@ -146,7 +146,7 @@ function HomePage() {
                 <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-chaybook-container px-3.5 py-1.5 shadow-sm">
                   <span className="flex items-center gap-1.5 text-xs font-bold text-chaybook-primary">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-chaybook-primary" />
-                    25,000+ recipes & verified guides
+                    Hơn 25.000 công thức và cẩm nang đã kiểm duyệt
                   </span>
 
                   <span className="h-1 w-1 rounded-full bg-gray-400" />
@@ -154,24 +154,23 @@ function HomePage() {
                   <span className="flex items-center gap-1 text-xs text-gray-600">
                     <Star className="h-3.5 w-3.5 fill-current text-amber-500" />
                     <span className="font-bold text-gray-900">4.9/5</span>
-                    by 12,000+ plant eaters
+                    từ hơn 12.000 người ăn thực vật
                   </span>
                 </div>
 
                 {/* Heading */}
                 <div className="flex flex-col gap-2">
                   <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-[48px]">
-                    Eat Better.
+                    Ăn ngon hơn.
                     <br />
                     <span className="text-chaybook-primary">
-                      Live Healthier.
+                      Sống khỏe hơn.
                     </span>
                   </h1>
 
                   <p className="max-w-xl pt-2 text-base leading-7 text-gray-600 md:text-lg">
-                    Your personal intelligent assistant and trusted peer
-                    community for a vibrant, nutrient-dense, and sustainable
-                    vegetarian lifestyle.
+                    Trợ lý thông minh và cộng đồng đồng hành đáng tin cậy giúp
+                    bạn xây dựng lối sống ăn chay giàu dinh dưỡng, bền vững.
                   </p>
                 </div>
 
@@ -183,7 +182,7 @@ function HomePage() {
                       className="flex h-12 w-full items-center justify-center gap-2 px-6 sm:w-auto"
                     >
                       <Bot className="h-5 w-5" />
-                      Chat with AI Nutritionist
+                      Trò chuyện với chuyên gia dinh dưỡng AI
                     </Button>
                   </Link>
 
@@ -194,7 +193,7 @@ function HomePage() {
                       className="flex h-12 w-full items-center justify-center gap-2 px-6 sm:w-auto"
                     >
                       <Utensils className="h-5 w-5" />
-                      Explore Healthy Recipes
+                      Khám phá công thức lành mạnh
                     </Button>
                   </Link>
                 </div>
@@ -207,7 +206,7 @@ function HomePage() {
                     </span>
 
                     <span className="text-[11px] uppercase tracking-wider text-gray-500">
-                      Plant-Based
+                      Thuần thực vật
                     </span>
                   </div>
 
@@ -217,7 +216,7 @@ function HomePage() {
                     </span>
 
                     <span className="text-[11px] uppercase tracking-wider text-gray-500">
-                      Avg Bowl Protein
+                      Protein trung bình mỗi phần
                     </span>
                   </div>
 
@@ -227,7 +226,7 @@ function HomePage() {
                     </span>
 
                     <span className="text-[11px] uppercase tracking-wider text-gray-500">
-                      Instant AI Advice
+                      Tư vấn AI tức thì
                     </span>
                   </div>
                 </div>
@@ -239,7 +238,7 @@ function HomePage() {
                   <div className="relative h-[420px] overflow-hidden rounded-xl sm:h-[460px]">
                     <img
                       src={posts[0]?.image || "/home-background.png"}
-                      alt={posts[0]?.imageAlt || "Healthy vegetarian meal"}
+                      alt={posts[0]?.imageAlt || "Bữa ăn chay lành mạnh"}
                       className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                     />
 
@@ -250,7 +249,7 @@ function HomePage() {
                       <span className="h-2 w-2 rounded-full bg-chaybook-primary" />
 
                       <span className="text-xs font-semibold text-gray-900">
-                        {posts[0]?.title || "Healthy Vegetarian Bowl"}
+                        {posts[0]?.title || "Tô món chay lành mạnh"}
                       </span>
                     </div>
                   </div>
@@ -264,12 +263,12 @@ function HomePage() {
                     </div>
 
                     <span className="text-xs font-bold">
-                      AI Nutrition Insight
+                      Gợi ý dinh dưỡng từ AI
                     </span>
                   </div>
 
                   <p className="text-[11px] leading-snug text-gray-600">
-                    High in plant protein, rich in iron and prebiotic fiber.
+                    Giàu protein thực vật, sắt và chất xơ prebiotic.
                   </p>
                 </div>
 
@@ -277,11 +276,11 @@ function HomePage() {
                 <div className="absolute -bottom-6 -right-2 min-w-[210px] rounded-xl bg-white/95 p-4 shadow-lg backdrop-blur-md sm:-right-6">
                   <div className="flex items-center justify-between gap-3 pb-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                      BMI Analysis
+                      Phân tích BMI
                     </span>
 
                     <span className="rounded-full bg-chaybook-secondary-container px-2 py-0.5 text-[11px] font-bold text-chaybook-primary">
-                      Optimal
+                      Tối ưu
                     </span>
                   </div>
 
@@ -291,7 +290,7 @@ function HomePage() {
                     </span>
 
                     <span className="text-[11px] text-gray-500">
-                      Healthy weight range
+                      Khoảng cân nặng khỏe mạnh
                     </span>
                   </div>
 
@@ -313,16 +312,16 @@ function HomePage() {
             {/* Header */}
             <div className="mx-auto mb-12 flex max-w-2xl flex-col items-center text-center">
               <span className="mb-3 rounded-full bg-chaybook-secondary-container px-3 py-1 text-xs font-bold uppercase tracking-wider text-chaybook-primary">
-                Powerful Tools
+                Công cụ hữu ích
               </span>
 
               <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                Everything You Need to Flourish
+                Mọi điều bạn cần để sống khỏe
               </h2>
 
               <p className="pt-2 text-sm leading-6 text-gray-600 md:text-base">
-                Personalized vegetarian guidance, nutritional tools, and a
-                vibrant community of passionate home cooks.
+                Hướng dẫn ăn chay cá nhân hóa, công cụ dinh dưỡng và cộng đồng
+                những người yêu nấu ăn tại nhà.
               </p>
             </div>
 
@@ -337,12 +336,12 @@ function HomePage() {
 
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      AI Nutrition Assistant
+                      Trợ lý dinh dưỡng AI
                     </h3>
 
                     <p className="pt-2 text-sm leading-6 text-gray-600">
-                      Ask questions about plant proteins, micronutrients, meal
-                      pairings and vegetarian nutrition.
+                      Hỏi về protein thực vật, vi chất, cách kết hợp món ăn và
+                      dinh dưỡng chay.
                     </p>
                   </div>
                 </div>
@@ -352,7 +351,7 @@ function HomePage() {
                     <MessageCircle className="h-3.5 w-3.5 text-chaybook-primary" />
 
                     <span className="truncate">
-                      "Quick 15-min high-protein dinner?"
+                      "Bữa tối giàu protein trong 15 phút?"
                     </span>
                   </div>
 
@@ -360,7 +359,7 @@ function HomePage() {
                     to="/ai-assistant"
                     className="flex items-center justify-between text-sm font-semibold text-chaybook-primary"
                   >
-                    Try Nutrition AI
+                    Trải nghiệm AI dinh dưỡng
                     <ArrowRight className="h-[18px] w-[18px]" />
                   </Link>
                 </div>
@@ -375,12 +374,12 @@ function HomePage() {
 
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      BMI & Health Analysis
+                      Phân tích BMI & sức khỏe
                     </h3>
 
                     <p className="pt-2 text-sm leading-6 text-gray-600">
-                      Calculate your BMI, understand your health metrics and
-                      receive tailored vegetarian guidance.
+                      Tính BMI, tìm hiểu các chỉ số sức khỏe và nhận hướng dẫn
+                      dinh dưỡng chay phù hợp.
                     </p>
                   </div>
                 </div>
@@ -390,7 +389,7 @@ function HomePage() {
                     <Calculator className="h-3.5 w-3.5 text-chaybook-primary" />
 
                     <span className="truncate">
-                      Visual weight & metabolic health ranges
+                      Theo dõi cân nặng và chuyển hóa
                     </span>
                   </div>
 
@@ -398,7 +397,7 @@ function HomePage() {
                     to="/bmi"
                     className="flex items-center justify-between text-sm font-semibold text-chaybook-primary"
                   >
-                    Calculate Now
+                    Tính ngay
                     <ArrowRight className="h-[18px] w-[18px]" />
                   </Link>
                 </div>
@@ -413,12 +412,12 @@ function HomePage() {
 
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      Vegetarian Community
+                      Cộng đồng ăn chay
                     </h3>
 
                     <p className="pt-2 text-sm leading-6 text-gray-600">
-                      Connect with plant-based foodies, share meals, discover
-                      dining spots and swap healthy lifestyle tips.
+                      Kết nối với những người yêu món chay, chia sẻ bữa ăn, khám
+                      phá địa điểm ăn uống và trao đổi bí quyết sống khỏe.
                     </p>
                   </div>
                 </div>
@@ -428,7 +427,7 @@ function HomePage() {
                     <MessageCircle className="h-3.5 w-3.5 text-chaybook-primary" />
 
                     <span className="truncate">
-                      1,400+ active conversations today
+                      Hơn 1.400 cuộc trò chuyện hôm nay
                     </span>
                   </div>
 
@@ -436,7 +435,7 @@ function HomePage() {
                     to="/community"
                     className="flex items-center justify-between text-sm font-semibold text-chaybook-primary"
                   >
-                    Explore Community
+                    Khám phá cộng đồng
                     <ArrowRight className="h-[18px] w-[18px]" />
                   </Link>
                 </div>

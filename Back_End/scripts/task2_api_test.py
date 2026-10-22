@@ -78,9 +78,9 @@ class Task2ApiTests(unittest.TestCase):
 
     def test_04_profile_post_edit_delete_ownership_and_terminal_states(self):
         self.check("PUT", "/api/posts/1", 403, {"title": "Other user's post"}, self.other)
-        self.check("PUT", "/api/posts/1", body={"title": "IT Task2 Edited Post", "content": "Edited content"}, session=self.member)
+        self.check("PUT", "/api/posts/1", body={"title": "IT Task Edited Post", "content": "Edited content"}, session=self.member)
         detail = self.check("GET", "/api/admin/posts-videos/POST/1")
-        self.assertEqual(("IT Task2 Edited Post", "PENDING"), (detail["title"], detail["status"]))
+        self.assertEqual(("IT Task Edited Post", "PENDING"), (detail["title"], detail["status"]))
         for identifier in (4, 5):
             self.check("PUT", f"/api/posts/{identifier}", 404, {"title": "Cannot restore"}, self.member)
             self.check("DELETE", f"/api/posts/{identifier}", 404, session=self.member)

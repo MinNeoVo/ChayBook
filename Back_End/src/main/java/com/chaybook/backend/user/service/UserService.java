@@ -1,11 +1,15 @@
 package com.chaybook.backend.user.service;
 
+import com.chaybook.backend.auth.dto.ResetPasswordRequest;
+import com.chaybook.backend.auth.service.AuthService;
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.community.dto.PostResponse;
 import com.chaybook.backend.community.entity.Post;
 import com.chaybook.backend.community.repository.CommentRepository;
 import com.chaybook.backend.community.repository.PostInteractionRepository;
 import com.chaybook.backend.community.repository.PostRepository;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
+import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.user.dto.*;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.exception.IncorrectCurrentPasswordException;
@@ -17,9 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.util.*;
 
 @Service
@@ -30,19 +32,25 @@ public class UserService {
     private final PostRepository postRepository;
     private final PostInteractionRepository postInteractionRepository;
     private final CommentRepository commentRepository;
+    private final AuthService authService;
+    private final MediaService mediaService;
 
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             PostRepository postRepository,
             PostInteractionRepository postInteractionRepository,
-            CommentRepository commentRepository
+            CommentRepository commentRepository,
+            AuthService authService,
+            MediaService mediaService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;  //Cos kha nang anh huong Auth
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
         this.commentRepository = commentRepository;
+        this.authService = authService;
+        this.mediaService = mediaService;
     }
 
     /**
@@ -65,6 +73,13 @@ public class UserService {
 
         // Lấy tất cả bài viết (trừ DELETED) của user
         List<Post> posts = postRepository.findPostsByUserId(currentUserId);
+        Map<Integer, String> adminRejectionReasons = new HashMap<>();
+        for (Object[] rejection : postRepository.findLatestRejectionReasonsByUserId(currentUserId)) {
+            adminRejectionReasons.put(
+                    ((Number) rejection[0]).intValue(),
+                    rejection[1] == null ? null : rejection[1].toString()
+            );
+        }
 
         // Đếm tương tác (LIKE, BOOKMARK) cho các bài viết của user
         Map<Integer, Long> likeCounts = new HashMap<>();
@@ -129,7 +144,8 @@ public class UserService {
                     bookmarkCounts.getOrDefault(postId, 0L),
                     commentCounts.getOrDefault(postId, 0L),
                     likedPostIds.contains(postId),
-                    bookmarkedPostIds.contains(postId)
+                    bookmarkedPostIds.contains(postId),
+                    adminRejectionReasons.get(postId)
             ));
         }
 
@@ -279,6 +295,32 @@ public class UserService {
             throw new IncorrectCurrentPasswordException();
         }
 
+        if (request.newPassword().equals(request.currentPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "New password must be different from the current password"
+            );
+        }
+
+        boolean hasResetAuthorization = request.email() != null
+                || request.resetToken() != null;
+        if (hasResetAuthorization) {
+            if (request.email() == null
+                    || request.resetToken() == null
+                    || !user.getEmail().equalsIgnoreCase(request.email().strip())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "OTP verification does not match the authenticated account"
+                );
+            }
+            authService.resetPassword(new ResetPasswordRequest(
+                    request.email(),
+                    request.resetToken(),
+                    request.newPassword()
+            ));
+            return;
+        }
+
         if (request.newPassword()
                 .getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(
@@ -296,8 +338,7 @@ public class UserService {
 
 
     /**
-     * Upload ảnh avatar cho user, lưu vào thư mục uploads/avatars/.
-     * Trả về URL tương đối của ảnh đã lưu.
+     * Upload ảnh avatar lên Cloudinary và lưu URL của ảnh vào profile.
      */
     @Transactional
     public UploadAvatarResponse uploadAvatar(
@@ -336,34 +377,18 @@ public class UserService {
             );
         }
 
-        String extension = switch (contentType.toLowerCase()) {
-            case "image/png" -> ".png";
-            case "image/webp" -> ".webp";
-            default -> ".jpg";
-        };
-
-        String fileName = UUID.randomUUID() + extension;
-        Path uploadDir = Paths.get("uploads", "avatars").toAbsolutePath();
-        Path destination = uploadDir.resolve(fileName).normalize();
-
-        try {
-            Files.createDirectories(uploadDir);
-            Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Unable to save avatar image"
-            );
-        }
-
-        String avatarUrl = "/uploads/avatars/" + fileName;
-
-        // Cập nhật avatarUrl cho user trong DB
         User user = userRepository.findById(authenticatedUserId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User not found"
                 ));
+
+        MediaUploadResponse upload = mediaService.upload(file);
+        String avatarUrl = upload.getUrl();
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            throw new IllegalStateException("Cloudinary did not return an avatar URL.");
+        }
+
         user.setAvatarUrl(avatarUrl);
         userRepository.saveAndFlush(user);
 

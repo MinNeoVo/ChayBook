@@ -1,25 +1,32 @@
 function PostStatusBadge({ status }) {
+  const normalizedStatus = String(status || "").trim().toUpperCase();
   const statusConfig = {
     APPROVED: {
-      label: "Approved",
+      label: "Đã duyệt",
       dot: "bg-secondary",
       className: "bg-secondary-container/60 text-on-secondary-container",
     },
 
     PENDING: {
-      label: "Pending Review",
+      label: "Chờ duyệt",
       dot: "bg-tertiary animate-pulse",
       className: "bg-surface-container-high text-tertiary",
     },
 
     REJECTED: {
-      label: "Rejected",
+      label: "Đã từ chối",
+      dot: "bg-error",
+      className: "bg-error-container text-on-error-container",
+    },
+
+    DENIED: {
+      label: "Đã từ chối",
       dot: "bg-error",
       className: "bg-error-container text-on-error-container",
     },
   };
 
-  const config = statusConfig[status] || statusConfig.PENDING;
+  const config = statusConfig[normalizedStatus] || statusConfig.PENDING;
 
   return (
     <span

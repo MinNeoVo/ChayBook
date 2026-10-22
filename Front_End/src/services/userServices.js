@@ -1,7 +1,5 @@
 import { apiFetch } from "./api";
 
-export const changePassword = (id, body) => apiFetch(`/users/${id}/password`, { method: "PUT", body });
-
 /**
  * Lấy thông tin profile + danh sách bài viết của user đang đăng nhập.
  * GET /api/users/me/profile
@@ -23,6 +21,17 @@ export async function updateProfile(userId, data) {
   return apiFetch(`/users/${userId}`, {
     method: "PUT",
     body: data,
+  });
+}
+
+/**
+ * Change the authenticated user's password.
+ * PUT /api/users/{userId}/password
+ */
+export async function changePassword(userId, currentPassword, newPassword, email, resetToken) {
+  return apiFetch(`/users/${encodeURIComponent(userId)}/password`, {
+    method: "PUT",
+    body: { currentPassword, newPassword, email, resetToken },
   });
 }
 

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import PostStatusBadge from "./PostStatusBadge";
-import API_BASE_URL from "../../services/app";
+import MediaRenderer from "../media/MediaRenderer";
 import Avatar from "../common/Avatar";
 
 function PostCard({
@@ -25,6 +25,8 @@ function PostCard({
   onEdit,
   onDelete,
   onWithdraw,
+  isPendingAction = false,
+  isActionDisabled = false,
 }) {
   const {
     status,
@@ -44,8 +46,6 @@ function PostCard({
     bookmarkedByCurrentUser,
   } = post;
 
-  const API_ORIGIN = new URL(API_BASE_URL).origin;
-
   const isLiked = Boolean(likedByCurrentUser);
   const isBookmarked = Boolean(bookmarkedByCurrentUser);
 
@@ -54,9 +54,10 @@ function PostCard({
 
   const postDescription = description || content;
 
-  const isApproved = !status || status === "APPROVED";
-  const isRejected = status === "REJECTED";
-  const isPending = status === "PENDING";
+  const normalizedStatus = String(status || "").trim().toUpperCase();
+  const isApproved = !status || normalizedStatus === "APPROVED";
+  const isDenied = normalizedStatus === "REJECTED" || normalizedStatus === "DENIED";
+  const isPending = normalizedStatus === "PENDING";
 
   return (
     <article className="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
@@ -67,7 +68,7 @@ function PostCard({
 
           <Avatar
             src={author?.avatarUrl}
-            alt={author?.fullName || "User avatar"}
+            alt={author?.fullName || "Ảnh đại diện người dùng"}
             size="md"
           />
 
@@ -75,7 +76,7 @@ function PostCard({
           <div className="flex min-w-0 flex-col">
             <div className="flex items-center gap-1">
               <span className="truncate text-sm font-bold text-gray-900">
-                {author?.name || "ChayBook User"}
+                {author?.name || "Thành viên ChayBook"}
               </span>
             </div>
 
@@ -92,17 +93,17 @@ function PostCard({
       </div>
 
       {isApproved && onEdit && <div className="flex justify-end gap-3 text-sm">
-        <button type="button" onClick={() => onEdit(post)}>Edit Post</button>
-        <button type="button" onClick={() => onDelete?.(post)} className="text-red-700">Delete Post</button>
+        <button type="button" disabled={isActionDisabled} onClick={() => onEdit(post)}>Chỉnh sửa bài viết</button>
+        <button type="button" disabled={isActionDisabled} onClick={() => onDelete?.(post)} className="text-red-700">Xóa bài viết</button>
       </div>}
 
       {/* ================= DENIED FEEDBACK ================= */}
-      {isRejected && moderationFeedback && (
+      {isDenied && moderationFeedback && (
         <div className="flex items-start gap-3 rounded-xl bg-red-50 p-4">
           <AlertCircle size={20} className="mt-0.5 shrink-0 text-red-600" />
 
           <div className="flex flex-col text-sm text-red-800">
-            <span className="font-bold">Moderation Feedback</span>
+            <span className="font-bold">Lý do từ chối</span>
 
             <p className="mt-0.5 leading-relaxed">{moderationFeedback}</p>
           </div>
@@ -115,8 +116,8 @@ function PostCard({
           <Hourglass size={18} className="shrink-0 text-chaybook-primary" />
 
           <p className="text-sm text-gray-600">
-            Under review by ChayBook verified dietitians. Review queue average
-            turnaround: <strong>2–4 hours</strong>.
+            Bài viết đang được đội ngũ ChayBook xem xét. Thời gian xử lý trung
+            bình: <strong>2–4 giờ</strong>.
           </p>
         </div>
       )}
@@ -153,12 +154,8 @@ function PostCard({
           className="relative h-64 w-full overflow-hidden rounded-xl md:h-80 cursor-pointer"
           onClick={() => onComment?.(post)}
         >
-          <img
-            src={
-              image.startsWith("http")
-                ? image
-                : `${API_ORIGIN}${image.startsWith("/") ? "" : "/"}${image}`
-            }
+          <MediaRenderer
+            src={image}
             alt={imageAlt || title}
             className="
         h-full
@@ -168,8 +165,9 @@ function PostCard({
         duration-500
         hover:scale-105
       "
+            onClick={(event) => event.stopPropagation()}
             onError={(event) => {
-              console.error("Không tải được ảnh:", event.currentTarget.src);
+              console.error("Không tải được media:", event.currentTarget.src);
             }}
           />
         </div>
@@ -208,7 +206,7 @@ function PostCard({
                 }`}
               />
 
-              <span className={isLiked ? "font-bold" : ""}>{likes} likes</span>
+              <span className={isLiked ? "font-bold" : ""}>{likes} lượt thích</span>
             </button>
 
             {/* Comment */}
@@ -228,7 +226,7 @@ function PostCard({
             >
               <MessageCircle size={19} />
 
-              <span>{comments} comments</span>
+              <span>{comments} bình luận</span>
             </button>
 
             {/* Share */}
@@ -249,7 +247,7 @@ function PostCard({
             >
               <Share2 size={19} />
 
-              <span>Share</span>
+              <span>Chia sẻ</span>
             </button>
           </div>
 
@@ -294,7 +292,7 @@ function PostCard({
                 transition-colors
                 hover:bg-gray-100
               "
-              title="More options"
+              title="Tùy chọn khác"
             >
               <MoreVertical size={20} />
             </button>
@@ -303,7 +301,7 @@ function PostCard({
       )}
 
       {/* ================= DENIED ACTIONS ================= */}
-      {isRejected && (
+      {isDenied && (
         <div
           className="
             flex
@@ -317,7 +315,7 @@ function PostCard({
           "
         >
           <span className="text-[11px] text-gray-500">
-            You can edit the post and resubmit anytime.
+            Bạn có thể chỉnh sửa bài viết và gửi lại bất cứ lúc nào.
           </span>
 
           <div className="flex items-center gap-2">
@@ -325,6 +323,8 @@ function PostCard({
             <button
               type="button"
               onClick={() => onDelete?.(post)}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
               className="
                 flex
                 cursor-pointer
@@ -335,16 +335,20 @@ function PostCard({
                 text-sm
                 text-red-600
                 hover:underline
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
               <Trash2 size={15} />
-              Delete Draft
+              {isPendingAction ? "Đang xóa..." : "Xóa bài viết"}
             </button>
 
             {/* Edit */}
             <button
               type="button"
               onClick={() => onEdit?.(post)}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
               className="
                 flex
                 cursor-pointer
@@ -359,10 +363,12 @@ function PostCard({
                 text-red-600
                 shadow-sm
                 hover:bg-red-50
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
               <Edit3 size={16} />
-              Edit & Resubmit
+              {isPendingAction ? "Đang lưu..." : "Chỉnh sửa & gửi lại"}
             </button>
           </div>
         </div>
@@ -390,7 +396,7 @@ function PostCard({
             "
           >
             <LockKeyhole size={14} />
-            Locked during verification
+            Đang khóa trong thời gian kiểm duyệt
           </span>
 
           <div className="flex items-center gap-2">
@@ -398,6 +404,8 @@ function PostCard({
             <button
               type="button"
               onClick={() => onWithdraw?.(post)}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
               className="
                 cursor-pointer
                 rounded-lg
@@ -406,15 +414,19 @@ function PostCard({
                 text-sm
                 text-gray-600
                 hover:bg-gray-100
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
-              Withdraw Submission
+              {isPendingAction ? "Đang xử lý..." : "Rút bài viết"}
             </button>
 
             {/* Edit */}
             <button
               type="button"
               onClick={() => onEdit?.(post)}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
               className="
                 cursor-pointer
                 rounded-lg
@@ -425,9 +437,11 @@ function PostCard({
                 font-medium
                 text-gray-800
                 hover:bg-gray-200
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
-              Edit Details
+              Chỉnh sửa
             </button>
           </div>
         </div>

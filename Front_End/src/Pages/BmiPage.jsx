@@ -6,12 +6,12 @@ function BmiPage() {
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
         <header>
           <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-chaybook-primary">
-            Health tools
+            Công cụ sức khỏe
           </p>
-          <h1 className="text-3xl font-bold sm:text-4xl">BMI Calculator</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">Tính chỉ số BMI</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3e4a3d]">
-            Calculate your BMI here. When signed in, the result is saved and
-            shared with the home page and meal planning page.
+            Tính chỉ số BMI tại đây. Khi đăng nhập, kết quả sẽ được lưu và đồng
+            bộ với trang chủ và trang lập thực đơn.
           </p>
         </header>
 

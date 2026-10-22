@@ -1,7 +1,13 @@
 import { apiFetch } from "./api";
 
-export const updatePost = (id, body) => apiFetch(`/posts/${id}`, { method: "PUT", body });
-export const deletePost = (id) => apiFetch(`/posts/${id}`, { method: "DELETE" });
+export async function uploadMedia(file) {
+  const body = new FormData();
+  body.append("file", file);
+  return apiFetch("/media/upload", {
+    method: "POST",
+    body,
+  });
+}
 
 /**
  * Lấy danh sách bài viết đã duyệt với phân trang
@@ -37,7 +43,7 @@ export async function getPosts(
 
 /**
  * Tạo bài viết mới
- * @param {object} postData - { categoryId, title, content, imageUrl }
+ * @param {object} postData - { categoryId, title, content, image }
  */
 
 export async function createPost(postData) {
@@ -51,12 +57,56 @@ export async function createPost(postData) {
   formData.append("content", postData.content.trim());
 
   if (postData.image instanceof File) {
-    formData.append("image", postData.image);
+    const uploadedMedia = await uploadMedia(postData.image);
+    if (typeof uploadedMedia?.url !== "string" || !uploadedMedia.url.startsWith("https://")) {
+      throw new Error("Cloudinary did not return a secure media URL.");
+    }
+    formData.append("imageUrl", uploadedMedia.url);
   }
 
   return apiFetch("/posts", {
     method: "POST",
     body: formData,
+  });
+}
+
+export async function updatePost(postId, postData) {
+  if (!postId || !Number.isInteger(Number(postData.categoryId))) {
+    throw new Error("Vui lòng chọn danh mục hợp lệ.");
+  }
+
+  let imageUrl = postData.imageUrl ?? "";
+  if (postData.image instanceof File) {
+    const uploadedMedia = await uploadMedia(postData.image);
+    if (typeof uploadedMedia?.url !== "string" || !uploadedMedia.url.startsWith("https://")) {
+      throw new Error("Cloudinary did not return a secure media URL.");
+    }
+    imageUrl = uploadedMedia.url;
+  }
+
+  const response = await apiFetch(`/posts/${encodeURIComponent(postId)}`, {
+    method: "PUT",
+    body: {
+      categoryId: Number(postData.categoryId),
+      title: postData.title.trim(),
+      content: postData.content.trim(),
+      imageUrl,
+    },
+  });
+  return { ...response, imageUrl };
+}
+
+export async function withdrawPost(postId) {
+  return deletePost(postId);
+}
+
+export async function deletePost(postId) {
+  if (!postId) {
+    throw new Error("Không tìm thấy bài viết cần xóa.");
+  }
+
+  return apiFetch(`/posts/${encodeURIComponent(postId)}`, {
+    method: "DELETE",
   });
 }
 

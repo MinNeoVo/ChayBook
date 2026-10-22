@@ -39,16 +39,49 @@ test('Related article service creates numeric page/size and reads Spring Page', 
   assert.equal(seen.options.credentials, 'include');
 });
 
-test('Post Edit/Delete and password services use existing methods and JSON DTOs', async () => {
+test('Post Edit/Delete and OTP password services use one implementation and the backend DTOs', async () => {
   const calls = [];
   globalThis.fetch = async (url, options) => { calls.push({ url, ...options }); return new Response('{}', { status: 200 }); };
   const posts = await server.ssrLoadModule('/src/services/postServices.js');
   const users = await server.ssrLoadModule('/src/services/userServices.js');
-  await posts.updatePost(2, { title: 'Updated' }); await posts.deletePost(2);
-  await users.changePassword(2, { currentPassword: 'synthetic', newPassword: 'synthetic-new' });
+  await posts.updatePost(2, { title: 'Updated', content: 'Vegetarian meal', categoryId: 3, imageUrl: 'https://example.com/meal.png' });
+  await posts.deletePost(2);
+  await users.changePassword(2, 'synthetic', 'synthetic-new', 'user@example.invalid', 'otp-token');
   assert.deepEqual(calls.map((c) => c.method), ['PUT', 'DELETE', 'PUT']);
-  assert.deepEqual(JSON.parse(calls[0].body), { title: 'Updated' });
+  assert.deepEqual(JSON.parse(calls[0].body), { title: 'Updated', content: 'Vegetarian meal', categoryId: 3, imageUrl: 'https://example.com/meal.png' });
   assert.ok(calls[2].url.endsWith('/users/2/password'));
+  assert.deepEqual(JSON.parse(calls[2].body), { currentPassword: 'synthetic', newPassword: 'synthetic-new', email: 'user@example.invalid', resetToken: 'otp-token' });
+});
+
+test('Post creation uploads media once and sends the Cloudinary URL to the existing post endpoint', async () => {
+  const calls = [];
+  globalThis.fetch = async (url, options) => {
+    calls.push({ url, ...options });
+    return new Response(JSON.stringify(url.endsWith('/media/upload')
+      ? { url: 'https://res.cloudinary.com/test/meal.mp4' }
+      : { postId: 2 }), { status: 200 });
+  };
+  const { createPost } = await server.ssrLoadModule('/src/services/postServices.js');
+  const image = new File(['synthetic-video'], 'meal.mp4', { type: 'video/mp4' });
+  await createPost({ categoryId: 3, title: 'Vegetarian meal', content: 'Fresh vegetables', image });
+  assert.equal(calls.length, 2);
+  assert.ok(calls[0].url.endsWith('/media/upload'));
+  assert.equal(calls[0].body.get('file'), image);
+  assert.ok(calls[1].url.endsWith('/posts'));
+  assert.equal(calls[1].body.get('imageUrl'), 'https://res.cloudinary.com/test/meal.mp4');
+  assert.equal(calls[1].body.has('image'), false);
+});
+
+test('Admin moderation keeps one status endpoint and separates the trimmed rejection reason', async () => {
+  const calls = [];
+  globalThis.fetch = async (url, options) => { calls.push({ url, ...options }); return new Response(null, { status: 204 }); };
+  const { updateAdminSubmissionStatus } = await server.ssrLoadModule('/src/services/adminContentServices.js');
+  await updateAdminSubmissionStatus('POST', 2, 'REJECTED', '  Needs context  ');
+  await updateAdminSubmissionStatus('VIDEO', 3, 'APPROVED');
+  assert.ok(calls[0].url.endsWith('/admin/posts-videos/POST/2/status'));
+  assert.deepEqual(JSON.parse(calls[0].body), { status: 'REJECTED', reason: 'Needs context' });
+  assert.deepEqual(JSON.parse(calls[1].body), { status: 'APPROVED' });
+  assert.ok(calls.every((call) => call.method === 'PATCH'));
 });
 
 test('AI request keeps conversation context and uses cookies without a spoofable guest header', async () => {
