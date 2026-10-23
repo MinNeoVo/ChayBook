@@ -9,7 +9,7 @@ import com.chaybook.backend.admin.dashboard.service.AdminDashboardStatisticsServ
 import com.chaybook.backend.admin.post.controller.AdminPostVideoController;
 import com.chaybook.backend.admin.post.service.AdminPostVideoService;
 import com.chaybook.backend.admin.recipe.controller.AdminRecipeController;
-import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
+import com.chaybook.backend.admin.recipe.service.impl.AdminRecipeServiceImpl;
 import com.chaybook.backend.admin.user.controller.AdminUserController;
 import com.chaybook.backend.admin.user.service.AdminUserService;
 import com.chaybook.backend.common.exception.GlobalExceptionHandler;
@@ -100,6 +100,19 @@ class AdminApiSecurityTest {
         verifyNoInteractions(context.getBean(AdminPostVideoService.class));
     }
 
+    @Test void onlyAdminCanPublishUsingTheExistingArticleUpdateEndpoint() throws Exception {
+        String body = "{\"categoryId\":1,\"title\":\"Draft title\",\"content\":\"Draft content\",\"status\":\"PUBLISHED\"}";
+        mvc.perform(put("/api/admin/articles/7").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/admin/articles/7").cookie(token("USER"))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
+        verifyNoInteractions(context.getBean(AdminArticleService.class));
+        mvc.perform(put("/api/admin/articles/7").cookie(token("ADMIN"))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+        verify(context.getBean(AdminArticleService.class)).updateArticle(eq(1), eq(7),
+                argThat(request -> "PUBLISHED".equals(request.status()) && "Draft content".equals(request.content())));
+    }
+
     @Test void moderationPreservesTypeAndReturns204() throws Exception {
         mvc.perform(patch("/api/admin/posts-videos/VIDEO/7/status").cookie(token("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"APPROVED\"}"))
@@ -134,7 +147,7 @@ class AdminApiSecurityTest {
         @Bean AdminCategoryService categories() { return mock(AdminCategoryService.class); }
         @Bean AdminDashboardStatisticsService dashboard() { return mock(AdminDashboardStatisticsService.class); }
         @Bean AdminPostVideoService posts() { return mock(AdminPostVideoService.class); }
-        @Bean AdminRecipeService recipes() { return mock(AdminRecipeService.class); }
+        @Bean AdminRecipeServiceImpl recipes() { return mock(AdminRecipeServiceImpl.class); }
         @Bean AdminUserService users() { return mock(AdminUserService.class); }
     }
 }

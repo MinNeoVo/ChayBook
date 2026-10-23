@@ -830,6 +830,32 @@ function ArticleDetail({ article, onRefresh }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState("");
+  const publishInFlight = useRef(false);
+
+  const publishArticle = async () => {
+    if (article.status !== "DRAFT" || publishInFlight.current || isDeleting) return;
+    publishInFlight.current = true;
+    setIsPublishing(true);
+    setPublishError("");
+    try {
+      await updateAdminArticle(article.articleId, {
+        categoryId: article.categoryId,
+        title: article.title,
+        content: article.content,
+        coverImage: article.coverImage,
+        status: "PUBLISHED",
+      });
+      setNotice("Đã xuất bản bài viết thành công.");
+      onRefresh();
+    } catch (error) {
+      setPublishError(error.message || "Không thể xuất bản bài viết. Vui lòng thử lại.");
+    } finally {
+      publishInFlight.current = false;
+      setIsPublishing(false);
+    }
+  };
 
   const updateArticle = async (values) => {
     const updatedArticle = await updateAdminArticle(article.articleId, values);
@@ -838,7 +864,7 @@ function ArticleDetail({ article, onRefresh }) {
   };
 
   const removeArticle = async () => {
-    if (isDeleting || !window.confirm(`Permanently delete article "${article.title}"?`)) return;
+    if (isDeleting || publishInFlight.current || !window.confirm(`Permanently delete article "${article.title}"?`)) return;
     setIsDeleting(true);
     setDeleteError("");
     try {
@@ -869,16 +895,24 @@ function ArticleDetail({ article, onRefresh }) {
       <Breadcrumbs current="Chi tiết bài viết" parent="Bài viết" />
       <SessionNotice message={notice} onDismiss={() => setNotice("")} />
       <AdminRequestState error={deleteError} />
+      <AdminRequestState error={publishError} />
       <header className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Chi tiết bài viết</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Link to="/admin/articles" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
             <ArrowLeft aria-hidden="true" size={16} /> Quay lại danh sách bài viết
           </Link>
-          <button type="button" disabled={isDeleting} onClick={() => setIsEditing(true)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">
+          {article.status === "DRAFT" && (
+            <button type="button" disabled={isPublishing || isDeleting} onClick={publishArticle}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+              {isPublishing ? <LoaderCircle aria-hidden="true" size={15} className="animate-spin" /> : <Check aria-hidden="true" size={15} />}
+              {isPublishing ? "Đang xuất bản…" : "Publish"}
+            </button>
+          )}
+          <button type="button" disabled={isDeleting || isPublishing} onClick={() => setIsEditing(true)} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800">
             <Pencil aria-hidden="true" size={15} /> Chỉnh sửa bài viết
           </button>
-          <button type="button" disabled={isDeleting} onClick={removeArticle} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+          <button type="button" disabled={isDeleting || isPublishing} onClick={removeArticle} className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
             {isDeleting ? "Đang xóa…" : "Xóa bài viết"}
           </button>
         </div>
