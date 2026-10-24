@@ -41,6 +41,7 @@ import AdminArticleManagement, {
   AdminArticleListPage,
 } from "./Pages/admin/AdminArticleManagement";
 import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
+import AdminIngredientPage from "./Pages/admin/AdminIngredientPage";
 
 function App() {
   return (
@@ -82,6 +83,7 @@ function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="categories" element={<AdminCategoryPage />} />
+          <Route path="ingredients" element={<AdminIngredientPage />} />
           <Route path="recipes" element={<AdminRecipeManagement />}>
             <Route index element={<AdminRecipeListPage />} />
             <Route path="new" element={<AdminRecipeCreatePage />} />
