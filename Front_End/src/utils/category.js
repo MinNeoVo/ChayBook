@@ -7,7 +7,7 @@ export const CATEGORY_TYPES = [
 export const INITIAL_CATEGORY_FILTERS = {
   q: "",
   type: "",
-  status: "ACTIVE",
+  status: "",
 };
 
 export function formatCategoryId(id) {
@@ -54,23 +54,23 @@ const ERROR_TRANSLATIONS = {
   "Tên Category không được để trống": "Vui lòng nhập tên danh mục.",
 
   "Tên Category tối đa 255 ký tự":
-  "Tên danh mục không được vượt quá 255 ký tự.",
+    "Tên danh mục không được vượt quá 255 ký tự.",
 
   "Type không được để trống": "Vui lòng chọn loại danh mục.",
 
   "Type phải là ARTICLE, RECIPE hoặc POST":
-  "Loại danh mục phải là bài viết, công thức hoặc bài đăng.",
+    "Loại danh mục phải là bài viết, công thức hoặc bài đăng.",
 
   "Tên Category đã tồn tại trong type này":
-  "Tên danh mục này đã tồn tại trong loại đã chọn.",
+    "Tên danh mục này đã tồn tại trong loại đã chọn.",
 
   "Category đang được nội dung sử dụng":
-  "Danh mục đang được sử dụng nên không thể thay đổi loại.",
+    "Danh mục đang được sử dụng nên không thể thay đổi loại.",
 
   "Cannot update a deleted category": "Không thể cập nhật danh mục đã xóa.",
 
   "Đang xử lý thao tác trước.":
-  "Một thao tác khác đang được xử lý. Vui lòng chờ.",
+    "Một thao tác khác đang được xử lý. Vui lòng chờ.",
 };
 
 const HTTP_ERROR_MESSAGES = {
@@ -85,7 +85,8 @@ export function getCategoryFieldErrors(error) {
   return Object.fromEntries(
     Object.entries(error?.data?.errors ?? {}).map(([field, message]) => [
       field,
-      ERROR_TRANSLATIONS[message] ?? "Giá trị không hợp lệ. Vui lòng kiểm tra trường này.",
+      ERROR_TRANSLATIONS[message] ??
+        "Giá trị không hợp lệ. Vui lòng kiểm tra trường này.",
     ]),
   );
 }

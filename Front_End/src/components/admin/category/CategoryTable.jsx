@@ -16,8 +16,8 @@ const TYPE_ICONS = {
 };
 
 const STATUS_LABELS = {
-  ACTIVE: "Đang hoạt động",
-  DELETED: "Đã xóa",
+  ACTIVE: "Active",
+  DELETED: "Deleted",
 };
 
 const actionClass =
