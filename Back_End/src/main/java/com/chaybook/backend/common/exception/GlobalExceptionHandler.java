@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST,
-                "Invalid input"
+                "Dữ liệu đầu vào không hợp lệ."
         );
 
         problem.setProperty("errors", errors);
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(
                 exception.getStatusCode(),
                 exception.getReason() == null
-                        ? "Unable to process the request"
+                        ? "Không thể xử lý yêu cầu."
                         : exception.getReason()
         );
     }
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
                 if (code == 2601 || code == 2627) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
-                            "The data already exists. Please check and try again"
+                            "Dữ liệu đã tồn tại. Vui lòng kiểm tra và thử lại."
                     );
                 }
             }
@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
 
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to save the data"
+                "Không thể lưu dữ liệu."
         );
     }
 }

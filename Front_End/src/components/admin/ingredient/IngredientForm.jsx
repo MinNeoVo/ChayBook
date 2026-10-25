@@ -62,15 +62,15 @@ export default function IngredientForm({
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-lg font-semibold text-slate-900">
-        {ingredient ? "Edit ingredient" : "Add new ingredient"}
+        {ingredient ? "Chỉnh sửa nguyên liệu" : "Thêm nguyên liệu mới"}
       </h2>
 
       <form onSubmit={submit} noValidate>
         <fieldset disabled={busy} className="space-y-4">
-          <legend className="sr-only">Ingredient information</legend>
+          <legend className="sr-only">Thông tin nguyên liệu</legend>
 
           <label className="block space-y-1 text-sm">
-            <span>Ingredient Name *</span>
+            <span>Tên nguyên liệu *</span>
 
             <input
               name="name"
@@ -97,7 +97,7 @@ export default function IngredientForm({
           </label>
 
           <label className="block space-y-1 text-sm">
-            <span>Description</span>
+            <span>Mô tả</span>
 
             <textarea
               name="description"
@@ -131,11 +131,11 @@ export default function IngredientForm({
 
           <div className="flex gap-3">
             <Button type="submit">
-              {busy ? "Saving..." : "Save Ingredient"}
+              {busy ? "Đang lưu" : "Lưu nguyên liệu"}
             </Button>
 
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              Hủy
             </Button>
           </div>
         </fieldset>

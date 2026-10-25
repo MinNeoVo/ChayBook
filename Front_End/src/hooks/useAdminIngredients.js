@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { adminIngredientService } from "../services/adminIngredientServices";
 
 export function useAdminIngredients(filters, service = adminIngredientService) {
-  const { q, page, size } = filters;
+  const { q, status = "", page, size } = filters;
 
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState({
@@ -13,13 +13,13 @@ export function useAdminIngredients(filters, service = adminIngredientService) {
   const [isMutating, setIsMutating] = useState(false);
 
   const mutationLock = useRef(false);
-  const requestKey = JSON.stringify([q, page, size, revision]);
+  const requestKey = JSON.stringify([q, status, page, size, revision]);
 
   useEffect(() => {
     const controller = new AbortController();
 
     service
-      .list({ q, page, size }, { signal: controller.signal })
+      .list({ q, status, page, size }, { signal: controller.signal })
       .then((data) => {
         if (!controller.signal.aborted) {
           setResult({
@@ -40,7 +40,7 @@ export function useAdminIngredients(filters, service = adminIngredientService) {
       });
 
     return () => controller.abort();
-  }, [q, page, size, requestKey, service]);
+  }, [q, status, page, size, requestKey, service]);
 
   function reload() {
     setRevision((current) => current + 1);
@@ -48,7 +48,9 @@ export function useAdminIngredients(filters, service = adminIngredientService) {
 
   async function mutate(operation) {
     if (mutationLock.current) {
-      throw new Error("Another operation is already in progress.");
+      throw new Error(
+        "Một thao tác đang được thực hiện. Vui lòng thử lại sau.",
+      );
     }
 
     mutationLock.current = true;
@@ -76,6 +78,10 @@ export function useAdminIngredients(filters, service = adminIngredientService) {
     return mutate(() => service.remove(ingredientId));
   }
 
+  function restoreIngredient(ingredientId) {
+    return mutate(() => service.restore(ingredientId));
+  }
+
   const isLoading = result.key !== requestKey;
 
   return {
@@ -86,5 +92,6 @@ export function useAdminIngredients(filters, service = adminIngredientService) {
     reload,
     saveIngredient,
     deleteIngredient,
+    restoreIngredient,
   };
 }

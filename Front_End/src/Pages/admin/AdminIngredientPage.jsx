@@ -24,6 +24,7 @@ export default function AdminIngredientPage() {
     reload,
     saveIngredient,
     deleteIngredient,
+    restoreIngredient,
   } = useAdminIngredients(filters);
 
   const controlsDisabled = isMutating || editor !== null;
@@ -38,6 +39,7 @@ export default function AdminIngredientPage() {
     setFilters({
       ...nextFilters,
       page: 0,
+      size: INITIAL_INGREDIENT_FILTERS.size,
     });
 
     setNotice("");
@@ -61,14 +63,14 @@ export default function AdminIngredientPage() {
       ...current,
       page: 0,
     }));
-    setNotice("Ingredient saved successfully!");
+    setNotice("Lưu nguyên liệu thành công!");
     setActionError("");
   }
 
   async function remove(ingredient) {
     const confirmed = window.confirm(
-      `Delete ingredient "${ingredient.name}"?\n\n` +
-        "This action cannot be undone. If the ingredient is used in any recipe, allergy group, or AI, it will not be deleted.",
+      `Xóa nguyên liệu "${ingredient.name}"?\n\n` +
+        "Nguyên liệu sẽ chuyển sang trạng thái 'Đã xóa'. Bạn có thể hoàn tác sau.",
     );
 
     if (!confirmed) return;
@@ -84,7 +86,25 @@ export default function AdminIngredientPage() {
         page: 0,
       }));
 
-      setNotice("Ingredient deleted successfully!");
+      setNotice("Xóa nguyên liệu thành công!");
+    } catch (requestError) {
+      setActionError(getIngredientErrorMessage(requestError));
+    }
+  }
+
+  async function restore(ingredient) {
+    setNotice("");
+    setActionError("");
+
+    try {
+      await restoreIngredient(ingredient.ingredientId);
+
+      setFilters((current) => ({
+        ...current,
+        page: 0,
+      }));
+
+      setNotice(`Đã hoàn tác xóa nguyên liệu "${ingredient.name}".`);
     } catch (requestError) {
       setActionError(getIngredientErrorMessage(requestError));
     }
@@ -100,11 +120,11 @@ export default function AdminIngredientPage() {
 
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Manage Ingredients
+              Quản lý nguyên liệu
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Browse, add, edit, and delete ingredients used in Chaybook.
+              Tra cứu, bổ sung và cập nhật nguyên liệu của ChayBook.
             </p>
           </div>
         </div>
@@ -115,7 +135,7 @@ export default function AdminIngredientPage() {
           className="gap-2"
         >
           <Plus aria-hidden="true" size={17} />
-          Add Ingredient
+          Thêm nguyên liệu
         </Button>
       </header>
 
@@ -151,8 +171,7 @@ export default function AdminIngredientPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
-          Only ingredients not referenced by recipes, allergy groups, or AI
-          results can be deleted.
+          Chỉ xóa nguyên liệu chưa được công thức, nhóm dị ứng hoặc AI sử dụng.
         </p>
 
         <Button
@@ -161,13 +180,13 @@ export default function AdminIngredientPage() {
           onClick={reload}
           disabled={isLoading || controlsDisabled}
         >
-          Refresh
+          Tải lại
         </Button>
       </div>
 
       {isLoading ? (
         <p role="status" className="text-sm text-slate-500">
-          Loading...
+          Đang tải nguyên liệu...
         </p>
       ) : error ? (
         <p role="alert" className="text-sm text-red-700">
@@ -180,16 +199,17 @@ export default function AdminIngredientPage() {
             busy={controlsDisabled}
             onEdit={openEditor}
             onDelete={remove}
+            onRestore={restore}
           />
 
           <nav
-            aria-label="Ingredient pagination"
+            aria-label="Phân trang nguyên liệu"
             className="flex flex-wrap items-center justify-between gap-3"
           >
             <p className="text-sm text-slate-500">
-              Total {pageData.totalElements}
+              Tổng {pageData.totalElements} nguyên liệu
               {" · "}
-              Page {pageData.number + 1}
+              Trang {pageData.number + 1}/{Math.max(1, pageData.totalPages)}
             </p>
 
             <div className="flex gap-2">
@@ -199,7 +219,7 @@ export default function AdminIngredientPage() {
                 disabled={controlsDisabled || filters.page === 0}
                 onClick={() => changePage(filters.page - 1)}
               >
-                Previous
+                Trước
               </Button>
 
               <Button
@@ -210,7 +230,7 @@ export default function AdminIngredientPage() {
                 }
                 onClick={() => changePage(filters.page + 1)}
               >
-                Next
+                Sau
               </Button>
             </div>
           </nav>

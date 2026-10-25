@@ -2,8 +2,8 @@ package com.chaybook.backend.admin.ingredient.controller;
 
 import com.chaybook.backend.admin.ingredient.dto.AdminIngredientPageResponse;
 import com.chaybook.backend.admin.ingredient.dto.AdminIngredientRequest;
+import com.chaybook.backend.admin.ingredient.dto.AdminIngredientResponse;
 import com.chaybook.backend.admin.ingredient.service.AdminIngredientService;
-import com.chaybook.backend.ingredient.dto.IngredientResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +37,7 @@ public class AdminIngredientController {
     @GetMapping
     public AdminIngredientPageResponse getIngredients(
             @RequestParam(name = "q", defaultValue = "") String q,
+            @RequestParam(name = "status", defaultValue = "") String status,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @AuthenticationPrincipal Jwt jwt
@@ -45,6 +46,7 @@ public class AdminIngredientController {
                 ingredientService.getIngredients(
                         requireAuthenticatedUserId(jwt),
                         q,
+                        status,
                         page,
                         size
                 )
@@ -52,7 +54,7 @@ public class AdminIngredientController {
     }
 
     @GetMapping("/{ingredientId}")
-    public IngredientResponse getIngredientDetail(
+    public AdminIngredientResponse getIngredientDetail(
             @PathVariable("ingredientId") Integer ingredientId,
             @AuthenticationPrincipal Jwt jwt
     ) {
@@ -63,11 +65,11 @@ public class AdminIngredientController {
     }
 
     @PostMapping
-    public ResponseEntity<IngredientResponse> createIngredient(
+    public ResponseEntity<AdminIngredientResponse> createIngredient(
             @Valid @RequestBody AdminIngredientRequest request,
             @AuthenticationPrincipal Jwt jwt
     ) {
-        IngredientResponse response = ingredientService.createIngredient(
+        AdminIngredientResponse response = ingredientService.createIngredient(
                 requireAuthenticatedUserId(jwt),
                 request
         );
@@ -80,7 +82,7 @@ public class AdminIngredientController {
     }
 
     @PutMapping("/{ingredientId}")
-    public IngredientResponse updateIngredient(
+    public AdminIngredientResponse updateIngredient(
             @PathVariable("ingredientId") Integer ingredientId,
             @Valid @RequestBody AdminIngredientRequest request,
             @AuthenticationPrincipal Jwt jwt
@@ -109,7 +111,7 @@ public class AdminIngredientController {
         if (jwt == null) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Please sign in"
+                    "Vui lòng đăng nhập."
             );
         }
 
@@ -122,13 +124,24 @@ public class AdminIngredientController {
         } catch (NumberFormatException exception) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Invalid authentication indentity"
+                    "Thông tin xác thực không hợp lệ."
             );
         }
 
         throw new ResponseStatusException(
                 HttpStatus.UNAUTHORIZED,
-                "Invalid authentication indentity"
+                "Thông tin xác thực không hợp lệ."
+        );
+    }
+
+    @PutMapping("/{ingredientId}/restore")
+    public AdminIngredientResponse restoreIngredient(
+            @PathVariable("ingredientId") Integer ingredientId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ingredientService.restoreIngredient(
+                requireAuthenticatedUserId(jwt),
+                ingredientId
         );
     }
 }

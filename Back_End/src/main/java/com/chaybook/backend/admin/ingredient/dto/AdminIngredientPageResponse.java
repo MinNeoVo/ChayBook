@@ -1,19 +1,18 @@
 package com.chaybook.backend.admin.ingredient.dto;
 
-import com.chaybook.backend.ingredient.dto.IngredientResponse;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public record AdminIngredientPageResponse(
-        List<IngredientResponse> content,
+        List<AdminIngredientResponse> content,
         int number,
         int size,
         long totalElements,
         int totalPages
 ) {
     public static AdminIngredientPageResponse from(
-            Page<IngredientResponse> page
+            Page<AdminIngredientResponse> page
     ) {
         return new AdminIngredientPageResponse(
                 page.getContent(),

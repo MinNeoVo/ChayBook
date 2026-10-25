@@ -29,7 +29,7 @@ public class AdminIngredientExceptionHandler {
     ) {
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST,
-                "Invalid parameter: " + exception.getName()
+                "Tham số không hợp lệ: " + exception.getName()
         );
     }
 
@@ -46,14 +46,14 @@ public class AdminIngredientExceptionHandler {
                 if (errorCode == 2601 || errorCode == 2627) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
-                            "An ingredient with this name already exists"
+                            "Tên nguyên liệu đã tồn tại. Vui lòng chọn tên khác."
                     );
                 }
 
                 if (errorCode == 547) {
                     return ProblemDetail.forStatusAndDetail(
                             HttpStatus.CONFLICT,
-                            "This ingredient is linked to other data. The operation cannot be completed"
+                            "Nguyên liệu đang liên kết với dữ liệu khác. Không thể hoàn tất thao tác."
                     );
                 }
             }
@@ -65,7 +65,7 @@ public class AdminIngredientExceptionHandler {
 
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to update the ingredient. Please try again later!s"
+                "Không thể cập nhật nguyên liệu. Vui lòng thử lại sau."
         );
     }
 }

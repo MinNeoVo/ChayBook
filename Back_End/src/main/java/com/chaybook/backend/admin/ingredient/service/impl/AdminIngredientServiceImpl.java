@@ -1,6 +1,9 @@
 package com.chaybook.backend.admin.ingredient.service.impl;
 
+import java.util.Locale;
+
 import com.chaybook.backend.admin.ingredient.dto.AdminIngredientRequest;
+import com.chaybook.backend.admin.ingredient.dto.AdminIngredientResponse;
 import com.chaybook.backend.admin.ingredient.repository.AdminIngredientRepository;
 import com.chaybook.backend.admin.ingredient.service.AdminIngredientService;
 import com.chaybook.backend.ingredient.dto.IngredientResponse;
@@ -32,9 +35,10 @@ public class AdminIngredientServiceImpl
     }
 
     @Override
-    public Page<IngredientResponse> getIngredients(
+    public Page<AdminIngredientResponse> getIngredients(
             Integer authenticatedUserId,
             String q,
+            String status,
             int page,
             int size
     ) {
@@ -42,26 +46,27 @@ public class AdminIngredientServiceImpl
         validatePagination(page, size);
 
         String keyword = q == null ? "" : q.strip();
+        String normalizedStatus = normalizeStatus(status);
 
         if (keyword.length() > 255) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Search keyword must not exceed 255 characters"
+                    "Từ khóa tìm kiếm không được vượt quá 255 ký tự"
             );
         }
 
         PageRequest pageable = PageRequest.of(
                 page,
                 size,
-                Sort.by(Sort.Direction.DESC, "ingredientId")
+                Sort.by(Sort.Direction.ASC, "ingredientId")
         );
 
-        return ingredientRepository.search(keyword, pageable)
+        return ingredientRepository.search(keyword, normalizedStatus, pageable)
                 .map(this::toResponse);
     }
 
     @Override
-    public IngredientResponse getIngredientDetail(
+    public AdminIngredientResponse getIngredientDetail(
             Integer authenticatedUserId,
             Integer ingredientId
     ) {
@@ -72,7 +77,7 @@ public class AdminIngredientServiceImpl
                 .findById(ingredientId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Ingredient not found"
+                        "Không tìm thấy nguyên liệu."
                 ));
 
         return toResponse(ingredient);
@@ -80,7 +85,7 @@ public class AdminIngredientServiceImpl
 
     @Override
     @Transactional
-    public IngredientResponse createIngredient(
+    public AdminIngredientResponse createIngredient(
             Integer authenticatedUserId,
             AdminIngredientRequest request
     ) {
@@ -99,7 +104,7 @@ public class AdminIngredientServiceImpl
 
     @Override
     @Transactional
-    public IngredientResponse updateIngredient(
+    public AdminIngredientResponse updateIngredient(
             Integer authenticatedUserId,
             Integer ingredientId,
             AdminIngredientRequest request
@@ -107,6 +112,13 @@ public class AdminIngredientServiceImpl
         requireAdmin(authenticatedUserId);
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
+
+        if (!"ACTIVE".equals(ingredient.getStatus())) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Vui lòng hoàn tác trước khi chỉnh sửa nguyên liệu đã xóa."
+            );
+        }
 
         ensureUniqueName(request.name(), ingredientId);
 
@@ -128,36 +140,61 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
+        if("DELETED".equals(ingredient.getStatus())) {
+            return;
+        }
+
         if (ingredientRepository.findUsageFlag(ingredientId) != 0) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "This ingredient is referenced by recipes, allergy groups, or AI recognition results"
+                    "Nguyên liệu đang liên kết với dữ liệu khác. Không thể hoàn tất thao tác."
             );
         }
 
-        ingredientRepository.delete(ingredient);
-        ingredientRepository.flush();
+        ingredient.setStatus("DELETED");
+        ingredientRepository.saveAndFlush(ingredient);
+    }
+
+    @Override
+    @Transactional
+    public AdminIngredientResponse restoreIngredient(
+            Integer authenticatedUserId,
+            Integer ingredientId
+    ) {
+        requireAdmin(authenticatedUserId);
+
+        Ingredient ingredient = requireIngredientForWrite(ingredientId);
+
+        if ("ACTIVE".equals(ingredient.getStatus())) {
+            return toResponse(ingredient);
+        }
+
+        ingredient.setStatus("ACTIVE");
+
+        Ingredient saved = ingredientRepository.saveAndFlush(ingredient);
+
+        return toResponse(saved);
     }
 
     private void requireAdmin(Integer authenticatedUserId) {
         if (authenticatedUserId == null || authenticatedUserId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Please sign in"
+                    "Vui lòng đăng nhập."
             );
         }
 
         User user = userRepository.findById(authenticatedUserId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
-                        "This account does not exist"
+                        "Tài khoản không tồn tại."
                 ));
 
         if (!"ADMIN".equals(user.getRole())
                 || !"ACTIVE".equals(user.getStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Only active admin accounts can perform this action"
+                    "Chỉ tài khoản admin đang hoạt động mới được thực hiện thao tác này."
             );
         }
     }
@@ -166,14 +203,14 @@ public class AdminIngredientServiceImpl
         if (page < 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Page number must be a positive integer"
+                    "Chỉ số trang phải là một số nguyên không âm."
             );
         }
 
         if (size < 1 || size > 100) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Page size must be between 1 and 100"
+                    "Kích thước trang phải nằm trong khoảng từ 1 đến 100."
             );
         }
     }
@@ -182,7 +219,7 @@ public class AdminIngredientServiceImpl
         if (ingredientId == null || ingredientId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Ingredient ID must be a positive integer"
+                    "Mã nguyên liệu phải là một số nguyên dương."
             );
         }
     }
@@ -193,7 +230,7 @@ public class AdminIngredientServiceImpl
         return ingredientRepository.findByIdForUpdate(ingredientId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Ingredient not found"
+                        "Không tìm thấy nguyên liệu."
                 ));
     }
 
@@ -201,16 +238,32 @@ public class AdminIngredientServiceImpl
         if (ingredientRepository.countDuplicates(name, excludedId) > 0) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "An ingredient with this name already exists"
+                    "Tên nguyên liệu đã tồn tại. Hãy kiểm tra cả danh sách nguyên liệu đã xóa."
             );
         }
     }
 
-    private IngredientResponse toResponse(Ingredient ingredient) {
-        return new IngredientResponse(
+    private AdminIngredientResponse toResponse(Ingredient ingredient) {
+        return new AdminIngredientResponse(
                 ingredient.getIngredientId(),
                 ingredient.getName(),
-                ingredient.getDescription()
+                ingredient.getDescription(),
+                ingredient.getStatus()
         );
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return "";
+        }
+        String normalized = status.strip().toUpperCase(Locale.ROOT);
+        if (!"ACTIVE".equals(normalized)
+                && !"DELETED".equals(normalized)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Trạng thái phải là ACTIVE hoặc DELETED."
+            );
+        }
+        return normalized;
     }
 }

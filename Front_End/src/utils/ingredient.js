@@ -1,7 +1,13 @@
 export const INITIAL_INGREDIENT_FILTERS = {
   q: "",
+  status: "",
   page: 0,
   size: 10,
+};
+
+export const INGREDIENT_STATUS_LABELS = {
+  ACTIVE: "Đang hoạt động",
+  DELETED: "Đã xóa",
 };
 
 export function formatIngredientId(id) {
@@ -19,13 +25,13 @@ export function validateIngredient(payload) {
   const errors = {};
 
   if (!payload.name) {
-    errors.name = "Please enter the ingredient name.";
+    errors.name = "Vui lòng nhập tên nguyên liệu.";
   } else if (payload.name.length > 255) {
-    errors.name = "Ingredient name must not exceed 255 characters.";
+    errors.name = "Tên nguyên liệu không được vượt quá 255 ký tự.";
   }
 
   if (payload.description?.length > 5000) {
-    errors.description = "Description must not exceed 5000 characters.";
+    errors.description = "Mô tả nguyên liệu không được vượt quá 5000 ký tự.";
   }
 
   return errors;
@@ -33,9 +39,9 @@ export function validateIngredient(payload) {
 
 export function getIngredientErrorMessage(error) {
   const messages = {
-    401: "Your session is invalid. Please log in again.",
-    403: "You do not have permission to perform this action.",
-    404: "This ingredient no longer exists. Please refresh the page.",
+    401: "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.",
+    403: "Bạn không có quyền thực hiện thao tác này.",
+    404: "Nguyên liệu không tồn tại hoặc đã bị xóa.",
   };
 
   if (messages[error?.status]) {
@@ -43,12 +49,12 @@ export function getIngredientErrorMessage(error) {
   }
 
   if (error?.status >= 500) {
-    return "The server is currently unavailable. Please try again later.";
+    return "Máy chủ hiện không khả dụng. Vui lòng thử lại sau.";
   }
 
   return (
     error?.data?.detail ||
     error?.message ||
-    "Unable to perform this action. Please try again later."
+    "Không thể thực hiện thao tác. Vui lòng thử lại sau."
   );
 }

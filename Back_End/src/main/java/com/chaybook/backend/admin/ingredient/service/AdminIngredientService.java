@@ -1,29 +1,30 @@
 package com.chaybook.backend.admin.ingredient.service;
 
 import com.chaybook.backend.admin.ingredient.dto.AdminIngredientRequest;
-import com.chaybook.backend.ingredient.dto.IngredientResponse;
+import com.chaybook.backend.admin.ingredient.dto.AdminIngredientResponse;
 import org.springframework.data.domain.Page;
 
 public interface AdminIngredientService {
 
-    Page<IngredientResponse> getIngredients(
+    Page<AdminIngredientResponse> getIngredients(
             Integer authenticatedUserId,
             String q,
+            String status,
             int page,
             int size
     );
 
-    IngredientResponse getIngredientDetail(
+    AdminIngredientResponse getIngredientDetail(
             Integer authenticatedUserId,
             Integer ingredientId
     );
 
-    IngredientResponse createIngredient(
+    AdminIngredientResponse createIngredient(
             Integer authenticatedUserId,
             AdminIngredientRequest request
     );
 
-    IngredientResponse updateIngredient(
+    AdminIngredientResponse updateIngredient(
             Integer authenticatedUserId,
             Integer ingredientId,
             AdminIngredientRequest request
@@ -33,4 +34,9 @@ public interface AdminIngredientService {
             Integer authenticatedUserId,
             Integer ingredientId
     );
+
+    AdminIngredientResponse restoreIngredient(
+        Integer authenticatedUserId,
+        Integer ingredientId
+);
 }

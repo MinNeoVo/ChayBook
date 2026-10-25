@@ -17,11 +17,15 @@ public interface AdminIngredientRepository
     @Query("""
         SELECT i
         FROM Ingredient i
-        WHERE :keyword = ''
-           OR LOCATE(LOWER(:keyword), LOWER(i.name)) > 0
+        WHERE (:status = '' OR i.status = :status)
+        AND (
+            :keyword = ''
+            OR LOCATE(LOWER(:keyword), LOWER(i.name)) > 0
+        )
         """)
     Page<Ingredient> search(
             @Param("keyword") String keyword,
+            @Param("status") String status,
             Pageable pageable
     );
 
