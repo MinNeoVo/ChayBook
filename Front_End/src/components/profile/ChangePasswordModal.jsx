@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KeyRound, Loader2, Mail, X } from "lucide-react";
 
+import { useAuth } from "../../context/useAuth";
 import Button from "../common/Button";
 import Input from "../common/Input";
 import { requestPasswordReset, verifyPasswordResetOtp } from "../../services/authServices";
@@ -9,6 +10,7 @@ import { changePassword } from "../../services/userServices";
 
 function ChangePasswordModal({ profile, onClose }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [step, setStep] = useState("request");
   const [otp, setOtp] = useState("");
   const [resetToken, setResetToken] = useState("");
@@ -93,6 +95,14 @@ function ChangePasswordModal({ profile, onClose }) {
         email,
         resetToken,
       );
+      try {
+        await logout();
+      } catch (logoutError) {
+        console.error(
+          "Mật khẩu đã đổi nhưng không thể gọi API đăng xuất:",
+          logoutError,
+        );
+      }
       navigate("/login", {
         replace: true,
         state: { successMessage: "Mật khẩu đã được cập nhật. Vui lòng đăng nhập lại." },

@@ -5,6 +5,7 @@ import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 
 import ProfileHeader from "../components/profile/ProfileHeader";
+import ProfileSidebar from "../components/profile/ProfileSidebar";
 
 import PostCard from "../components/post/PostCard";
 import CreatePostModal from "../components/community/CreatePostModal";
@@ -539,18 +540,17 @@ function ProfilePage() {
             grid-cols-1
             lg:grid-cols-12
             gap-8
-            items-center
+            items-start
             
    
           "
           >
-            {/* LEFT SIDEBAR */}
+            <ProfileSidebar />
 
             {/* RIGHT CONTENT */}
             <section
               className="
               lg:col-span-8
-              lg:col-start-3
               flex
               flex-col
               gap-6
