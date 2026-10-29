@@ -22,6 +22,7 @@ ChayBook_AI_Coding_Mentor_Instructions.md
 
 # Archify generated files
 .archify/
+.agents/skills/archify/
 
 node_modules/
 dist/
