@@ -3,6 +3,7 @@ package com.chaybook.backend.article.entity;
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,6 +45,14 @@ public class Article {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Size(max = 10)
+    @Column(name = "media_type", length = 10)
+    private String mediaType;
+
+    @Size(max = 255)
+    @Column(name = "media_public_id")
+    private String mediaPublicId;
 
     public Article() {
     }
@@ -126,5 +135,21 @@ public class Article {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaPublicId() {
+        return mediaPublicId;
+    }
+
+    public void setMediaPublicId(String mediaPublicId) {
+        this.mediaPublicId = mediaPublicId;
     }
 }

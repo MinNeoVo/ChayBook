@@ -20,17 +20,29 @@ public class AiRecognitionItem {
     @JoinColumn(name = "ingredient_id")
     private Ingredient ingredient;
 
+    @Column(name = "detected_name", length = 255, columnDefinition = "NVARCHAR(255)")
+    private String detectedName;
+
     @Column(name = "confidence")
     private Double confidence;
 
     public AiRecognitionItem() {
     }
 
-    public AiRecognitionItem(AiRecognition recognition,
-                             Ingredient ingredient, Double confidence) {
+    public AiRecognitionItem(AiRecognition recognition, Ingredient ingredient, String detectedName, Double confidence) {
         this.recognition = recognition;
         this.ingredient = ingredient;
+        this.detectedName = detectedName;
         this.confidence = confidence;
+    }
+
+
+    public String getDetectedName() {
+        return detectedName;
+    }
+
+    public void setDetectedName(String detectedName) {
+        this.detectedName = detectedName;
     }
 
     public Integer getRecognitionItemId() {

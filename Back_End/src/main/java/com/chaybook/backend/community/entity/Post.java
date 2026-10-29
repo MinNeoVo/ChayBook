@@ -3,6 +3,7 @@ package com.chaybook.backend.community.entity;
 import com.chaybook.backend.category.entity.Category;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -44,11 +45,18 @@ public class Post {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    @Size(max = 10)
+    @Column(name = "media_type", length = 10)
+    private String mediaType;
+
+    @Size(max = 255)
+    @Column(name = "media_public_id")
+    private String mediaPublicId;
 
     public Post() {
     }
 
-    public Post(User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Post(User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt, String mediaType, String mediaPublicId) {
         this.user = user;
         this.category = category;
         this.title = title;
@@ -57,7 +65,10 @@ public class Post {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.mediaType = mediaType;
+        this.mediaPublicId = mediaPublicId;
     }
+
 
     public Integer getPostId() {
         return postId;
@@ -126,5 +137,21 @@ public class Post {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaPublicId() {
+        return mediaPublicId;
+    }
+
+    public void setMediaPublicId(String mediaPublicId) {
+        this.mediaPublicId = mediaPublicId;
     }
 }
