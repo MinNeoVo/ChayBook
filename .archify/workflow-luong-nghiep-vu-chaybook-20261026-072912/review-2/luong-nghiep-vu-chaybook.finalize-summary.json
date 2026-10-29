@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "standard",
+  "specification": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\candidate.json",
+    "sha256": "50751f51db6ed78f177afb485ac1ba39475d460ff575306106314726fff0f5e1",
+    "bytes": 18008
+  },
+  "artifact": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nghiep-vu-chaybook.html",
+    "sha256": "d4403cb8417a926012c0001c665716e837995fc3785cd3227e8ea68ea80daba0",
+    "bytes": 934613
+  },
+  "gates": {
+    "validate": "fail",
+    "deliver": "not-run",
+    "check": "not-run",
+    "browser-check": "not-run"
+  },
+  "failedStage": "validate",
+  "diagnostics": [
+    {
+      "code": "artifact/legend-clearance",
+      "severity": "error",
+      "message": "path 4 crosses legend Legend",
+      "subject": {
+        "check": "legend_clearance"
+      },
+      "evidence": {
+        "details": [
+          "path 4 crosses legend Legend",
+          "path 4 crosses legend Legend",
+          "path 4 crosses legend Legend",
+          "path 4 crosses legend Legend",
+          "path 4 crosses legend Legend",
+          "path 4 crosses legend Legend"
+        ]
+      },
+      "supportedFixes": [
+        "move the route or enlarge the viewBox so relationships do not enter the legend"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-2\\luong-nghiep-vu-chaybook.finalize.json",
+    "summaryReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-2\\luong-nghiep-vu-chaybook.finalize-summary.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T00:34:14.601Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2858,
+  "browserCheck": {
+    "requested": true,
+    "ran": false
+  },
+  "nextAction": {
+    "action": "edit-in-place",
+    "candidate": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\candidate.json",
+    "constraint": "Preserve unaffected semantics and geometry; apply each diagnostic's supportedFixes, or the fix its message names, and do not replace the whole candidate.",
+    "then": "finalize-once"
+  }
+}

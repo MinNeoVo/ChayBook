@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "standard",
+  "specification": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.json",
+    "sha256": "6067418a1fee0047dc837bbba21d02a6a392ff427a7d639f2e680a06bd3d40b4",
+    "bytes": 11451
+  },
+  "artifact": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+    "sha256": "0172e3db117b1c21bc69205ab000a32828f49bce31583e9c6ab46fe114bca4b9",
+    "bytes": 876066
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.finalize.json",
+    "summaryReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.finalize-summary.json",
+    "browserCheckReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T00:34:14.601Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 6102,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

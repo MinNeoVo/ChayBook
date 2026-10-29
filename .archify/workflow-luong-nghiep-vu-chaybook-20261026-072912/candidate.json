@@ -1,0 +1,431 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Luồng nghiệp vụ ChayBook",
+    "output": ".archify/workflow-luong-nghiep-vu-chaybook-20261026-072912/luong-nghiep-vu-chaybook.html",
+    "quality_profile": "standard",
+    "legend": { "mode": "hidden" },
+    "repository": {
+      "url": "https://github.com/MinNeoVo/ChayBook.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "9f38c0a3e077b591a1acbafe215ffd844c8e78df"
+    }
+  },
+  "lanes": [
+    { "id": "visitor", "label": "Người dùng & điểm vào" },
+    { "id": "access", "label": "Đăng nhập & phân quyền" },
+    { "id": "public", "label": "Tính năng công khai" },
+    { "id": "member", "label": "Tính năng thành viên" },
+    { "id": "community", "label": "Bài viết cộng đồng" },
+    { "id": "admin", "label": "Quản trị & duyệt nội dung", "variant": "exception" }
+  ],
+  "mainPath": ["start", "home", "choose", "public_hub", "recipes_articles", "public_detail"],
+  "nodes": [
+    {
+      "id": "start",
+      "lane": "visitor",
+      "col": 0,
+      "type": "external",
+      "label": "Người dùng",
+      "sublabel": "Mở ChayBook",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 51, "end_line": 52 }]
+    },
+    {
+      "id": "home",
+      "lane": "visitor",
+      "col": 1,
+      "type": "frontend",
+      "label": "Trang chủ",
+      "sublabel": "Chọn tính năng",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 51, "end_line": 74 }]
+    },
+    {
+      "id": "choose",
+      "lane": "visitor",
+      "col": 2,
+      "type": "frontend",
+      "label": "Chọn luồng",
+      "sublabel": "Công khai · thành viên · quản trị",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 60, "end_line": 81 }]
+    },
+    {
+      "id": "public_hub",
+      "lane": "public",
+      "col": 3,
+      "type": "frontend",
+      "label": "Tra cứu công khai",
+      "sublabel": "Không cần đăng nhập",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 60, "end_line": 66 }]
+    },
+    {
+      "id": "recipes_articles",
+      "lane": "public",
+      "col": 4,
+      "yOffset": -50,
+      "type": "backend",
+      "label": "Công thức & bài viết",
+      "sublabel": "Duyệt danh sách",
+      "sources": [
+        { "path": "Back_End/src/main/java/com/chaybook/backend/recipe/controller/RecipeController.java", "line": 20, "end_line": 48 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/article/controller/ArticleController.java", "line": 10, "end_line": 46 }
+      ]
+    },
+    {
+      "id": "public_detail",
+      "lane": "public",
+      "col": 5,
+      "yOffset": -50,
+      "type": "frontend",
+      "label": "Xem nội dung",
+      "sublabel": "Mở chi tiết món hoặc bài viết",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 60, "end_line": 66 }]
+    },
+    {
+      "id": "bmi_ai",
+      "lane": "public",
+      "col": 4,
+      "yOffset": 70,
+      "type": "backend",
+      "label": "BMI & trợ lý AI",
+      "sublabel": "Tính chỉ số hoặc gửi câu hỏi",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 65, "end_line": 66 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/bmi/controller/BmiController.java", "line": 29, "end_line": 56 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/assistant/controller/ChatbotController.java", "line": 18, "end_line": 60 }
+      ]
+    },
+    {
+      "id": "protected_gate",
+      "lane": "access",
+      "col": 2,
+      "type": "security",
+      "label": "Cần đăng nhập?",
+      "sublabel": "Hồ sơ, thực đơn, cộng đồng, tìm quán",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 68, "end_line": 74 },
+        { "path": "Front_End/src/routes/ProtectedRoute.jsx", "line": 5, "end_line": 19 }
+      ]
+    },
+    {
+      "id": "login",
+      "lane": "access",
+      "col": 3,
+      "yOffset": -80,
+      "type": "frontend",
+      "label": "Đăng nhập",
+      "sublabel": "Email và mật khẩu",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 54, "end_line": 58 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 63, "end_line": 107 }
+      ]
+    },
+    {
+      "id": "login_error",
+      "lane": "access",
+      "col": 4,
+      "yOffset": -80,
+      "type": "security",
+      "label": "Đăng nhập thất bại",
+      "sublabel": "Sai thông tin hoặc tài khoản bị khóa",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 63, "end_line": 93 }]
+    },
+    {
+      "id": "register",
+      "lane": "access",
+      "col": 3,
+      "yOffset": 40,
+      "type": "frontend",
+      "label": "Đăng ký",
+      "sublabel": "Nhận mã OTP qua email",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 55, "end_line": 55 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/auth/controller/AuthController.java", "line": 33, "end_line": 46 }
+      ]
+    },
+    {
+      "id": "otp",
+      "lane": "access",
+      "col": 4,
+      "yOffset": 40,
+      "type": "security",
+      "label": "Xác minh OTP",
+      "sublabel": "Mã còn hạn, tối đa 5 lần nhập",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 158, "end_line": 174 }]
+    },
+    {
+      "id": "session",
+      "lane": "access",
+      "col": 3,
+      "yOffset": 160,
+      "type": "security",
+      "label": "Phiên hợp lệ",
+      "sublabel": "Cho phép dùng tính năng thành viên",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 63, "end_line": 107 }]
+    },
+    {
+      "id": "otp_error",
+      "lane": "access",
+      "col": 5,
+      "yOffset": 80,
+      "type": "security",
+      "label": "OTP sai / hết hạn",
+      "sublabel": "Tài khoản chưa được tạo",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 231, "end_line": 251 }]
+    },
+    {
+      "id": "account_created",
+      "lane": "access",
+      "col": 5,
+      "yOffset": 0,
+      "type": "backend",
+      "label": "Tạo tài khoản",
+      "sublabel": "Sau khi OTP hợp lệ",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/auth/service/AuthService.java", "line": 158, "end_line": 179 }]
+    },
+    {
+      "id": "profile_allergies",
+      "lane": "member",
+      "col": 4,
+      "yOffset": -100,
+      "type": "frontend",
+      "label": "Hồ sơ & dị ứng",
+      "sublabel": "Xem hoặc cập nhật thông tin",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 68, "end_line": 74 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/user/controller/UserController.java", "line": 20, "end_line": 70 }
+      ]
+    },
+    {
+      "id": "places",
+      "lane": "member",
+      "col": 4,
+      "yOffset": 40,
+      "type": "backend",
+      "label": "Gợi ý quán gần đây",
+      "sublabel": "Theo món ăn và vị trí; không đặt hàng",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 68, "end_line": 74 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/shop/service/impl/ShopRecommendationServiceImpl.java", "line": 56, "end_line": 87 }
+      ]
+    },
+    {
+      "id": "mealplan_input",
+      "lane": "member",
+      "col": 4,
+      "yOffset": 180,
+      "type": "frontend",
+      "label": "Tạo thực đơn",
+      "sublabel": "Mục tiêu và thời lượng 1–14 ngày",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 72, "end_line": 72 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/mealplan/service/MealPlanService.java", "line": 73, "end_line": 76 }
+      ]
+    },
+    {
+      "id": "mealplan_check",
+      "lane": "member",
+      "col": 5,
+      "yOffset": 0,
+      "type": "backend",
+      "label": "Kiểm tra BMI & dị ứng",
+      "sublabel": "Chỉ chọn món phù hợp",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/mealplan/service/MealPlanService.java", "line": 63, "end_line": 95 }]
+    },
+    {
+      "id": "mealplan_saved",
+      "lane": "member",
+      "col": 5,
+      "yOffset": 100,
+      "type": "backend",
+      "label": "Lưu thực đơn",
+      "sublabel": "Có công thức phù hợp",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/mealplan/service/MealPlanService.java", "line": 98, "end_line": 115 }]
+    },
+    {
+      "id": "mealplan_no_bmi",
+      "lane": "member",
+      "col": 5,
+      "yOffset": 200,
+      "type": "security",
+      "label": "Thiếu BMI",
+      "sublabel": "Tính và lưu BMI trước",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/mealplan/service/MealPlanService.java", "line": 67, "end_line": 71 }]
+    },
+    {
+      "id": "mealplan_no_recipe",
+      "lane": "member",
+      "col": 5,
+      "yOffset": 300,
+      "type": "security",
+      "label": "Không có món phù hợp",
+      "sublabel": "Dừng tạo thực đơn",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/mealplan/service/MealPlanService.java", "line": 86, "end_line": 95 }]
+    },
+    {
+      "id": "post_form",
+      "lane": "community",
+      "col": 4,
+      "type": "frontend",
+      "label": "Gửi bài cộng đồng",
+      "sublabel": "Lưu PENDING và gọi kiểm duyệt AI",
+      "sources": [
+        { "path": "Front_End/src/App.jsx", "line": 68, "end_line": 74 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/community/service/PostService.java", "line": 198, "end_line": 250 }
+      ]
+    },
+    {
+      "id": "post_invalid",
+      "lane": "community",
+      "col": 5,
+      "yOffset": -100,
+      "type": "security",
+      "label": "Bài chưa hợp lệ",
+      "sublabel": "Sửa dữ liệu rồi gửi lại",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/community/service/PostService.java", "line": 206, "end_line": 235 }]
+    },
+    {
+      "id": "post_ai_pending",
+      "lane": "community",
+      "col": 5,
+      "yOffset": 0,
+      "type": "security",
+      "label": "AI gặp lỗi",
+      "sublabel": "Bài vẫn ở PENDING",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/moderation/service/impl/AiModerationServiceImpl.java", "line": 54, "end_line": 78 }]
+    },
+    {
+      "id": "post_approved",
+      "lane": "community",
+      "col": 5,
+      "yOffset": 100,
+      "type": "backend",
+      "label": "Được duyệt",
+      "sublabel": "APPROVED",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/admin/post/service/impl/AdminPostVideoServiceImpl.java", "line": 156, "end_line": 160 }]
+    },
+    {
+      "id": "post_rejected",
+      "lane": "community",
+      "col": 5,
+      "yOffset": 200,
+      "type": "security",
+      "label": "Bị từ chối",
+      "sublabel": "REJECTED; cần lý do",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/admin/post/service/impl/AdminPostVideoServiceImpl.java", "line": 117, "end_line": 120 }]
+    },
+    {
+      "id": "admin_gate",
+      "lane": "admin",
+      "col": 2,
+      "yOffset": -70,
+      "type": "security",
+      "label": "Vai trò ADMIN?",
+      "sublabel": "Chưa đăng nhập → login",
+      "sources": [{ "path": "Front_End/src/routes/AdminRoute.jsx", "line": 4, "end_line": 22 }]
+    },
+    {
+      "id": "admin_dashboard",
+      "lane": "admin",
+      "col": 3,
+      "yOffset": -70,
+      "type": "frontend",
+      "label": "Bảng quản trị",
+      "sublabel": "Chỉ ADMIN được vào",
+      "sources": [{ "path": "Front_End/src/App.jsx", "line": 80, "end_line": 96 }]
+    },
+    {
+      "id": "not_admin",
+      "lane": "admin",
+      "col": 3,
+      "yOffset": 70,
+      "type": "security",
+      "label": "Không đủ quyền",
+      "sublabel": "Chuyển về trang chủ",
+      "sources": [{ "path": "Front_End/src/routes/AdminRoute.jsx", "line": 10, "end_line": 22 }]
+    },
+    {
+      "id": "admin_manage",
+      "lane": "admin",
+      "col": 4,
+      "yOffset": -70,
+      "type": "backend",
+      "label": "Quản lý nội dung",
+      "sublabel": "Công thức, bài viết, danh mục, tài khoản",
+      "sources": [
+        { "path": "Back_End/src/main/java/com/chaybook/backend/admin/recipe/controller/AdminRecipeController.java", "line": 19, "end_line": 119 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/admin/article/controller/AdminArticleController.java", "line": 27, "end_line": 130 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/admin/category/controller/AdminCategoryController.java", "line": 27, "end_line": 130 }
+      ]
+    },
+    {
+      "id": "admin_review",
+      "lane": "admin",
+      "col": 4,
+      "yOffset": 90,
+      "type": "security",
+      "label": "Admin duyệt bài",
+      "sublabel": "Đổi PENDING thành APPROVED / REJECTED",
+      "sources": [
+        { "path": "Back_End/src/main/java/com/chaybook/backend/admin/post/service/impl/AdminPostVideoServiceImpl.java", "line": 101, "end_line": 177 },
+        { "path": "Back_End/src/main/java/com/chaybook/backend/admin/post/controller/AdminPostVideoController.java", "line": 50, "end_line": 61 }
+      ]
+    },
+    {
+      "id": "admin_saved",
+      "lane": "admin",
+      "col": 5,
+      "yOffset": -70,
+      "type": "backend",
+      "label": "Lưu thay đổi",
+      "sublabel": "Nội dung quản trị được cập nhật",
+      "sources": [{ "path": "Back_End/src/main/java/com/chaybook/backend/admin/user/controller/AdminUserController.java", "line": 13, "end_line": 49 }]
+    }
+  ],
+  "edges": [
+    { "id": "open-home", "from": "start", "to": "home", "role": "main" },
+    { "id": "home-choose", "from": "home", "to": "choose", "role": "main" },
+    { "id": "choose-public", "from": "choose", "to": "public_hub", "label": "Công khai", "role": "main" },
+    { "id": "public-recipes", "from": "public_hub", "to": "recipes_articles", "role": "main" },
+    { "id": "public-detail", "from": "recipes_articles", "to": "public_detail", "role": "main" },
+    { "id": "public-health", "from": "public_hub", "to": "bmi_ai", "label": "Sức khỏe / AI" },
+    { "id": "choose-protected", "from": "choose", "to": "protected_gate", "label": "Thành viên" },
+    { "id": "needs-login", "from": "protected_gate", "to": "login", "label": "Chưa đăng nhập" },
+    { "id": "login-failed", "from": "login", "to": "login_error", "label": "Sai thông tin / khóa", "role": "error" },
+    { "id": "login-retry", "from": "login_error", "to": "login", "label": "Thử lại" },
+    { "id": "login-ok", "from": "login", "to": "session", "label": "Hợp lệ" },
+    { "id": "needs-register", "from": "protected_gate", "to": "register", "label": "Chưa có tài khoản" },
+    { "id": "register-otp", "from": "register", "to": "otp", "label": "Nhập OTP" },
+    { "id": "otp-bad", "from": "otp", "to": "otp_error", "label": "Sai / hết hạn", "role": "error" },
+    { "id": "otp-good", "from": "otp", "to": "account_created", "label": "Hợp lệ" },
+    { "id": "session-profile", "from": "session", "to": "profile_allergies", "label": "Hồ sơ" },
+    { "id": "session-places", "from": "session", "to": "places", "label": "Tìm quán" },
+    { "id": "session-plan", "from": "session", "to": "mealplan_input", "label": "Thực đơn" },
+    { "id": "plan-check", "from": "mealplan_input", "to": "mealplan_check", "label": "Kiểm tra điều kiện" },
+    { "id": "plan-ok", "from": "mealplan_check", "to": "mealplan_saved", "label": "Đủ điều kiện" },
+    { "id": "plan-no-bmi", "from": "mealplan_check", "to": "mealplan_no_bmi", "label": "Thiếu BMI", "role": "branch" },
+    { "id": "plan-no-recipe", "from": "mealplan_check", "to": "mealplan_no_recipe", "label": "Không có món hợp lệ", "role": "error" },
+    { "id": "session-community", "from": "session", "to": "post_form", "label": "Đăng bài" },
+    { "id": "post-bad", "from": "post_form", "to": "post_invalid", "label": "Dữ liệu sai", "role": "error" },
+    { "id": "post-ai-fail", "from": "post_form", "to": "post_ai_pending", "label": "AI lỗi", "role": "error" },
+    { "id": "post-to-admin", "from": "post_form", "to": "admin_review", "label": "Hợp lệ; chờ duyệt" },
+    { "id": "admin-approve", "from": "admin_review", "to": "post_approved", "label": "Duyệt" },
+    { "id": "admin-reject", "from": "admin_review", "to": "post_rejected", "label": "Từ chối" },
+    { "id": "choose-admin", "from": "choose", "to": "admin_gate", "label": "Quản trị" },
+    { "id": "admin-authorized", "from": "admin_gate", "to": "admin_dashboard", "label": "Đã đăng nhập, là ADMIN" },
+    { "id": "admin-blocked", "from": "admin_gate", "to": "not_admin", "label": "Chưa đăng nhập / sai vai trò", "role": "error" },
+    { "id": "dashboard-manage", "from": "admin_dashboard", "to": "admin_manage", "label": "Thêm / sửa / xóa" },
+    { "id": "admin-save", "from": "admin_manage", "to": "admin_saved", "label": "Lưu" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Phạm vi sơ đồ",
+      "items": [
+        "Công thức, bài viết, BMI và trợ lý AI có thể truy cập công khai.",
+        "Tìm quán chỉ trả gợi ý địa điểm; không có luồng đặt hàng."
+      ]
+    }
+  ]
+}

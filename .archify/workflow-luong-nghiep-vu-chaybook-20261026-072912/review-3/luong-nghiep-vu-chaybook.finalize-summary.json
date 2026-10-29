@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "finalize",
+  "status": "fail",
+  "type": "workflow",
+  "quality": "standard",
+  "specification": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\candidate.json",
+    "sha256": "a9464679fa210ab41432eed6d101288bc44626ff6156ad41ff5cffff8573f2cc",
+    "bytes": 18045
+  },
+  "artifact": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nghiep-vu-chaybook.html",
+    "sha256": "8016077bd65010044076ee4426a8d27a500c27632322c87f41f2d8128d2ee304",
+    "bytes": 908920
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "fail"
+  },
+  "failedStage": "browser-check",
+  "diagnostics": [
+    {
+      "code": "viewer/viewport-overflow",
+      "severity": "error",
+      "message": "The rendered artifact overflows 3 viewport/theme combinations.",
+      "subject": {},
+      "evidence": {
+        "overflows": [
+          {
+            "detection": "browser-measurement",
+            "subject": {
+              "viewport": {
+                "width": 1440,
+                "height": 900,
+                "theme": "light"
+              }
+            },
+            "evidence": {
+              "scrollWidth": 1440,
+              "scrollHeight": 2088,
+              "overflowX": false,
+              "overflowY": true,
+              "overflowDisposition": "unexpected-overflow",
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 52,
+                "diagramChromePx": 78,
+                "svgPx": 1945,
+                "cardsPx": 0,
+                "viewBoxHeight": 2470
+              },
+              "pageCompositionMeasurement": "CSS pixels at this viewport; body padding, header, diagram chrome, SVG and cards stack vertically and sum to scrollHeight",
+              "workflowLanes": [
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 543,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "mealplan_input",
+                    "places",
+                    "profile_allergies",
+                    "mealplan_check",
+                    "mealplan_no_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 356,
+                  "spaceAboveNodesPx": 184,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 386,
+                  "nodeCount": 5,
+                  "nodeIds": [
+                    "post_form",
+                    "post_ai_pending",
+                    "post_approved",
+                    "post_invalid",
+                    "post_rejected"
+                  ],
+                  "nodeSpanPx": 277,
+                  "spaceAboveNodesPx": 106,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 323,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "session",
+                    "login_error",
+                    "otp",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 230,
+                  "spaceAboveNodesPx": 90,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 213,
+                  "nodeCount": 6,
+                  "nodeIds": [
+                    "admin_gate",
+                    "admin_dashboard",
+                    "not_admin",
+                    "admin_manage",
+                    "admin_review",
+                    "admin_saved"
+                  ],
+                  "nodeSpanPx": 167,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 181,
+                  "nodeCount": 4,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_articles",
+                    "public_detail"
+                  ],
+                  "nodeSpanPx": 135,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 82,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 41,
+                  "spaceAboveNodesPx": 32,
+                  "spaceBelowNodesPx": 9
+                }
+              ],
+              "measurement": "CSS pixels; rendered node boxes geometrically contained in each lane frame; spaces include headers and routing, not guaranteed removable space"
+            }
+          },
+          {
+            "detection": "browser-measurement",
+            "subject": {
+              "viewport": {
+                "width": 1600,
+                "height": 1000,
+                "theme": "light"
+              }
+            },
+            "evidence": {
+              "scrollWidth": 1600,
+              "scrollHeight": 2385,
+              "overflowX": false,
+              "overflowY": true,
+              "overflowDisposition": "unexpected-overflow",
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 2177,
+                "cardsPx": 0,
+                "viewBoxHeight": 2470
+              },
+              "pageCompositionMeasurement": "CSS pixels at this viewport; body padding, header, diagram chrome, SVG and cards stack vertically and sum to scrollHeight",
+              "workflowLanes": [
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 608,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "mealplan_input",
+                    "places",
+                    "profile_allergies",
+                    "mealplan_check",
+                    "mealplan_no_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 398,
+                  "spaceAboveNodesPx": 206,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 432,
+                  "nodeCount": 5,
+                  "nodeIds": [
+                    "post_form",
+                    "post_ai_pending",
+                    "post_approved",
+                    "post_invalid",
+                    "post_rejected"
+                  ],
+                  "nodeSpanPx": 310,
+                  "spaceAboveNodesPx": 118,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 361,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "session",
+                    "login_error",
+                    "otp",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 257,
+                  "spaceAboveNodesPx": 100,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 238,
+                  "nodeCount": 6,
+                  "nodeIds": [
+                    "admin_gate",
+                    "admin_dashboard",
+                    "not_admin",
+                    "admin_manage",
+                    "admin_review",
+                    "admin_saved"
+                  ],
+                  "nodeSpanPx": 187,
+                  "spaceAboveNodesPx": 48,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 203,
+                  "nodeCount": 4,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_articles",
+                    "public_detail"
+                  ],
+                  "nodeSpanPx": 152,
+                  "spaceAboveNodesPx": 48,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 92,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 46,
+                  "spaceAboveNodesPx": 36,
+                  "spaceBelowNodesPx": 10
+                }
+              ],
+              "measurement": "CSS pixels; rendered node boxes geometrically contained in each lane frame; spaces include headers and routing, not guaranteed removable space"
+            }
+          },
+          {
+            "detection": "browser-measurement",
+            "subject": {
+              "viewport": {
+                "width": 1440,
+                "height": 900,
+                "theme": "dark"
+              }
+            },
+            "evidence": {
+              "scrollWidth": 1440,
+              "scrollHeight": 2088,
+              "overflowX": false,
+              "overflowY": true,
+              "overflowDisposition": "unexpected-overflow",
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 52,
+                "diagramChromePx": 78,
+                "svgPx": 1945,
+                "cardsPx": 0,
+                "viewBoxHeight": 2470
+              },
+              "pageCompositionMeasurement": "CSS pixels at this viewport; body padding, header, diagram chrome, SVG and cards stack vertically and sum to scrollHeight",
+              "workflowLanes": [
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 543,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "mealplan_input",
+                    "places",
+                    "profile_allergies",
+                    "mealplan_check",
+                    "mealplan_no_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 356,
+                  "spaceAboveNodesPx": 184,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-4",
+                  "heightPx": 386,
+                  "nodeCount": 5,
+                  "nodeIds": [
+                    "post_form",
+                    "post_ai_pending",
+                    "post_approved",
+                    "post_invalid",
+                    "post_rejected"
+                  ],
+                  "nodeSpanPx": 277,
+                  "spaceAboveNodesPx": 106,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 323,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "session",
+                    "login_error",
+                    "otp",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 230,
+                  "spaceAboveNodesPx": 90,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-5",
+                  "heightPx": 213,
+                  "nodeCount": 6,
+                  "nodeIds": [
+                    "admin_gate",
+                    "admin_dashboard",
+                    "not_admin",
+                    "admin_manage",
+                    "admin_review",
+                    "admin_saved"
+                  ],
+                  "nodeSpanPx": 167,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 181,
+                  "nodeCount": 4,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_articles",
+                    "public_detail"
+                  ],
+                  "nodeSpanPx": 135,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 3
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 82,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 41,
+                  "spaceAboveNodesPx": 32,
+                  "spaceBelowNodesPx": 9
+                }
+              ],
+              "measurement": "CSS pixels; rendered node boxes geometrically contained in each lane frame; spaces include headers and routing, not guaranteed removable space"
+            }
+          }
+        ]
+      },
+      "supportedFixes": [
+        "contain the rendered layout within 1440x900 (smallest reported viewport), then rerun browser-check"
+      ]
+    },
+    {
+      "code": "viewer/projected-text-readability",
+      "severity": "error",
+      "message": "Projected context text is below the readability floor at 1440x900.",
+      "subject": {
+        "artifact": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nghiep-vu-chaybook.html",
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "theme": "light"
+        }
+      },
+      "evidence": {
+        "text": "Sửa dữ liệu rồi gửi lại",
+        "detail": "context",
+        "owner": {
+          "kind": "node",
+          "id": "post_invalid"
+        },
+        "minimumProjectedNodeTextPx": 4.961849034523113,
+        "minimumRequiredNodeTextPx": 6
+      },
+      "supportedFixes": [
+        "increase projected node text to at least 6px at 1440x900, then rerun browser-check"
+      ]
+    },
+    {
+      "code": "viewer/projected-text-readability",
+      "severity": "error",
+      "message": "Projected context text is below the readability floor at 1600x1000.",
+      "subject": {
+        "artifact": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nghiep-vu-chaybook.html",
+        "viewport": {
+          "width": 1600,
+          "height": 1000,
+          "theme": "light"
+        }
+      },
+      "evidence": {
+        "text": "Sửa dữ liệu rồi gửi lại",
+        "detail": "context",
+        "owner": {
+          "kind": "node",
+          "id": "post_invalid"
+        },
+        "minimumProjectedNodeTextPx": 5.551667641895845,
+        "minimumRequiredNodeTextPx": 6
+      },
+      "supportedFixes": [
+        "increase projected node text to at least 6px at 1600x1000, then rerun browser-check"
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 3,
+    "shown": 3,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-3\\luong-nghiep-vu-chaybook.finalize.json",
+    "summaryReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-3\\luong-nghiep-vu-chaybook.finalize-summary.json",
+    "browserCheckReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-3\\luong-nghiep-vu-chaybook.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T00:34:14.601Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 7952,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

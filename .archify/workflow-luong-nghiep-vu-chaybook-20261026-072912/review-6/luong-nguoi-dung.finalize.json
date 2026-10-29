@@ -1,0 +1,1823 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "standard",
+  "startedAt": "2026-10-26T00:41:58.898Z",
+  "specification": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.json",
+    "sha256": "6067418a1fee0047dc837bbba21d02a6a392ff427a7d639f2e680a06bd3d40b4",
+    "bytes": 11451
+  },
+  "artifact": {
+    "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+    "sha256": "0172e3db117b1c21bc69205ab000a32828f49bce31583e9c6ab46fe114bca4b9",
+    "bytes": 876066
+  },
+  "stages": {
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.json",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "--quality",
+        "standard",
+        "--repo-root",
+        "C:\\FPT\\SWP391\\ChayBook_Project",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "6067418a1fee0047dc837bbba21d02a6a392ff427a7d639f2e680a06bd3d40b4",
+          "bytes": 11451
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "standard",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 1,
+          "compositionIssues": [
+            {
+              "severity": "warning",
+              "code": "composition/desktop-readability",
+              "nodeId": "mealplan_missing_bmi",
+              "owner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "viewportWidth": 1440,
+              "viewportHeight": 900,
+              "availableDiagramWidth": 930,
+              "budgetBasis": "legacy-930",
+              "readerContract": "declared-wide-v1",
+              "requestedTargetPx": null,
+              "requestedTargetMet": null,
+              "budgetLimit": "legacy",
+              "viewBoxWidth": 1294,
+              "scale": 0.7187017001545595,
+              "text": "Tính và lưu BMI trước",
+              "detail": "context",
+              "sourceFontPx": 6.6,
+              "projectedFontPx": 4.743431221020092,
+              "minimumProjectedFontPx": 6
+            }
+          ]
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 1218,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "workflow",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.json",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "--quality",
+        "standard",
+        "--repo-root",
+        "C:\\FPT\\SWP391\\ChayBook_Project",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "ff0072fc-5f31-4691-8dfa-9e726e65884d",
+        "ok": true,
+        "command": "deliver",
+        "type": "workflow",
+        "input": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.json",
+        "output": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "specification": {
+          "sha256": "6067418a1fee0047dc837bbba21d02a6a392ff427a7d639f2e680a06bd3d40b4",
+          "bytes": 11451
+        },
+        "artifact": {
+          "sha256": "0172e3db117b1c21bc69205ab000a32828f49bce31583e9c6ab46fe114bca4b9",
+          "bytes": 876066
+        },
+        "validation": {
+          "checksPassed": 9,
+          "checkCount": 9,
+          "compositionProfile": "standard",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 1,
+          "compositionIssues": [
+            {
+              "severity": "warning",
+              "code": "composition/desktop-readability",
+              "nodeId": "mealplan_missing_bmi",
+              "owner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "viewportWidth": 1440,
+              "viewportHeight": 900,
+              "availableDiagramWidth": 930,
+              "budgetBasis": "legacy-930",
+              "readerContract": "declared-wide-v1",
+              "requestedTargetPx": null,
+              "requestedTargetMet": null,
+              "budgetLimit": "legacy",
+              "viewBoxWidth": 1294,
+              "scale": 0.7187017001545595,
+              "text": "Tính và lưu BMI trước",
+              "detail": "context",
+              "sourceFontPx": 6.6,
+              "projectedFontPx": 4.743431221020092,
+              "minimumProjectedFontPx": 6
+            }
+          ]
+        },
+        "evidence": {
+          "verified": true,
+          "repository": "https://github.com/MinNeoVo/ChayBook",
+          "revision": "9f38c0a3e077b591a1acbafe215ffd844c8e78df",
+          "references": 30
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 344,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "check",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "artifact": {
+          "sha256": "0172e3db117b1c21bc69205ab000a32828f49bce31583e9c6ab46fe114bca4b9",
+          "bytes": 876066
+        },
+        "checks": [
+          {
+            "name": "single_svg",
+            "ok": true,
+            "details": [
+              "found 1 <svg> block(s)"
+            ]
+          },
+          {
+            "name": "finite_svg",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "orthogonal_arrows",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "label_route_clearance",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_crossings",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "relationship_corridors",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "container_border_runs",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "route_rhythm",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "legend_clearance",
+            "ok": true,
+            "details": []
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "standard",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 1
+          },
+          "metrics": {
+            "properCrossings": 0,
+            "resolvedCrossovers": 0,
+            "ambiguousCorridors": 0,
+            "arrowheadCollisions": 0,
+            "containerBorderRuns": 0,
+            "labelRouteClearanceIssues": 0,
+            "labelCanvasOverflowIssues": 0,
+            "minLabelRouteClearance": 8,
+            "desktopReadabilityIssues": 1,
+            "viewportHeightIssues": 0,
+            "minProjectedNodeTextPx": 4.743431221020092,
+            "maxBends": 0,
+            "routesOverSuggestedBends": 0,
+            "maxStretch": 1,
+            "routesOverSuggestedStretch": 0,
+            "minSegmentPx": 8,
+            "minInteriorSegmentPx": null,
+            "shortSegmentCount": 5,
+            "shortEndpointSegmentCount": 5,
+            "shortInteriorSegmentCount": 0,
+            "microSegmentCount": 0
+          },
+          "suggestedLimits": {
+            "bendsPerRelationship": 2,
+            "stretch": 1.35,
+            "segmentPx": 16,
+            "microSegmentPx": 8
+          },
+          "routeReview": {
+            "crossings": [],
+            "detours": []
+          },
+          "leadingSpace": {
+            "measured": false,
+            "reviewSuggested": false
+          },
+          "desktopReadability": {
+            "budgetBasis": "legacy-930",
+            "readerContract": "declared-wide-v1",
+            "availableDiagramWidth": 930,
+            "actualBudgetPx": 930,
+            "limit": "legacy",
+            "requestedTargetPx": null,
+            "requestedTargetMet": null,
+            "hardFloorPx": 6,
+            "hardFloorMet": false,
+            "minimumOwner": {
+              "kind": "node",
+              "id": "mealplan_missing_bmi"
+            },
+            "minimumSourceTextPx": 6.6,
+            "minimumProjectedTextPx": 4.743431221020092,
+            "semanticTextCount": 58
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "code": "composition/desktop-readability",
+              "nodeId": "mealplan_missing_bmi",
+              "owner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "viewportWidth": 1440,
+              "viewportHeight": 900,
+              "availableDiagramWidth": 930,
+              "budgetBasis": "legacy-930",
+              "readerContract": "declared-wide-v1",
+              "requestedTargetPx": null,
+              "requestedTargetMet": null,
+              "budgetLimit": "legacy",
+              "viewBoxWidth": 1294,
+              "scale": 0.7187017001545595,
+              "text": "Tính và lưu BMI trước",
+              "detail": "context",
+              "sourceFontPx": 6.6,
+              "projectedFontPx": 4.743431221020092,
+              "minimumProjectedFontPx": 6
+            }
+          ]
+        },
+        "provenance": "current",
+        "deliveryReceiptId": "ff0072fc-5f31-4691-8dfa-9e726e65884d"
+      }
+    },
+    "browser-check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 3671,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "browser-check",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+        "--json",
+        "--require-provenance",
+        "--out-dir",
+        "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6"
+      ],
+      "execution": "in-process",
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "browser-check",
+        "evidenceKind": "automated-browser",
+        "status": "pass",
+        "visualReview": "not-requested",
+        "provenance": "current",
+        "deliveryReceiptId": "ff0072fc-5f31-4691-8dfa-9e726e65884d",
+        "artifact": {
+          "path": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nguoi-dung.html",
+          "sha256": "0172e3db117b1c21bc69205ab000a32828f49bce31583e9c6ab46fe114bca4b9",
+          "bytes": 876066
+        },
+        "state": {
+          "detail": "read",
+          "motion": "still"
+        },
+        "chrome": {
+          "status": "available",
+          "executable": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+        },
+        "diagnostics": [],
+        "containment": {
+          "status": "pass",
+          "policy": "fit-or-reader-declared-readable-vertical-scroll",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1359,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 52,
+                "diagramChromePx": 78,
+                "svgPx": 1217,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 343,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 98,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 322,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 77,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 198,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 148,
+                  "spaceAboveNodesPx": 46,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 108,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 54,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 11
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1570,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1506,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1362,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 384,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 109,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 361,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 86,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 221,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 165,
+                  "spaceAboveNodesPx": 51,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 121,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 61,
+                  "spaceAboveNodesPx": 48,
+                  "spaceBelowNodesPx": 13
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1859,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1826,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1651,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 466,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 133,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 437,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 104,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 268,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 200,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 147,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 73,
+                  "spaceAboveNodesPx": 58,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1917,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1870,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 68,
+                "diagramChromePx": 94,
+                "svgPx": 1691,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 477,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 136,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 448,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 107,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 275,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 205,
+                  "spaceAboveNodesPx": 64,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "themeStates": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "light",
+              "resolvedTheme": "light",
+              "ok": true
+            },
+            {
+              "width": 1440,
+              "height": 900,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "requestedTheme": "dark",
+              "resolvedTheme": "dark",
+              "ok": true
+            }
+          ]
+        },
+        "readability": {
+          "status": "pass",
+          "minimumProjectedNodeTextPx": 6,
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1359,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 52,
+                "diagramChromePx": 78,
+                "svgPx": 1217,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 343,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 98,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 322,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 77,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 198,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 148,
+                  "spaceAboveNodesPx": 46,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 108,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 54,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 11
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1570,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1506,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1362,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 384,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 109,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 361,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 86,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 221,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 165,
+                  "spaceAboveNodesPx": 51,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 121,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 61,
+                  "spaceAboveNodesPx": 48,
+                  "spaceBelowNodesPx": 13
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1859,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1826,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1651,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 466,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 133,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 437,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 104,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 268,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 200,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 147,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 73,
+                  "spaceAboveNodesPx": 58,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1917,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1870,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 68,
+                "diagramChromePx": 94,
+                "svgPx": 1691,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 477,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 136,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 448,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 107,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 275,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 205,
+                  "spaceAboveNodesPx": 64,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "viewerChrome": {
+          "status": "pass",
+          "viewports": [
+            {
+              "width": 1440,
+              "height": 900,
+              "theme": "light",
+              "innerWidth": 1440,
+              "innerHeight": 900,
+              "scrollWidth": 1440,
+              "scrollHeight": 1359,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1376,
+              "diagramWidth": 1346,
+              "pageComposition": {
+                "bodyPaddingPx": 12,
+                "headerPx": 52,
+                "diagramChromePx": 78,
+                "svgPx": 1217,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 343,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 98,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 322,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 241,
+                  "spaceAboveNodesPx": 77,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 198,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 148,
+                  "spaceAboveNodesPx": 46,
+                  "spaceBelowNodesPx": 4
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 108,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 54,
+                  "spaceAboveNodesPx": 43,
+                  "spaceBelowNodesPx": 11
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1600,
+              "height": 1000,
+              "theme": "light",
+              "innerWidth": 1600,
+              "innerHeight": 1000,
+              "scrollWidth": 1600,
+              "scrollHeight": 1570,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1536,
+              "diagramWidth": 1506,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1362,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 384,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 109,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 361,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 270,
+                  "spaceAboveNodesPx": 86,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 221,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 165,
+                  "spaceAboveNodesPx": 51,
+                  "spaceBelowNodesPx": 5
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 121,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 61,
+                  "spaceAboveNodesPx": 48,
+                  "spaceBelowNodesPx": 13
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 1920,
+              "height": 1080,
+              "theme": "light",
+              "innerWidth": 1920,
+              "innerHeight": 1080,
+              "scrollWidth": 1920,
+              "scrollHeight": 1859,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1856,
+              "diagramWidth": 1826,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 60,
+                "diagramChromePx": 84,
+                "svgPx": 1651,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 466,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 133,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 437,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 327,
+                  "spaceAboveNodesPx": 104,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 268,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 200,
+                  "spaceAboveNodesPx": 62,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 147,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 73,
+                  "spaceAboveNodesPx": 58,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 54,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            },
+            {
+              "width": 2048,
+              "height": 1320,
+              "theme": "light",
+              "innerWidth": 2048,
+              "innerHeight": 1320,
+              "scrollWidth": 2048,
+              "scrollHeight": 1917,
+              "overflowX": false,
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
+              "readerLayout": "adaptive",
+              "readerOverflow": "authored",
+              "readerFit": "width-first",
+              "ok": true,
+              "readerWidth": 1920,
+              "diagramWidth": 1870,
+              "pageComposition": {
+                "bodyPaddingPx": 64,
+                "headerPx": 68,
+                "diagramChromePx": 94,
+                "svgPx": 1691,
+                "cardsPx": 0,
+                "viewBoxHeight": 1170
+              },
+              "viewBoxWidth": 1294,
+              "workflowLanes": [
+                {
+                  "frameId": "lane-2",
+                  "heightPx": 477,
+                  "nodeCount": 8,
+                  "nodeIds": [
+                    "protected_gate",
+                    "login",
+                    "register",
+                    "login_error",
+                    "otp",
+                    "session",
+                    "account_created",
+                    "otp_error"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 136,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-3",
+                  "heightPx": 448,
+                  "nodeCount": 7,
+                  "nodeIds": [
+                    "member_start",
+                    "profile_places",
+                    "mealplan_input",
+                    "mealplan_check",
+                    "mealplan_missing_bmi",
+                    "mealplan_no_recipe",
+                    "mealplan_saved"
+                  ],
+                  "nodeSpanPx": 335,
+                  "spaceAboveNodesPx": 107,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-1",
+                  "heightPx": 275,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "public_hub",
+                    "bmi_ai",
+                    "recipes_detail"
+                  ],
+                  "nodeSpanPx": 205,
+                  "spaceAboveNodesPx": 64,
+                  "spaceBelowNodesPx": 6
+                },
+                {
+                  "frameId": "lane-0",
+                  "heightPx": 150,
+                  "nodeCount": 3,
+                  "nodeIds": [
+                    "start",
+                    "home",
+                    "choose"
+                  ],
+                  "nodeSpanPx": 75,
+                  "spaceAboveNodesPx": 59,
+                  "spaceBelowNodesPx": 16
+                }
+              ],
+              "minimumProjectedNodeTextPx": 6.6,
+              "minimumProjectedNonEdgeTextPx": 6.6,
+              "minimumProjectedEdgeTextPx": 8,
+              "minimumProjectedNodeText": "Tính và lưu BMI trước",
+              "minimumProjectedNodeTextDetail": "context",
+              "minimumProjectedNodeTextOwner": {
+                "kind": "node",
+                "id": "mealplan_missing_bmi"
+              },
+              "minimumRequiredNodeTextPx": 6,
+              "readabilityOk": true,
+              "hasLegend": false,
+              "hasNavigationDock": true,
+              "legendDockIntersectionArea": 0,
+              "dockStageIntersectionArea": 0,
+              "dockStageGap": 10,
+              "requiredDockStageGap": 10,
+              "viewerChromeStageOk": true,
+              "viewerChromeReserve": 44,
+              "viewerChromeActive": true,
+              "viewerChromeOk": true,
+              "resolvedTheme": "light"
+            }
+          ]
+        },
+        "captures": {
+          "status": "not-requested",
+          "screenshots": [],
+          "contactSheet": null
+        },
+        "sidecars": {
+          "directory": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6",
+          "receipt": "luong-nguoi-dung.browser-check.json",
+          "files": []
+        }
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.finalize.json",
+    "summaryReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.finalize-summary.json",
+    "browserCheckReceipt": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\review-6\\luong-nguoi-dung.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "finishedAt": "2026-10-26T00:42:05.000Z",
+  "durationMs": 6102,
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-10-26T00:34:14.601Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  }
+}

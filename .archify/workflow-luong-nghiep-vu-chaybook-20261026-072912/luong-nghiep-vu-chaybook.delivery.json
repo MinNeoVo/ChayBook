@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "372eb4a1-a37f-4719-86d0-a7dd06a5824f",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\candidate.json",
+  "output": "C:\\FPT\\SWP391\\ChayBook_Project\\.archify\\workflow-luong-nghiep-vu-chaybook-20261026-072912\\luong-nghiep-vu-chaybook.html",
+  "specification": {
+    "sha256": "a9464679fa210ab41432eed6d101288bc44626ff6156ad41ff5cffff8573f2cc",
+    "bytes": 18045
+  },
+  "artifact": {
+    "sha256": "8016077bd65010044076ee4426a8d27a500c27632322c87f41f2d8128d2ee304",
+    "bytes": 908920
+  }
+}
