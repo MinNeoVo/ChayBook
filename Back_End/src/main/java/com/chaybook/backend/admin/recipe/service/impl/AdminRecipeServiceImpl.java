@@ -379,22 +379,24 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
         }
 
         Map<Integer, Ingredient> ingredientsById = new HashMap<>();
+        
+        for (Integer ingredientId : ingredientIds.stream().sorted().toList()) {
+        Ingredient ingredient = ingredientRepository
+                .findByIdForUpdate(ingredientId)
+                .orElseThrow(() -> new RecipeException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy nguyên liệu có mã " + ingredientId + "."
+                ));
 
-        for (Ingredient ingredient :
-                ingredientRepository.findAllById(ingredientIds)) {
-            ingredientsById.put(
-                    ingredient.getIngredientId(),
-                    ingredient
-            );
+        if (!"ACTIVE".equals(ingredient.getStatus())) {
+                throw new RecipeException(
+                        HttpStatus.CONFLICT,
+                        "Nguyên liệu \"" + ingredient.getName()
+                                + "\" đã bị xóa. Vui lòng chọn nguyên liệu khác."
+                );
         }
 
-        for (Integer ingredientId : ingredientIds) {
-            if (!ingredientsById.containsKey(ingredientId)) {
-                throw new RecipeException(
-                        HttpStatus.NOT_FOUND,
-                        "Ingredient not found: " + ingredientId
-                );
-            }
+        ingredientsById.put(ingredientId, ingredient);
         }
 
         return ingredientsById;

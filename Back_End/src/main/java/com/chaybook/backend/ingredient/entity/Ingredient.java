@@ -20,6 +20,9 @@ public class Ingredient {
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @ManyToMany(mappedBy = "ingredients", fetch = FetchType.LAZY)
     private Set<Allergy> allergies = new HashSet<>();
 
@@ -49,5 +52,13 @@ public class Ingredient {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
