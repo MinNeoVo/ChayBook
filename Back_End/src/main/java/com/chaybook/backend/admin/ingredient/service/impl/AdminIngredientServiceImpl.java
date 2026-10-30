@@ -95,6 +95,7 @@ public class AdminIngredientServiceImpl
         Ingredient ingredient = new Ingredient(
                 request.name(),
                 request.description()
+
         );
 
         Ingredient saved = ingredientRepository.saveAndFlush(ingredient);

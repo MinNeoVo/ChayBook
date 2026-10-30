@@ -4,12 +4,15 @@ import com.chaybook.backend.recognition.provider.ContentRecognitionProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -24,14 +27,46 @@ public class GeminiContentProvider implements ContentRecognitionProvider {
             @Value("${gemini.api.key}") String apiKey,
             @Value("${gemini.vision.api.url}") String apiUrl
     ) {
+        SimpleClientHttpRequestFactory requestFactory =
+                new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(10));
+        requestFactory.setReadTimeout(Duration.ofSeconds(120));
 
-        this.restClient = RestClient.create();
+        this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
+                .build();
         this.apiKey = apiKey;
         this.apiUrl = apiUrl;
     }
 
     @Override
     public String generateText(String prompt) {
+        return callGemini(prompt, null, null, false);
+    }
+
+    @Override
+    public String generateContent(
+            String prompt,
+            byte[] imageBytes,
+            String mimeType
+    ) {
+        if (imageBytes == null || imageBytes.length == 0
+                || mimeType == null || !mimeType.startsWith("image/")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Ảnh gửi lên không hợp lệ."
+            );
+        }
+
+        return callGemini(prompt, imageBytes, mimeType, true);
+    }
+
+    private String callGemini(
+            String prompt,
+            byte[] imageBytes,
+            String mimeType,
+            boolean jsonResponse
+    ) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE,
@@ -39,18 +74,38 @@ public class GeminiContentProvider implements ContentRecognitionProvider {
             );
         }
 
+        List<Map<String, Object>> parts;
+
+        if (imageBytes == null) {
+            parts = List.of(Map.of("text", prompt));
+        } else {
+            parts = List.of(
+                    Map.of("text", prompt),
+                    Map.of(
+                            "inlineData",
+                            Map.of(
+                                    "mimeType", mimeType,
+                                    "data", Base64.getEncoder()
+                                            .encodeToString(imageBytes)
+                            )
+                    )
+            );
+        }
+
+        Map<String, Object> generationConfig = jsonResponse
+                ? Map.of(
+                "responseMimeType", "application/json",
+                "maxOutputTokens", 512,
+                "thinkingConfig", Map.of("thinkingLevel", "low")
+        )
+                : Map.of(
+                "maxOutputTokens", 64,
+                "thinkingConfig", Map.of("thinkingLevel", "low")
+        );
+
         Map<String, Object> requestBody = Map.of(
-                "contents", List.of(
-                        Map.of(
-                                "parts", List.of(
-                                        Map.of("text", prompt)
-                                )
-                        )
-                ),
-                "generationConfig", Map.of(
-                        "temperature", 0.0,
-                        "maxOutputTokens", 64
-                )
+                "contents", List.of(Map.of("parts", parts)),
+                "generationConfig", generationConfig
         );
 
         try {
@@ -91,18 +146,19 @@ public class GeminiContentProvider implements ContentRecognitionProvider {
             return text.trim();
 
         } catch (RestClientResponseException exception) {
-            exception.printStackTrace();
-
+            System.err.println("Gemini HTTP status: "
+                    + exception.getStatusCode().value());
+            System.err.println("Gemini response body: "
+                    + exception.getResponseBodyAsString());
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
-                    "Không gọi được Gemini 3.8 Flash. Hãy kiểm tra API key, model và hạn mức.",
+                    "Gemini từ chối xử lý yêu cầu.",
                     exception
             );
         } catch (RestClientException exception) {
-            exception.printStackTrace();
             throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    "Không kết nối được tới Gemini.",
+                    HttpStatus.GATEWAY_TIMEOUT,
+                    "Gemini phản hồi quá lâu hoặc không thể kết nối.",
                     exception
             );
         }
