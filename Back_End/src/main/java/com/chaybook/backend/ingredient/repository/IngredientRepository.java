@@ -30,4 +30,9 @@ public interface IngredientRepository
     Optional<Ingredient> findByIdForUpdate(
             @Param("ingredientId") Integer ingredientId
     );
+
+    Optional<Ingredient> findByNameIgnoreCaseAndStatus(
+            String name,
+            String status
+    );
 }

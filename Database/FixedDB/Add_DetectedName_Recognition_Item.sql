@@ -1,0 +1,9 @@
+USE ChayBook_Project;
+GO
+
+IF COL_LENGTH(N'dbo.AI_RECOGNITION_ITEM', N'detected_name') IS NULL
+BEGIN
+    ALTER TABLE dbo.AI_RECOGNITION_ITEM
+    ADD detected_name NVARCHAR(255) NULL;
+END;
+GO

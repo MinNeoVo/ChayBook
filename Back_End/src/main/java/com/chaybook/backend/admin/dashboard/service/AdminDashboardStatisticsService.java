@@ -4,6 +4,7 @@ import com.chaybook.backend.admin.dashboard.dto.AdminDashboardStatisticsResponse
 import com.chaybook.backend.admin.dashboard.repository.AdminDashboardStatisticsRepository;
 import com.chaybook.backend.assistant.repository.AiMessageRepository;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -169,7 +170,7 @@ public class AdminDashboardStatisticsService {
                         "Authenticated user no longer exists"
                 ));
 
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())
+        if (!UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())
                 || !"ADMIN".equalsIgnoreCase(user.getRole())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

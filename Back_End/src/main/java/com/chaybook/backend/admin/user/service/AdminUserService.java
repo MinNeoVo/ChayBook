@@ -6,10 +6,7 @@ import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.repository.projection.UserStatisticsProjection;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +15,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import com.chaybook.backend.user.enums.UserStatus;
 
 @Service
 public class AdminUserService {
@@ -37,7 +35,7 @@ public class AdminUserService {
         }
         User admin = userRepository.findById(authenticatedUserId)
                 .orElseThrow(() -> new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in again"));
-        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || !"ACTIVE".equalsIgnoreCase(admin.getStatus())) {
+        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || !UserStatus.ACTIVE.name().equalsIgnoreCase(admin.getStatus())) {
             throw new AdminUserException(HttpStatus.FORBIDDEN, "An active administrator account is required");
         }
     }
@@ -92,8 +90,9 @@ public class AdminUserService {
 
         String newStatus = request.status();
 
-        if (!"ACTIVE".equals(newStatus)
-                && !"DISABLED".equals(newStatus)) {
+        try {
+            UserStatus.valueOf(newStatus);
+        } catch (IllegalArgumentException exception) {
             throw new AdminUserException(
                     HttpStatus.BAD_REQUEST,
                     "Status must be ACTIVE or DISABLED"

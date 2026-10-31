@@ -2,6 +2,7 @@ package com.chaybook.backend.ingredient.service;
 
 import com.chaybook.backend.ingredient.dto.IngredientResponse;
 import com.chaybook.backend.ingredient.entity.Ingredient;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import com.chaybook.backend.ingredient.exception.IngredientException;
 import com.chaybook.backend.ingredient.repository.IngredientRepository;
 import org.springframework.data.domain.Sort;
@@ -23,8 +24,7 @@ public class IngredientService {
     }
 
     public List<IngredientResponse> getIngredients() {
-        return ingredientRepository
-                .findByStatus("ACTIVE", Sort.by(Sort.Direction.ASC, "ingredientId"))
+        return ingredientRepository.findByStatus(IngredientStatus.ACTIVE.name(), Sort.by(Sort.Direction.ASC, "ingredientId"))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -41,7 +41,8 @@ public class IngredientService {
         }
 
         Ingredient ingredient = ingredientRepository
-                .findByIngredientIdAndStatus(ingredientId, "ACTIVE")
+                .findByIngredientIdAndStatus(ingredientId,
+                        IngredientStatus.ACTIVE.name())
                 .orElseThrow(() -> new IngredientException(
                         HttpStatus.NOT_FOUND,
                         "Ingredient not found"

@@ -14,6 +14,7 @@ import com.chaybook.backend.shop.policy.ShopRecommendationPolicy;
 import com.chaybook.backend.shop.provider.ShopSearchProvider;
 import com.chaybook.backend.shop.service.ShopRecommendationService;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
@@ -95,7 +96,7 @@ public class ShopRecommendationServiceImpl implements ShopRecommendationService 
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Tài khoản đăng nhập không còn tồn tại."
                 ));
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (!UserStatus.ACTIVE.name().equals(user.getStatus())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản không hoạt động.");
         }
     }
