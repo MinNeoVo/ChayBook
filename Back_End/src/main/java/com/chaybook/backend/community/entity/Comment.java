@@ -1,5 +1,6 @@
 package com.chaybook.backend.community.entity;
 
+import com.chaybook.backend.community.enums.CommentStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,8 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "[COMMENT]")
 public class Comment {
-    public static final String ACTIVE = "ACTIVE";
-    public static final String DELETED = "DELETED";
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
@@ -22,7 +22,7 @@ public class Comment {
     private Comment replyToComment;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status = ACTIVE;
+    private String status = CommentStatus.ACTIVE.name();
 
     @Column(name = "edited_at")
     private LocalDateTime editedAt;
@@ -108,7 +108,7 @@ public class Comment {
     }
     
     public boolean isDeleted() {
-        return DELETED.equals(status);
+        return CommentStatus.DELETED.name().equals(status);
     }
 
     public Comment getParentComment() {

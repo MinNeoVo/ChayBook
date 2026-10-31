@@ -1,4 +1,4 @@
-package com.chaybook.backend.recognition.entity;
+package com.chaybook.backend.recognition.enums;
 
 public enum RecognitionStatus {
     COMPLETED,

@@ -1,6 +1,6 @@
 package com.chaybook.backend.recognition.dto;
 
-import com.chaybook.backend.recognition.entity.RecognitionStatus;
+import com.chaybook.backend.recognition.enums.RecognitionStatus;
 
 import java.util.List;
 

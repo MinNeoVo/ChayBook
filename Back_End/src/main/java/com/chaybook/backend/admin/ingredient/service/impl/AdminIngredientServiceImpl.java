@@ -8,7 +8,9 @@ import com.chaybook.backend.admin.ingredient.repository.AdminIngredientRepositor
 import com.chaybook.backend.admin.ingredient.service.AdminIngredientService;
 import com.chaybook.backend.ingredient.dto.IngredientResponse;
 import com.chaybook.backend.ingredient.entity.Ingredient;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -141,7 +143,7 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
-        if("DELETED".equals(ingredient.getStatus())) {
+        if(IngredientStatus.DELETED.name().equals(ingredient.getStatus())) {
             return;
         }
 
@@ -152,7 +154,7 @@ public class AdminIngredientServiceImpl
             );
         }
 
-        ingredient.setStatus("DELETED");
+        ingredient.setStatus(IngredientStatus.ACTIVE.name());
         ingredientRepository.saveAndFlush(ingredient);
     }
 
@@ -166,7 +168,7 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
-        if ("ACTIVE".equals(ingredient.getStatus())) {
+        if (IngredientStatus.ACTIVE.name().equals(ingredient.getStatus())) {
             return toResponse(ingredient);
         }
 
@@ -192,7 +194,7 @@ public class AdminIngredientServiceImpl
                 ));
 
         if (!"ADMIN".equals(user.getRole())
-                || !"ACTIVE".equals(user.getStatus())) {
+                || !UserStatus.ACTIVE.name().equals(user.getStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Chỉ tài khoản admin đang hoạt động mới được thực hiện thao tác này."
@@ -258,8 +260,9 @@ public class AdminIngredientServiceImpl
             return "";
         }
         String normalized = status.strip().toUpperCase(Locale.ROOT);
-        if (!"ACTIVE".equals(normalized)
-                && !"DELETED".equals(normalized)) {
+        try {
+            normalized = IngredientStatus.valueOf(normalized).name();
+        } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Trạng thái phải là ACTIVE hoặc DELETED."

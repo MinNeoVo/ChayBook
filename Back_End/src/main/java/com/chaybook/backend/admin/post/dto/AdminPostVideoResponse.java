@@ -1,5 +1,8 @@
 package com.chaybook.backend.admin.post.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,8 +38,8 @@ public record AdminPostVideoResponse(
     ) {}
 
     public record StatusRequest(
-            @jakarta.validation.constraints.NotBlank
-            @jakarta.validation.constraints.Pattern(regexp = "APPROVED|REJECTED|REMOVED")
+            @NotBlank
+            @Pattern(regexp = "APPROVED|REJECTED|REMOVED")
             String status,
             String reason
     ) {}

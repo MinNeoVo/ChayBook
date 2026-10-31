@@ -1,12 +1,14 @@
 package com.chaybook.backend.recognition.service.impl;
 
 import com.chaybook.backend.ingredient.entity.*;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import com.chaybook.backend.ingredient.repository.IngredientRepository;
 import com.chaybook.backend.media.dto.MediaUploadResponse;
 import com.chaybook.backend.media.service.MediaService;
-import com.chaybook.backend.recipe.entity.RecipeStatus;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recognition.dto.*;
 import com.chaybook.backend.recognition.entity.*;
+import com.chaybook.backend.recognition.enums.RecognitionStatus;
 import com.chaybook.backend.recognition.provider.ContentRecognitionProvider;
 import com.chaybook.backend.recognition.repository.*;
 import com.chaybook.backend.recognition.service.RecognitionService;

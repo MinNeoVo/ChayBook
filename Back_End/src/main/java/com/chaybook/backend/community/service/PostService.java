@@ -1,15 +1,18 @@
 package com.chaybook.backend.community.service;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.*;
+import com.chaybook.backend.community.enums.PostStatus;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
 import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.moderation.entity.AiModeration;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -244,7 +247,7 @@ public PostCreateResponse createPost(
     post.setTitle(title.strip());
     post.setContent(content.strip());
     post.setImageUrl(imageUrl);
-    post.setStatus("PENDING");
+    post.setStatus(PostStatus.PENDING.name());
 
     Post savedPost = postRepository.saveAndFlush(post);
     aiModerationService.moderatePost(savedPost);
@@ -350,7 +353,7 @@ private String uploadPostMedia(MultipartFile image) {
         post.setCategory(newCategory);
 
         // Nội dung đã thay đổi nên phải duyệt lại.
-        post.setStatus("PENDING");
+        post.setStatus(PostStatus.PENDING.name());
 
         // Không đổi tác giả, createdAt hoặc các tương tác.
         postRepository.saveAndFlush(post);
@@ -378,7 +381,7 @@ private String uploadPostMedia(MultipartFile image) {
         }
 
         // Xóa mềm: không xóa bản ghi hoặc dữ liệu liên quan.
-        post.setStatus("DELETED");
+        post.setStatus(PostStatus.REMOVED.name());
 
         postRepository.saveAndFlush(post);
 
@@ -400,7 +403,7 @@ private String uploadPostMedia(MultipartFile image) {
                 ));
 
         // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if ("DELETED".equalsIgnoreCase(post.getStatus())) {
+        if (PostStatus.REMOVED.name().equalsIgnoreCase(post.getStatus())) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"
@@ -459,7 +462,7 @@ private String uploadPostMedia(MultipartFile image) {
 
         Post post = requirePostForWrite(postId);
 
-        if (!"APPROVED".equalsIgnoreCase(post.getStatus())) {
+        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts can receive interactions"
@@ -527,7 +530,7 @@ private String uploadPostMedia(MultipartFile image) {
         // Kiểm tra ID, khóa bài trong transaction và chặn bài DELETED.
         Post post = requirePostForWrite(postId);
 
-        if (!"APPROVED".equalsIgnoreCase(post.getStatus())) {
+        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts allow interaction changes"
@@ -568,7 +571,7 @@ private String uploadPostMedia(MultipartFile image) {
                 ));
 
         if (user.getStatus() == null
-                || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+                || !UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())) {
             throw new PostException(
                     HttpStatus.FORBIDDEN,
                     "User account is not active"
@@ -596,7 +599,7 @@ private String uploadPostMedia(MultipartFile image) {
                         "Category not found"
                 ));
 
-        if (!"ACTIVE".equals(category.getStatus())) {
+        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"

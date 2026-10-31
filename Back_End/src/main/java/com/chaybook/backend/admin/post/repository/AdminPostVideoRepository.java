@@ -1,6 +1,7 @@
 package com.chaybook.backend.admin.post.repository;
 
 import com.chaybook.backend.admin.post.dto.AdminPostVideoResponse;
+import com.chaybook.backend.admin.post.enums.AdminContentStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -97,9 +98,9 @@ public class AdminPostVideoRepository {
     private static final String FILTERED_CONTENT = """
             SELECT *
             FROM (%s) content
-            WHERE UPPER(COALESCE(content.status, '')) <> 'REMOVED'
+            WHERE UPPER(COALESCE(content.status, '')) <> :removedStatus
               AND (:contentType = 'ALL' OR content.content_type = :contentType)
-              AND (:status = 'ALL' OR UPPER(content.status) = :status)
+              AND (:status IS NULL OR UPPER(content.status) = :status)
               AND (
                     :keyword = ''
                     OR LOWER(CAST(content.content_id AS VARCHAR(20))) LIKE :searchPattern
@@ -272,6 +273,7 @@ public class AdminPostVideoRepository {
         query.setParameter("status", status);
         query.setParameter("keyword", keyword);
         query.setParameter("searchPattern", "%" + keyword + "%");
+        query.setParameter("removedStatus", AdminContentStatus.REMOVED.name());
     }
 
     private AdminPostVideoResponse toResponse(Object[] row) {

@@ -1,6 +1,7 @@
 package com.chaybook.backend.ingredient.entity;
 
 import com.chaybook.backend.allergy.entity.Allergy;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
