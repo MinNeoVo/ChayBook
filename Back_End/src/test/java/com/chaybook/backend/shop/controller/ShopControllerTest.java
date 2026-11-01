@@ -85,14 +85,13 @@ class ShopControllerTest {
     }
 
     @Test
-    void invalidSourcePayloadIsRejectedBeforeService() throws Exception {
+    void locationSearchDoesNotRequireQuery() throws Exception {
         authenticate();
-        String body = SEARCH_BODY.replace("\"query\": \"phở chay\"", "\"query\": \"   \"");
+        String body = SEARCH_BODY.replace("\"query\": \"phở chay\"", "\"query\": null");
         mvc.perform(post("/api/shops/recommendations")
                         .contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.contextValid").exists());
-        verifyNoInteractions(service);
+                .andExpect(status().isOk());
+        verify(service).recommend(eq(27), any(ShopRecommendationRequest.class));
     }
 
     @Test

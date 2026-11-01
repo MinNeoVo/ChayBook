@@ -14,7 +14,9 @@ public class SearchContextResolver implements RecommendationContextResolver {
 
     @Override
     public RecommendationContext resolve(Integer userId, ShopRecommendationRequest request) {
-        String query = request.query().strip().replaceAll("(?U)\\s+", " ");
+        String query = request.query() == null
+                ? ""
+                : request.query().strip().replaceAll("(?U)\\s+", " ");
         return new RecommendationContext(query, null);
     }
 }

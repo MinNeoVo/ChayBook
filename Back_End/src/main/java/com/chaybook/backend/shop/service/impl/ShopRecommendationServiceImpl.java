@@ -62,7 +62,8 @@ public class ShopRecommendationServiceImpl implements ShopRecommendationService 
 
         // Each database resolver completes its read-only transaction before the provider call.
         RecommendationContext context = resolver.resolve(userId, request);
-        if (context.dishName() == null || context.dishName().isBlank()) {
+        if (request.source() != RecommendationSource.SEARCH
+                && (context.dishName() == null || context.dishName().isBlank())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Món ăn chưa có tên để tìm quán.");
         }
 
@@ -82,7 +83,7 @@ public class ShopRecommendationServiceImpl implements ShopRecommendationService 
         List<ShopResponse> items = recommendationPolicy
                 .select(candidates, query, request.limit())
                 .stream()
-                .map(shop -> toResponse(shop, context, fallbackUsed))
+                .map(shop -> toResponse(shop, request.source(), context, fallbackUsed))
                 .toList();
         return new ShopRecommendationResponse(items, fallbackUsed);
     }
@@ -101,11 +102,11 @@ public class ShopRecommendationServiceImpl implements ShopRecommendationService 
     }
 
     private ShopSearchQuery createSearchQuery(ShopRecommendationRequest request, RecommendationContext context) {
-        String dishName = context.dishName()
-                .strip()
-                .replaceAll("(?U)\\s+", " ");
+        String searchText = context.dishName() == null || context.dishName().isBlank()
+                ? "vegetarian restaurants"
+                : context.dishName().strip().replaceAll("(?U)\\s+", " ");
         return new ShopSearchQuery(
-                dishName,
+                searchText,
                 request.latitude().doubleValue(),
                 request.longitude().doubleValue(),
                 request.radiusMeters(),
@@ -116,12 +117,15 @@ public class ShopRecommendationServiceImpl implements ShopRecommendationService 
 
     private ShopResponse toResponse(
             RankedShop shop,
+            RecommendationSource source,
             RecommendationContext context,
             boolean fallbackUsed
     ) {
         ShopCandidate candidate = shop.candidate();
 
-        String reason = fallbackUsed
+        String reason = source == RecommendationSource.SEARCH
+                ? "Quán ăn chay gần vị trí tìm kiếm; thực đơn chưa được xác minh."
+                : fallbackUsed
                 ? "Quán chay gần vị trí đã chọn; chưa xác minh món "
                     + context.dishName()
                 : "Kết quả tìm kiếm theo món " + context.dishName()
