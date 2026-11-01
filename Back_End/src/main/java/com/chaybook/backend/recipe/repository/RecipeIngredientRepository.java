@@ -28,4 +28,15 @@ public interface RecipeIngredientRepository extends JpaRepository<RecipeIngredie
     List<RecipeIngredient> findIngredientsByRecipeId(
             @Param("recipeId") Integer recipeId
     );
+
+    @Query("""
+            SELECT i.name
+            FROM RecipeIngredient ri
+            JOIN ri.ingredient i
+            WHERE ri.recipe.recipeId = :recipeId
+            ORDER BY i.ingredientId ASC
+            """)
+    List<String> findIngredientNamesByRecipeId(
+            @Param("recipeId") Integer recipeId
+    );
 }
