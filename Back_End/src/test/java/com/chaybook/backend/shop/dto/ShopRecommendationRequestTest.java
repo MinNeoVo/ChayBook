@@ -31,7 +31,7 @@ class ShopRecommendationRequestTest {
 
     @Test
     void acceptsEachCompleteSourceAndInclusiveInputBounds() {
-        assertTrue(validator.validate(request(RecommendationSource.SEARCH, "Pho chay", null,
+        assertTrue(validator.validate(request(RecommendationSource.SEARCH, null, null,
                 null, null, null, "-90", "-180", 500, 1)).isEmpty());
         assertTrue(validator.validate(request(RecommendationSource.RECIPE, null, 7,
                 null, null, null, "90", "180", 10000, 10)).isEmpty());
@@ -40,9 +40,9 @@ class ShopRecommendationRequestTest {
     }
 
     @Test
-    void rejectsBlankMissingAndMixedSourceContexts() {
+    void acceptsLocationSearchWithoutQueryAndRejectsMixedSourceContexts() {
         assertTrue(violations(request(RecommendationSource.SEARCH, " \t ", null,
-                null, null, null, "0", "0", 500, 1)).contains("contextValid"));
+                null, null, null, "0", "0", 500, 1)).isEmpty());
         assertTrue(violations(request(RecommendationSource.SEARCH, "Pho chay", 7,
                 null, null, null, "0", "0", 500, 1)).contains("contextValid"));
         assertTrue(violations(request(RecommendationSource.RECIPE, null, null,

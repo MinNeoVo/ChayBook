@@ -8,7 +8,9 @@ import com.chaybook.backend.auth.service.LoginResult;
 import jakarta.validation.Valid;
 
 import java.util.Map;
+import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,9 @@ allowCredentials = "true"
 public class AuthController {
 
     private final AuthService authService;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
 
     public AuthController(AuthService authService) {
@@ -93,7 +98,7 @@ public ResponseEntity<LoginResponse> login(
             .secure(false) // localhost HTTP
             .sameSite("Lax")
             .path("/")
-            .maxAge(60 * 60)
+            .maxAge(Duration.ofMillis(jwtExpiration))
             .build();
 
     return ResponseEntity

@@ -11,9 +11,8 @@ export function getNearbyShopRecommendations({
     method: "POST",
     body: {
       source: "SEARCH",
-      // The current backend request still requires a non-empty query for SEARCH.
-      // Geoapify's provider uses the coordinates and dietary mode for its nearby search.
-      query: "nearby vegetarian restaurants",
+      // This is a location-based search; no dish or shop name is required.
+      query: null,
       recipeId: null,
       mealPlanId: null,
       dayNumber: null,
@@ -25,4 +24,12 @@ export function getNearbyShopRecommendations({
       limit,
     },
   });
+}
+
+export function geocodeShopAddress(address) {
+  return apiFetch(`/shops/geocode?address=${encodeURIComponent(address)}`);
+}
+
+export function autocompleteShopAddress(text, options = {}) {
+  return apiFetch(`/shops/address-suggestions?text=${encodeURIComponent(text)}`, options);
 }

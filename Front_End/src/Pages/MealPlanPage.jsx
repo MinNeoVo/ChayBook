@@ -28,6 +28,7 @@ function MealPlanPage() {
   const [selectedPlanId, setSelectedPlanId] = useState(returnPlan?.mealPlanId ?? null);
   const [healthGoal, setHealthGoal] = useState("MAINTAIN");
   const [durationDays, setDurationDays] = useState(7);
+  const [dietaryPreference, setDietaryPreference] = useState("");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
@@ -128,7 +129,7 @@ function MealPlanPage() {
         await allergySelectorRef.current.save();
       }
 
-      const plan = await createMealPlan({ healthGoal, durationDays });
+      const plan = await createMealPlan({ healthGoal, durationDays, dietaryPreference });
       setReturnPlan(null);
       setPlans((current) => [plan, ...current]);
       setSelectedPlanId(plan.mealPlanId);
@@ -164,7 +165,8 @@ function MealPlanPage() {
               <div>
                 <h2 className="text-xl font-bold">Tạo thực đơn</h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  Chọn mục tiêu và số ngày cho thực đơn.
+                  Gemini gợi ý cách sắp xếp món theo mục tiêu, BMI và dữ liệu dinh dưỡng.
+                  Nếu AI không khả dụng, hệ thống sẽ dùng cách chọn món dự phòng.
                 </p>
               </div>
             </div>
@@ -198,6 +200,21 @@ function MealPlanPage() {
                     </option>
                   ))}
                 </select>
+              </label>
+
+              <label className="flex flex-col gap-2 text-sm font-semibold text-gray-800">
+                Sở thích ăn uống
+                <textarea
+                  value={dietaryPreference}
+                  onChange={(event) => setDietaryPreference(event.target.value)}
+                  maxLength={255}
+                  rows={2}
+                  placeholder="Ví dụ: không thích nấm, ưu tiên món ít cay"
+                  className="rounded-xl border border-gray-300 bg-white px-3 py-2 font-normal outline-none focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/15"
+                />
+                <span className="font-normal text-gray-500">
+                  AI dùng thông tin này để chọn món; đây không thay thế mục Dị ứng bên dưới.
+                </span>
               </label>
 
               <AllergySelector
@@ -291,6 +308,9 @@ function MealPlanPage() {
                 <span>Mục tiêu: {goalLabels[selectedPlan.healthGoal] || selectedPlan.healthGoal.replaceAll("_", " ").toLowerCase()}</span>
                 {selectedPlan.bmi && (
                   <span>BMI: {formatBmiValue(selectedPlan.bmi.bmi)} · {getBmiCategoryLabel(selectedPlan.bmi.category)}</span>
+                )}
+                {selectedPlan.dietaryPreference && (
+                  <span>Sở thích: {selectedPlan.dietaryPreference}</span>
                 )}
               </div>
 
