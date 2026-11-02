@@ -12,6 +12,7 @@ import com.chaybook.backend.mealplan.entity.MealPlanItem;
 import com.chaybook.backend.mealplan.repository.MealPlanItemRepository;
 import com.chaybook.backend.mealplan.repository.MealPlanRepository;
 import com.chaybook.backend.recipe.entity.Recipe;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recipe.repository.RecipeIngredientRepository;
 import com.chaybook.backend.recipe.repository.RecipeRepository;
 import com.chaybook.backend.user.entity.User;
@@ -84,7 +85,7 @@ public class MealPlanService {
                     : new HashSet<>(recipeIngredientRepository.findRecipeIdsContainingAllergies(allergyIds));
 
             List<Recipe> eligibleRecipes =
-                    recipeRepository.findByStatus("ACTIVE").stream()
+                    recipeRepository.findByStatus(RecipeStatus.ACTIVE.name()).stream()
                     .filter(recipe -> recipe.getCalories() != null && recipe.getCalories() > 0)
                     .filter(recipe -> !excludedRecipeIds.contains(recipe.getRecipeId()))
                     .toList();

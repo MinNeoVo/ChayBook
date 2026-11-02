@@ -3,15 +3,19 @@ package com.chaybook.backend.admin.recipe.service.impl;
 import com.chaybook.backend.admin.recipe.dto.AdminRecipeResponse;
 import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.ingredient.entity.Ingredient;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import com.chaybook.backend.ingredient.repository.IngredientRepository;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recipe.exception.RecipeException;
 import com.chaybook.backend.recipe.repository.*;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -160,14 +164,14 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
 
         String normalized = status.strip().toUpperCase(Locale.ROOT);
 
-        if (!Set.of("ACTIVE", "DELETED").contains(normalized)) {
+        try {
+            return RecipeStatus.valueOf(normalized).name();
+        } catch (IllegalArgumentException exception) {
             throw new RecipeException(
                     HttpStatus.BAD_REQUEST,
                     "Status must be ACTIVE or DELETED"
             );
         }
-
-        return normalized;
     }
 
     @Transactional
@@ -225,7 +229,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
 
-        if (!"ACTIVE".equals(recipe.getStatus())) {
+        if (!RecipeStatus.ACTIVE.name().equals(recipe.getStatus())) {
             throw new RecipeException(
                     HttpStatus.CONFLICT,
                     "Cannot update a deleted recipe"
@@ -270,8 +274,8 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
 
-        if (!"DELETED".equals(recipe.getStatus())) {
-            recipe.setStatus("DELETED");
+        if (!RecipeStatus.DELETED.name().equals(recipe.getStatus())) {
+            recipe.setStatus(RecipeStatus.DELETED.name());
             recipeRepository.saveAndFlush(recipe);
         }
 
@@ -294,7 +298,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Please log in again"
                 ));
 
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (!UserStatus.ACTIVE.name().equals(user.getStatus())) {
             throw new RecipeException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"
@@ -325,7 +329,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Category not found"
                 ));
 
-        if (!"ACTIVE".equals(category.getStatus())) {
+        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
             throw new RecipeException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"
@@ -388,7 +392,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Không tìm thấy nguyên liệu có mã " + ingredientId + "."
                 ));
 
-        if (!"ACTIVE".equals(ingredient.getStatus())) {
+        if (!IngredientStatus.ACTIVE.name().equals(ingredient.getStatus())) {
                 throw new RecipeException(
                         HttpStatus.CONFLICT,
                         "Nguyên liệu \"" + ingredient.getName()

@@ -1,6 +1,7 @@
 package com.chaybook.backend.ingredient.entity;
 
 import com.chaybook.backend.allergy.entity.Allergy;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +31,18 @@ public class Ingredient {
     }
 
     public Ingredient(String name, String description) {
+
         this.name = name;
         this.description = description;
+        this.status = IngredientStatus.ACTIVE.name();
+    }
+
+    public Set<Allergy> getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(Set<Allergy> allergies) {
+        this.allergies = allergies;
     }
 
     public Integer getIngredientId() {

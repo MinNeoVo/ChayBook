@@ -5,12 +5,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.chaybook.backend.admin.article.service.AdminArticleService;
+import com.chaybook.backend.user.enums.UserStatus;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.admin.article.dto.AdminArticleRequest;
 import com.chaybook.backend.admin.article.dto.AdminArticleResponse;
 import com.chaybook.backend.admin.article.repository.AdminArticleRepository;
@@ -54,7 +55,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                     "Tài khoản không còn tồn tại"
             ));
 
-    if (!"ACTIVE".equals(user.getStatus())
+    if (!UserStatus.ACTIVE.name().equals(user.getStatus())
             || !"ADMIN".equals(user.getRole())) {
         throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -128,12 +129,17 @@ public class AdminArticleServiceImpl implements AdminArticleService {
 
         String normalized = status.strip().toUpperCase(Locale.ROOT);
 
-        if (!Set.of("DRAFT", "PUBLISHED").contains(normalized)) {
+        if (!Set.of(
+                ArticleStatus.DRAFT.name(),
+                ArticleStatus.PUBLISHED.name(),
+                ArticleStatus.DELETED.name()
+        ).contains(normalized)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Article status không hợp lệ"
             );
         }
+
         return normalized;
     }
 
@@ -282,7 +288,11 @@ public class AdminArticleServiceImpl implements AdminArticleService {
 
         Article article = requireArticle(articleId);
 
-        articleRepository.delete(article);
-        articleRepository.flush();
+        if (ArticleStatus.DELETED.name().equals(article.getStatus())) {
+            return;
+        }
+
+        article.setStatus(ArticleStatus.DELETED.name());
+        articleRepository.saveAndFlush(article);
     }
 }
