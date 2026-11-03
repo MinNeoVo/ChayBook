@@ -18,6 +18,7 @@ import RecipeDetailPage from "./Pages/RecipeDetailPage";
 import BmiPage from "./Pages/BmiPage";
 import MealPlanPage from "./Pages/MealPlanPage";
 import AIAssistantPage from "./Pages/AIAssistantPage";
+import IngredientRecognitionPage from "./pages/IngredientRecognitionPage";
 import PlacesPage from "./Pages/PlacesPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -42,13 +43,16 @@ import AdminArticleManagement, {
 } from "./Pages/admin/AdminArticleManagement";
 import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
 import AdminIngredientPage from "./Pages/admin/AdminIngredientPage";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 function App() {
   return (
-    <Routes>
-      {/* ==================== */}
-      {/* USER AREA */}
-      {/* ==================== */}
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* ==================== */}
+        {/* USER AREA */}
+        {/* ==================== */}
       <Route element={<UserLayout />}>
         <Route path="/" element={<HomePage />} />
 
@@ -65,6 +69,10 @@ function App() {
         <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
         <Route path="/bmi" element={<BmiPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
+        <Route
+          path="/ingredient-recognition"
+          element={<IngredientRecognitionPage />}
+        />
 
         {/* Protected User Routes */}
         <Route element={<ProtectedRoute />}>
@@ -99,6 +107,7 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </>
   );
 }
 

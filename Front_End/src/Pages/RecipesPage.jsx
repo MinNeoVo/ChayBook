@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   ChefHat,
   CircleAlert,
   Clock3,
+  Leaf,
   RefreshCcw,
   Search,
+  X,
 } from "lucide-react";
 
 import RecipeImage from "../components/recipes/RecipeImage";
@@ -143,12 +145,32 @@ function RecipeStatus({ onRetry }) {
 }
 
 function RecipesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ingredient = (searchParams.get("ingredient") || "").trim();
+
+  const [prevUrlIngredient, setPrevUrlIngredient] = useState(ingredient);
+  const [ingredientInput, setIngredientInput] = useState(ingredient);
+
   const [searchInput, setSearchInput] = useState("");
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [page, setPage] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
-  const requestKey = JSON.stringify([categoryId, keyword, page, retryCount]);
+
+  // Đồng bộ ingredientInput và page khi query param trên URL thay đổi
+  if (prevUrlIngredient !== ingredient) {
+    setPrevUrlIngredient(ingredient);
+    setIngredientInput(ingredient);
+    setPage(0);
+  }
+
+  const requestKey = JSON.stringify([
+    categoryId,
+    keyword,
+    ingredient,
+    page,
+    retryCount,
+  ]);
   const [result, setResult] = useState({
     requestKey: null,
     status: "loading",
@@ -169,6 +191,7 @@ function RecipesPage() {
       signal: controller.signal,
       page,
       size: PAGE_SIZE,
+      ingredient,
     })
       .then((data) => {
         if (controller.signal.aborted) return;
@@ -182,7 +205,7 @@ function RecipesPage() {
       });
 
     return () => controller.abort();
-  }, [categoryId, keyword, page, requestKey]);
+  }, [categoryId, keyword, ingredient, page, requestKey]);
 
   const isCurrentResult = result.requestKey === requestKey;
   const isLoading = !isCurrentResult;
@@ -190,10 +213,29 @@ function RecipesPage() {
   const data = isCurrentResult ? result.data : null;
   const recipes = data?.content || [];
 
+  const updateIngredientSearchParam = (nextIngredient) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextIngredient) {
+      nextParams.set("ingredient", nextIngredient);
+    } else {
+      nextParams.delete("ingredient");
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const handleSearch = (event) => {
     event.preventDefault();
-    setKeyword(searchInput.trim());
+    const nextKeyword = searchInput.trim();
+    const nextIngredient = ingredientInput.trim();
+    setKeyword(nextKeyword);
     setPage(0);
+    updateIngredientSearchParam(nextIngredient);
+  };
+
+  const handleClearIngredient = () => {
+    setIngredientInput("");
+    setPage(0);
+    updateIngredientSearchParam("");
   };
 
   const handleCategoryChange = (nextCategoryId) => {
@@ -221,34 +263,56 @@ function RecipesPage() {
             thường ngày.
           </p>
 
-          <div className="flex w-full max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex w-full max-w-4xl flex-col gap-3 lg:flex-row lg:items-center">
             <form
               onSubmit={handleSearch}
               role="search"
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-100 bg-white p-1.5 shadow-sm focus-within:shadow-md"
+              className="flex min-w-0 flex-1 flex-col gap-2 rounded-xl border border-gray-100 bg-white p-2 shadow-sm focus-within:shadow-md sm:flex-row sm:items-center"
             >
-              <label className="sr-only" htmlFor="recipe-search">
-                Tìm công thức
-              </label>
-              <Search
-                aria-hidden="true"
-                size={19}
-                className="ml-3 shrink-0 text-gray-400"
-              />
-              <input
-                id="recipe-search"
-                type="search"
-                placeholder="Tìm công thức..."
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
-              />
+              <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-gray-100 pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-2">
+                <label className="sr-only" htmlFor="recipe-search">
+                  Tìm công thức
+                </label>
+                <Search
+                  aria-hidden="true"
+                  size={18}
+                  className="ml-2 shrink-0 text-gray-400"
+                />
+                <input
+                  id="recipe-search"
+                  type="search"
+                  placeholder="Tìm tên công thức..."
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-1.5 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+                />
+              </div>
+
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <label className="sr-only" htmlFor="ingredient-search">
+                  Tìm theo nguyên liệu
+                </label>
+                <Leaf
+                  aria-hidden="true"
+                  size={18}
+                  className="ml-2 shrink-0 text-chaybook-primary"
+                />
+                <input
+                  id="ingredient-search"
+                  type="search"
+                  placeholder="Tìm theo nguyên liệu (vd: đậu phụ)..."
+                  value={ingredientInput}
+                  onChange={(event) => setIngredientInput(event.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-1.5 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+                />
+              </div>
+
               <Button type="submit" className="shrink-0 px-5">
                 Tìm kiếm
               </Button>
             </form>
 
-            <div className="w-full sm:w-56 sm:shrink-0">
+            <div className="w-full lg:w-56 lg:shrink-0">
               <CategorySelect
                 value={categoryId}
                 categories={categories}
@@ -278,6 +342,23 @@ function RecipesPage() {
               )}
             </div>
           </div>
+
+          {ingredient && (
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-chaybook-primary/20 bg-white px-4 py-1.5 text-xs font-semibold text-chaybook-primary shadow-2xs">
+              <Leaf className="h-3.5 w-3.5" />
+              <span>
+                Đang lọc theo nguyên liệu: <strong>{ingredient}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={handleClearIngredient}
+                aria-label="Xóa lọc nguyên liệu"
+                className="ml-1 inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </header>
 
         {isLoading ? (
