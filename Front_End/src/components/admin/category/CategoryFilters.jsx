@@ -8,7 +8,8 @@ import {
 export default function CategoryFilters({ onApply, disabled }) {
   const [draft, setDraft] = useState(INITIAL_CATEGORY_FILTERS);
 
-  const controlClass = "rounded-xl border border-slate-300 bg-white px-3 py-2";
+  const controlClass =
+    "h-10 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm";
 
   function update(event) {
     const { name, value } = event.target;
@@ -34,11 +35,14 @@ export default function CategoryFilters({ onApply, disabled }) {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form
+      onSubmit={submit}
+      className="rounded-xl border border-slate-200 bg-white p-4"
+    >
       <fieldset disabled={disabled} className="flex flex-wrap items-end gap-3">
         <legend className="sr-only">Lọc danh mục</legend>
 
-        <label className="grid gap-1 text-sm">
+        <label className="grid min-w-0 flex-1 basis-60 gap-1 text-sm text-slate-700">
           Tìm theo tên
           <input
             name="q"
@@ -46,10 +50,11 @@ export default function CategoryFilters({ onApply, disabled }) {
             value={draft.q}
             onChange={update}
             className={controlClass}
+            placeholder="Tìm danh mục..."
           />
         </label>
 
-        <label className="grid gap-1 text-sm">
+        <label className="grid gap-1 text-sm text-slate-700">
           Loại
           <select
             name="type"
@@ -67,7 +72,7 @@ export default function CategoryFilters({ onApply, disabled }) {
           </select>
         </label>
 
-        <label className="grid gap-1 text-sm">
+        <label className="grid gap-1 text-sm text-slate-700">
           Trạng thái
           <select
             name="status"
@@ -81,11 +86,17 @@ export default function CategoryFilters({ onApply, disabled }) {
           </select>
         </label>
 
-        <Button type="submit" size="sm">
+        <Button type="submit" size="sm" className="h-10 shrink-0">
           Áp dụng
         </Button>
 
-        <Button variant="outline" size="sm" onClick={reset}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={reset}
+          className="h-10 shrink-0"
+        >
           Đặt lại
         </Button>
       </fieldset>

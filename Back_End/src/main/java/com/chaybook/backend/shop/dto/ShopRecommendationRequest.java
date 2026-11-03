@@ -31,9 +31,7 @@ public record ShopRecommendationRequest(
         }
 
         return switch (source) {
-            case SEARCH -> query != null
-                    && !query.isBlank()
-                    && recipeId == null
+            case SEARCH -> recipeId == null
                     && mealPlanId == null
                     && dayNumber == null
                     && mealType == null;

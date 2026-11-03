@@ -1,6 +1,7 @@
 package com.chaybook.backend.ingredient.entity;
 
 import com.chaybook.backend.allergy.entity.Allergy;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,9 @@ public class Ingredient {
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @ManyToMany(mappedBy = "ingredients", fetch = FetchType.LAZY)
     private Set<Allergy> allergies = new HashSet<>();
 
@@ -27,8 +31,18 @@ public class Ingredient {
     }
 
     public Ingredient(String name, String description) {
+
         this.name = name;
         this.description = description;
+        this.status = IngredientStatus.ACTIVE.name();
+    }
+
+    public Set<Allergy> getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(Set<Allergy> allergies) {
+        this.allergies = allergies;
     }
 
     public Integer getIngredientId() {
@@ -49,5 +63,13 @@ public class Ingredient {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

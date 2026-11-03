@@ -6,9 +6,14 @@ import {
   Leaf,
   LocateFixed,
   MapPin,
+  Search,
   Utensils,
 } from "lucide-react";
-import { getNearbyShopRecommendations } from "../services/shopServices";
+import {
+  autocompleteShopAddress,
+  geocodeShopAddress,
+  getNearbyShopRecommendations,
+} from "../services/shopServices";
 import PlacesMap from "./PlacesMap";
 import "./PlacesPage.css";
 
@@ -58,6 +63,15 @@ function PlacesPage() {
   const [dietaryMode, setDietaryMode] = useState("VEGETARIAN");
   const [radiusMeters, setRadiusMeters] = useState(DEFAULT_RADIUS);
   const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState("");
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [searchLocationLabel, setSearchLocationLabel] = useState("");
+  const [geocoding, setGeocoding] = useState(false);
   const [locationState, setLocationState] = useState("loading");
   const [locationError, setLocationError] = useState("");
   const [shops, setShops] = useState([]);
@@ -66,6 +80,44 @@ function PlacesPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [sort, setSort] = useState("distance");
   const locationRequested = useRef(false);
+  const locationSelectionVersion = useRef(0);
+  const searchRequestVersion = useRef(0);
+
+  useEffect(() => {
+    const trimmedAddress = address.trim();
+    if (selectedSuggestion?.formattedAddress === trimmedAddress || trimmedAddress.length < 3) {
+      setSuggestions([]);
+      setSuggestionsLoading(false);
+      setSuggestionsError("");
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSuggestionsLoading(true);
+      setSuggestionsError("");
+      try {
+        const results = await autocompleteShopAddress(trimmedAddress, { signal: controller.signal });
+        if (!controller.signal.aborted) {
+          setSuggestions(Array.isArray(results) ? results : []);
+          setSuggestionsOpen(true);
+          setActiveSuggestionIndex(-1);
+        }
+      } catch (requestError) {
+        if (!controller.signal.aborted) {
+          setSuggestions([]);
+          setSuggestionsError(requestError.message || "Không tải được gợi ý địa chỉ.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setSuggestionsLoading(false);
+      }
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [address, selectedSuggestion]);
 
   const orderedShops = useMemo(() => {
     const results = [...shops];
@@ -75,6 +127,7 @@ function PlacesPage() {
   }, [shops, sort]);
 
   const searchNearby = useCallback(async (coords, mode, radius) => {
+    const requestVersion = ++searchRequestVersion.current;
     setLoading(true);
     setError("");
     setHasSearched(true);
@@ -86,16 +139,24 @@ function PlacesPage() {
         dietaryMode: mode,
         limit: 10,
       });
+      if (requestVersion !== searchRequestVersion.current) return;
       setShops(Array.isArray(response?.items) ? response.items : []);
     } catch (requestError) {
+      if (requestVersion !== searchRequestVersion.current) return;
       setShops([]);
       setError(requestError.message || "Không thể tải địa điểm gần đây. Vui lòng thử lại.");
     } finally {
-      setLoading(false);
+      if (requestVersion === searchRequestVersion.current) setLoading(false);
     }
   }, []);
 
   const requestLocation = useCallback(() => {
+    const requestVersion = ++locationSelectionVersion.current;
+    setGeocoding(false);
+    setAddress("");
+    setSelectedSuggestion(null);
+    setSuggestions([]);
+    setSuggestionsOpen(false);
     if (!navigator.geolocation) {
       setLocationError("Trình duyệt này không hỗ trợ truy cập vị trí.");
       setLocationState("error");
@@ -105,11 +166,14 @@ function PlacesPage() {
     setLocationError("");
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
+        if (requestVersion !== locationSelectionVersion.current) return;
         setLocation({ latitude: coords.latitude, longitude: coords.longitude });
+        setSearchLocationLabel("Vị trí hiện tại");
         setLocationState("ready");
         setLocationError("");
       },
       (geoError) => {
+        if (requestVersion !== locationSelectionVersion.current) return;
         const message = geoError.code === geoError.PERMISSION_DENIED
           ? "Bạn đã từ chối quyền truy cập vị trí. Hãy cho phép trình duyệt truy cập vị trí để tìm địa điểm gần bạn."
           : "Không thể lấy vị trí của bạn. Hãy kiểm tra kết nối và thử lại.";
@@ -118,6 +182,46 @@ function PlacesPage() {
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
     );
+  }, []);
+
+  const searchByAddress = useCallback(async (event) => {
+    event.preventDefault();
+    const trimmedAddress = address.trim();
+    if (!trimmedAddress) {
+      setLocationError("Vui lòng nhập địa chỉ cần tìm.");
+      return;
+    }
+
+    setGeocoding(true);
+    const requestVersion = ++locationSelectionVersion.current;
+    setLocationError("");
+    setError("");
+    setSuggestionsOpen(false);
+    try {
+      const result = selectedSuggestion?.formattedAddress === trimmedAddress
+        ? selectedSuggestion
+        : await geocodeShopAddress(trimmedAddress);
+      if (requestVersion !== locationSelectionVersion.current) return;
+      setLocation({ latitude: result.latitude, longitude: result.longitude });
+      const resolvedAddress = result.formattedAddress || trimmedAddress;
+      setAddress(resolvedAddress);
+      setSearchLocationLabel(resolvedAddress);
+      setSelectedSuggestion(result);
+      setLocationState("ready");
+    } catch (requestError) {
+      if (requestVersion !== locationSelectionVersion.current) return;
+      setLocationError(requestError.message || "Không tìm thấy địa chỉ này. Hãy thử nhập địa chỉ cụ thể hơn.");
+    } finally {
+      if (requestVersion === locationSelectionVersion.current) setGeocoding(false);
+    }
+  }, [address, selectedSuggestion]);
+
+  const chooseSuggestion = useCallback((suggestion) => {
+    setAddress(suggestion.formattedAddress);
+    setSelectedSuggestion(suggestion);
+    setSuggestions([]);
+    setSuggestionsOpen(false);
+    setActiveSuggestionIndex(-1);
   }, []);
 
   useEffect(() => {
@@ -139,19 +243,68 @@ function PlacesPage() {
           <div className="places-hero-copy">
             <span className="places-eyebrow"><Leaf size={13} /> Tìm địa điểm gần bạn</span>
             <h1>Địa điểm ăn chay gần bạn</h1>
-            <p>Chúng tôi sẽ tìm nhà hàng chay và thuần chay gần bạn dựa trên vị trí hiện tại.</p>
+            <p>Nhập một địa chỉ bất kỳ để tìm nhà hàng chay và thuần chay ở khu vực đó.</p>
           </div>
           <div className="places-hero-art"><Utensils size={60} /></div>
         </section>
 
         <section className="places-search-panel">
-          <div className="places-form-grid">
-            <div className="places-current-location">
-              <MapPin size={18} />
-              <div>
-                <strong>{locationState === "loading" ? "Đang tìm vị trí…" : location ? "Đang tìm quanh vị trí hiện tại" : "Cần vị trí để tìm địa điểm gần đây"}</strong>
-                <span>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Cho phép truy cập vị trí khi trình duyệt yêu cầu."}</span>
-              </div>
+          <form className="places-form-grid" onSubmit={searchByAddress}>
+            <div className="places-address-autocomplete">
+              <label className="places-address-input">
+                <Search size={17} />
+                <input
+                  value={address}
+                  onChange={(event) => {
+                    setAddress(event.target.value);
+                    setSelectedSuggestion(null);
+                    setSuggestionsError("");
+                    setSuggestionsOpen(true);
+                  }}
+                  onFocus={() => address.trim().length >= 3 && setSuggestionsOpen(true)}
+                  onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 120)}
+                  onKeyDown={(event) => {
+                    if (event.key === "ArrowDown" && suggestions.length) {
+                      event.preventDefault();
+                      setSuggestionsOpen(true);
+                      setActiveSuggestionIndex((index) => (index + 1) % suggestions.length);
+                    } else if (event.key === "ArrowUp" && suggestions.length) {
+                      event.preventDefault();
+                      setActiveSuggestionIndex((index) => (index <= 0 ? suggestions.length - 1 : index - 1));
+                    } else if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+                      event.preventDefault();
+                      chooseSuggestion(suggestions[activeSuggestionIndex]);
+                    } else if (event.key === "Escape") {
+                      setSuggestionsOpen(false);
+                    }
+                  }}
+                  placeholder="Nhập địa chỉ, ví dụ 230/8 Quận 1, TP.HCM"
+                  aria-label="Địa chỉ cần tìm quán chay"
+                  aria-autocomplete="list"
+                  aria-expanded={suggestionsOpen && suggestions.length > 0}
+                  maxLength={200}
+                />
+              </label>
+              {suggestionsOpen && (suggestionsLoading || suggestions.length > 0 || suggestionsError) && (
+                <div className="places-address-suggestions" role="listbox" aria-label="Gợi ý địa chỉ">
+                  {suggestionsLoading && <div className="places-suggestion-status">Đang tìm gợi ý…</div>}
+                  {suggestionsError && <div className="places-suggestion-status places-suggestion-error">{suggestionsError}</div>}
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={`${suggestion.latitude}:${suggestion.longitude}:${suggestion.formattedAddress}`}
+                      type="button"
+                      role="option"
+                      aria-selected={activeSuggestionIndex === index}
+                      className={activeSuggestionIndex === index ? "places-suggestion-active" : ""}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => chooseSuggestion(suggestion)}
+                    >
+                      <MapPin size={15} />
+                      <span>{suggestion.formattedAddress}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <select value={dietaryMode} onChange={(event) => setDietaryMode(event.target.value)} aria-label="Tùy chọn chế độ ăn">
               <option value="VEGETARIAN">Ăn chay & thuần chay</option>
@@ -162,12 +315,14 @@ function PlacesPage() {
               <option value={5000}>Trong phạm vi 5 km</option>
               <option value={10000}>Trong phạm vi 10 km</option>
             </select>
-            <button className={`places-location-button ${locationState === "ready" ? "places-location-ready" : ""}`} type="button" onClick={requestLocation} disabled={locationState === "loading"}>
-              <LocateFixed size={16} />{locationState === "loading" ? "Đang xác định…" : locationState === "ready" ? "Làm mới vị trí" : "Dùng vị trí của tôi"}
+            <button className={`places-location-button ${locationState === "ready" && searchLocationLabel === "Vị trí hiện tại" ? "places-location-ready" : ""}`} type="button" onClick={requestLocation} disabled={locationState === "loading"}>
+              <LocateFixed size={16} />{locationState === "loading" ? "Đang xác định…" : "Vị trí hiện tại"}
             </button>
-            <a className="places-submit-button places-maps-area-link" href={mapsAreaUrl(location)} target="_blank" rel="noreferrer"><MapPin size={16} />Mở Google Maps</a>
-          </div>
-          <div className="places-search-foot"><span>Vị trí của bạn được dùng để tìm và sắp xếp địa điểm gần đây.</span><span>Tối đa 10 kết quả · Sắp xếp theo khoảng cách</span></div>
+            <button className="places-submit-button" type="submit" disabled={geocoding || !address.trim()}>
+              <Search size={16} />{geocoding ? "Đang tìm địa chỉ…" : "Tìm quán"}
+            </button>
+          </form>
+          <div className="places-search-foot"><span>{searchLocationLabel ? `Đang tìm quanh: ${searchLocationLabel}` : "Nhập địa chỉ rồi bấm Tìm quán, hoặc chọn vị trí hiện tại."}</span><span>Tối đa 10 kết quả · Sắp xếp theo khoảng cách</span></div>
         </section>
 
         {(locationError || error) && <div className="places-alert"><AlertCircle size={17} /><span>{locationError || error}</span></div>}
@@ -180,7 +335,7 @@ function PlacesPage() {
             </div>
             <PlacesMap location={location} shops={orderedShops} radiusMeters={radiusMeters} />
             <div className="places-location-details">
-              <div><span>Đang tìm quanh</span><strong>{location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Vị trí hiện tại của bạn"}</strong></div>
+              <div><span>Đang tìm quanh</span><strong>{searchLocationLabel || (location ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}` : "Chưa chọn địa chỉ")}</strong></div>
               <a href={mapsAreaUrl(location)} target="_blank" rel="noreferrer">Khám phá khu vực trên Google Maps <ExternalLink size={13} /></a>
             </div>
             <p className="places-map-caption">Gợi ý dựa trên danh mục địa điểm và khoảng cách. Thực đơn nhà hàng có thể thay đổi.</p>

@@ -65,7 +65,12 @@ public Page<ArticleResponse> getArticles(
 
     Page<Article> articles;
 
-    if (categoryId != null && normalizedStatus != null) {
+    // Public reads never expose drafts, including an explicit status=DRAFT query.
+    if ("DRAFT".equals(normalizedStatus)) {
+        return Page.empty(pageable);
+    }
+
+    if (categoryId != null) {
 
         articles = articleRepository
                 .findByCategory_CategoryIdAndStatus(
@@ -74,15 +79,7 @@ public Page<ArticleResponse> getArticles(
                         pageable
                 );
 
-    } else if (categoryId != null) {
-
-        articles = articleRepository
-                .findByCategory_CategoryId(
-                        categoryId,
-                        pageable
-                );
-
-    } else if (normalizedStatus != null) {
+    } else {
 
         articles = articleRepository
                 .findByStatus(
@@ -90,9 +87,6 @@ public Page<ArticleResponse> getArticles(
                         pageable
                 );
 
-    } else {
-
-        articles = articleRepository.findAll(pageable);
     }
 
     return articles.map(this::toResponse);
@@ -117,6 +111,7 @@ public Page<ArticleResponse> getArticles(
         }
 
         return articleRepository.findById(articleId)
+                .filter(article -> "PUBLISHED".equals(article.getStatus()))
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Article not found"
@@ -126,7 +121,7 @@ public Page<ArticleResponse> getArticles(
 
     private String normalizeStatus(String status) {
         if (status == null || status.isBlank()) {
-            return null;
+            return "PUBLISHED";
         }
 
         String normalizedStatus = status.strip()

@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import AdminRequestState from "../../components/admin/AdminRequestState";
 import useAdminResource from "../../hooks/useAdminResource";
+import { uploadMedia } from "../../services/postServices";
 import {
   getAdminCategories, getAdminRecipes, getAdminRecipe, getAdminRecipeIngredients,
   createAdminRecipe, updateAdminRecipe, deleteAdminRecipe, resolveAdminMediaUrl,
@@ -11,6 +12,7 @@ const FIELD = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text
 const BUTTON = "inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50";
 const PANEL = "rounded-xl border border-slate-200 bg-white p-5 shadow-sm";
 const PAGE_SIZE = 10;
+const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const DIFFICULTY_LABELS = { Easy: "Dễ", Medium: "Trung bình", Hard: "Khó" };
 const NUTRITION_FIELDS = [
@@ -20,16 +22,16 @@ const NUTRITION_FIELDS = [
   ["fat", "Chất béo", "g"],
 ];
 
-function validateAdditionalFields(values) {
+function validateAdditionalFields(values, originalDifficulty) {
   const errors = {};
-  if (!values.servings.trim() || !Number.isSafeInteger(Number(values.servings)) || Number(values.servings) < 1) {
+  if (!values.servings.trim() || !Number.isSafeInteger(Number(values.servings)) || Number(values.servings) < 1 || Number(values.servings) > 2147483647) {
     errors.servings = "Số khẩu phần phải là số nguyên từ 1 trở lên.";
   }
-  if (!DIFFICULTIES.includes(values.difficulty)) {
+  if (!DIFFICULTIES.includes(values.difficulty) && !(originalDifficulty && values.difficulty === originalDifficulty)) {
     errors.difficulty = "Vui lòng chọn mức độ dễ, trung bình hoặc khó.";
   }
   NUTRITION_FIELDS.forEach(([field, label, unit]) => {
-    if (!values[field].trim() || !Number.isFinite(Number(values[field])) || Number(values[field]) < 0) {
+    if (values[field].trim() && (!Number.isFinite(Number(values[field])) || Number(values[field]) < 0)) {
       errors[field] = `${label} phải là số hợp lệ từ 0 ${unit} trở lên.`;
     }
   });
@@ -174,7 +176,9 @@ function initialValues(recipe) {
     description: recipe?.description ?? "", imageUrl: recipe?.imageUrl ?? "",
     prepTime: String(recipe?.prepTime ?? 0), cookTime: String(recipe?.cookTime ?? 0),
     instructions: recipe?.instructions ?? "",
-    ...(recipe ? {} : { servings: "1", difficulty: "Easy", calories: "", protein: "", carbs: "", fat: "" }),
+    servings: String(recipe?.servings ?? 1), difficulty: recipe?.difficulty || "Easy",
+    calories: String(recipe?.calories ?? ""), protein: String(recipe?.protein ?? ""),
+    carbs: String(recipe?.carbs ?? ""), fat: String(recipe?.fat ?? ""),
     ingredients: recipe?.ingredients?.map((item) => ({ ingredientId: String(item.ingredientId), quantity: String(item.quantity), unit: item.unit })) ?? [{ ingredientId: "", quantity: "", unit: "" }],
   };
 }
@@ -187,6 +191,38 @@ function RecipeForm({ recipe }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const saveInFlight = useRef(false);
+  const uploadedImage = useRef(null);
+  const imageInput = useRef(null);
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+  const chooseImage = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setImageError("");
+    uploadedImage.current = null;
+    setImageFile(null);
+    setPreviewUrl("");
+    if (!file.type.startsWith("image/") || file.size === 0 || file.size > MAX_IMAGE_SIZE) {
+      setImageError("Vui lòng chọn file ảnh không rỗng, dung lượng tối đa 50 MB.");
+      event.target.value = "";
+      return;
+    }
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setPreviewUrl("");
+    setImageError("");
+    uploadedImage.current = null;
+    if (imageInput.current) imageInput.current.value = "";
+  };
   const load = useCallback((signal) => getAdminRecipeIngredients({ signal }), []);
   const ingredients = useAdminResource(load);
   const change = (field, value) => {
@@ -194,47 +230,63 @@ function RecipeForm({ recipe }) {
     setFieldErrors((current) => ({ ...current, [field]: "" }));
   };
   const validateField = (field) => {
-    setFieldErrors((current) => ({ ...current, [field]: validateAdditionalFields(values)[field] || "" }));
+    setFieldErrors((current) => ({ ...current, [field]: validateAdditionalFields(values, original.difficulty)[field] || "" }));
   };
   const changeIngredient = (index, field, value) => setValues((current) => ({
     ...current, ingredients: current.ingredients.map((item, position) => position === index ? { ...item, [field]: value } : item),
   }));
   const cancel = () => {
-    if (saving) return;
-    if (JSON.stringify(values) !== JSON.stringify(original) && !window.confirm("Discard your unsaved changes?")) return;
+    if (saveInFlight.current) return;
+    if ((imageFile || JSON.stringify(values) !== JSON.stringify(original)) && !window.confirm("Discard your unsaved changes?")) return;
     navigate(recipe ? `/admin/recipes/${recipe.recipeId}` : "/admin/recipes");
   };
   const submit = async (event) => {
     event.preventDefault();
-    if (saving || ingredients.loading || ingredients.error) return;
+    if (saveInFlight.current || ingredients.loading || ingredients.error || imageError) return;
     setError("");
-    if (!recipe) {
-      const errors = validateAdditionalFields(values);
-      setFieldErrors(errors);
-      if (Object.keys(errors).length) return;
-    }
+    const errors = validateAdditionalFields(values, original.difficulty);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length) return;
     const ids = values.ingredients.map((item) => Number(item.ingredientId));
     if (new Set(ids).size !== ids.length) { setError("Choose each ingredient only once."); return; }
     if (!values.name.trim() || !values.instructions.trim() || values.ingredients.some((item) => !item.unit.trim() || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0)) {
       setError("Vui lòng nhập tên, cách thực hiện, định lượng nguyên liệu và đơn vị hợp lệ."); return;
     }
     const body = {
-      // The current write API does not accept servings, difficulty or nutrition.
-      // Keep an explicit allowlist so these form-only values are never sent.
       name: values.name.trim(), categoryId: Number(values.categoryId),
       description: values.description, imageUrl: values.imageUrl, instructions: values.instructions,
       prepTime: Number(values.prepTime), cookTime: Number(values.cookTime),
+      servings: Number(values.servings), difficulty: values.difficulty,
+      ...Object.fromEntries(NUTRITION_FIELDS.map(([field]) => [field, values[field].trim() ? Number(values[field]) : null])),
       ingredients: values.ingredients.map((item) => ({ ingredientId: Number(item.ingredientId), quantity: Number(item.quantity), unit: item.unit.trim() })),
     };
+    saveInFlight.current = true;
     setSaving(true);
     try {
+      if (imageFile) {
+        if (uploadedImage.current?.file !== imageFile) {
+          setUploading(true);
+          const media = await uploadMedia(imageFile);
+          const url = new URL(media?.url);
+          if (media?.mediaType !== "image" || url.protocol !== "https:" || url.hostname !== "res.cloudinary.com"
+              || !url.pathname.includes("/image/upload/") || url.username || url.password || url.port || media.url.length > 255) {
+            throw new Error("Dịch vụ upload chưa trả về URL ảnh Cloudinary hợp lệ.");
+          }
+          uploadedImage.current = { file: imageFile, url: media.url };
+        }
+        body.imageUrl = uploadedImage.current.url;
+        setUploading(false);
+      }
       const saved = recipe ? await updateAdminRecipe(recipe.recipeId, body) : await createAdminRecipe(body);
       setNotice(recipe ? "Cập nhật công thức thành công." : "Tạo công thức thành công.");
       navigate(`/admin/recipes/${saved.recipeId}`);
     } catch (requestError) {
       const fields = Object.values(requestError.data?.errors || {}).join("; ");
       setError(fields || requestError.message);
+    } finally {
+      saveInFlight.current = false;
       setSaving(false);
+      setUploading(false);
     }
   };
   return <>
@@ -249,16 +301,22 @@ function RecipeForm({ recipe }) {
           {categories.filter((category) => category.status === "ACTIVE" || String(category.categoryId) === original.categoryId).map((category) => <option key={category.categoryId} value={category.categoryId}>{category.name}{category.status === "DELETED" ? " (đã xóa)" : ""}</option>)}
         </select></label>
         <label className="block text-sm font-medium">Mô tả<textarea className={FIELD} rows={3} value={values.description} onChange={(event) => change("description", event.target.value)} /></label>
-        <label className="block text-sm font-medium">Đường dẫn ảnh<input className={FIELD} maxLength={255} value={values.imageUrl} onChange={(event) => change("imageUrl", event.target.value)} placeholder="URL ảnh hoặc đường dẫn máy chủ" /></label>
-        <RecipeImage imageUrl={values.imageUrl} name={values.name} />
+        <label className="block text-sm font-medium">Ảnh công thức
+          <input ref={imageInput} type="file" accept="image/*" className={FIELD} onChange={chooseImage}
+            aria-invalid={Boolean(imageError)} aria-describedby="recipe-image-help recipe-image-error" />
+        </label>
+        <p id="recipe-image-help" className="text-sm text-slate-500">Chọn ảnh tối đa 50 MB. Ảnh sẽ được tải lên khi lưu công thức. Không chọn ảnh mới để giữ ảnh hiện tại.</p>
+        <p id="recipe-image-error" role={imageError ? "alert" : undefined} className="text-sm text-red-600">{imageError}</p>
+        {previewUrl ? <img src={previewUrl} alt="Ảnh xem trước công thức" className="h-40 w-56 rounded-lg object-cover" /> : <RecipeImage imageUrl={values.imageUrl} name={values.name} />}
+        {(imageFile || imageError) && <button type="button" className="text-sm text-emerald-700 underline" onClick={clearImageSelection}>Bỏ ảnh đã chọn</button>}
         <div className="grid gap-4 sm:grid-cols-2">{[["prepTime", "Thời gian chuẩn bị (phút)"], ["cookTime", "Thời gian nấu (phút)"]].map(([field, label]) => <label key={field} className="text-sm font-medium">{label} *<input className={FIELD} type="number" min={0} max={2147483647} step={1} required value={values[field]} onChange={(event) => change(field, event.target.value)} /></label>)}</div>
-        {!recipe && <>
+        <>
           <fieldset className="min-w-0 space-y-3">
             <legend className="mb-3 font-bold">Thông tin công thức</legend>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="recipe-servings" className="block text-sm font-medium">Số khẩu phần *</label>
-                <input id="recipe-servings" name="servings" className={FIELD} type="number" min={1} step={1} required
+                <input id="recipe-servings" name="servings" className={FIELD} type="number" min={1} max={2147483647} step={1} required
                   value={values.servings} onChange={(event) => change("servings", event.target.value)}
                   onBlur={() => validateField("servings")} onInvalid={() => validateField("servings")}
                   aria-invalid={Boolean(fieldErrors.servings)} aria-describedby={fieldErrors.servings ? "recipe-servings-error" : undefined} />
@@ -270,6 +328,7 @@ function RecipeForm({ recipe }) {
                   onChange={(event) => change("difficulty", event.target.value)} onBlur={() => validateField("difficulty")}
                   onInvalid={() => validateField("difficulty")} aria-invalid={Boolean(fieldErrors.difficulty)}
                   aria-describedby={fieldErrors.difficulty ? "recipe-difficulty-error" : undefined}>
+                  {!DIFFICULTIES.includes(original.difficulty) && <option value={original.difficulty}>{original.difficulty}</option>}
                   {DIFFICULTIES.map((difficulty) => <option key={difficulty} value={difficulty}>{DIFFICULTY_LABELS[difficulty]}</option>)}
                 </select>
                 {fieldErrors.difficulty && <p id="recipe-difficulty-error" role="alert" className="mt-1 text-sm text-red-600">{fieldErrors.difficulty}</p>}
@@ -280,8 +339,8 @@ function RecipeForm({ recipe }) {
             <legend className="mb-3 font-bold">Thông tin dinh dưỡng</legend>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {NUTRITION_FIELDS.map(([field, label, unit]) => <div key={field}>
-                <label htmlFor={`recipe-${field}`} className="block text-sm font-medium">{label} ({unit}) *</label>
-                <input id={`recipe-${field}`} name={field} className={FIELD} type="number" min={0} step="any" required
+                <label htmlFor={`recipe-${field}`} className="block text-sm font-medium">{label} ({unit})</label>
+                <input id={`recipe-${field}`} name={field} className={FIELD} type="number" min={0} step="any"
                   value={values[field]} onChange={(event) => change(field, event.target.value)}
                   onBlur={() => validateField(field)} onInvalid={() => validateField(field)}
                   aria-invalid={Boolean(fieldErrors[field])} aria-describedby={fieldErrors[field] ? `recipe-${field}-error` : undefined} />
@@ -289,7 +348,7 @@ function RecipeForm({ recipe }) {
               </div>)}
             </div>
           </fieldset>
-        </>}
+        </>
         <label className="block text-sm font-medium">Cách thực hiện *<textarea className={FIELD} rows={7} required value={values.instructions} onChange={(event) => change("instructions", event.target.value)} /></label>
         <h2 className="font-bold">Nguyên liệu *</h2>
         {values.ingredients.map((item, index) => <div key={index} className="grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
@@ -302,7 +361,7 @@ function RecipeForm({ recipe }) {
         </div>)}
         <button type="button" className={BUTTON} onClick={() => change("ingredients", [...values.ingredients, { ingredientId: "", quantity: "", unit: "" }])}>Thêm nguyên liệu</button>
       </fieldset>
-      <div className="flex gap-3"><button className={BUTTON} type="submit" disabled={saving || ingredients.loading || Boolean(ingredients.error)}>{saving ? "Đang lưu…" : "Lưu công thức"}</button><button type="button" className="rounded-lg border border-slate-300 px-4 py-2 text-sm" disabled={saving} onClick={cancel}>Hủy</button></div>
+      <div className="flex gap-3"><button className={BUTTON} type="submit" disabled={saving || Boolean(imageError) || ingredients.loading || Boolean(ingredients.error)}>{uploading ? "Đang tải ảnh…" : saving ? "Đang lưu…" : "Lưu công thức"}</button><button type="button" className="rounded-lg border border-slate-300 px-4 py-2 text-sm" disabled={saving} onClick={cancel}>Hủy</button></div>
     </form>
   </>;
 }

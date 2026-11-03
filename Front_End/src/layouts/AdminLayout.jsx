@@ -54,6 +54,11 @@ function AdminLayout() {
       path: "/admin/categories",
       icon: Tags,
     },
+    {
+      name: "Nguyên liệu",
+      path: "/admin/ingredients",
+      icon: Leaf,
+    },
   ];
 
   const handleLogout = async () => {

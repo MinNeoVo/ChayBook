@@ -18,6 +18,35 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class AdminArticleIntegrationTest {
+    @Test void adminCanReadEditAndPublishDraftWithoutLosingItsContent() {
+        var articles = mock(AdminArticleRepository.class);
+        var users = mock(UserRepository.class);
+        User admin = new User(); admin.setRole("ADMIN"); admin.setStatus("ACTIVE");
+        when(users.findById(1)).thenReturn(Optional.of(admin));
+        var draft = new com.chaybook.backend.article.entity.Article();
+        org.springframework.test.util.ReflectionTestUtils.setField(draft, "articleId", 7);
+        draft.setStatus("DRAFT"); draft.setTitle("Draft title");
+        draft.setContent("Full draft body"); draft.setCoverImage("https://res.cloudinary.com/demo/image/upload/cover.png");
+        var category = new com.chaybook.backend.category.entity.Category();
+        org.springframework.test.util.ReflectionTestUtils.setField(category, "categoryId", 2);
+        draft.setCategory(category);
+        when(articles.findById(7)).thenReturn(Optional.of(draft));
+        when(articles.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
+        var service = new AdminArticleServiceImpl(articles, mock(AdminCategoryRepository.class), users);
+        assertEquals("DRAFT", service.getArticleDetail(1, 7).status());
+        var request = new com.chaybook.backend.admin.article.dto.AdminArticleRequest(
+                2, "Edited title", draft.getContent(), draft.getCoverImage(), "DRAFT");
+        assertEquals("DRAFT", service.updateArticle(1, 7, request).status());
+        var published = service.updateArticle(1, 7, new com.chaybook.backend.admin.article.dto.AdminArticleRequest(
+                2, draft.getTitle(), draft.getContent(), draft.getCoverImage(), "PUBLISHED"));
+        assertEquals("PUBLISHED", published.status());
+        assertEquals("Full draft body", published.content());
+        assertEquals(request.coverImage(), published.coverImage());
+        admin.setStatus("DISABLED");
+        assertEquals(HttpStatus.FORBIDDEN, assertThrows(ResponseStatusException.class,
+                () -> service.updateArticle(1, 7, request)).getStatusCode());
+    }
+
     @Test void uploadsArticleMediaToCloudinaryAfterCheckingAdministratorAccess() {
         var users = mock(UserRepository.class);
         var mediaService = mock(MediaService.class);

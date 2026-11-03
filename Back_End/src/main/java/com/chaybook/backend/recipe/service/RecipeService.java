@@ -5,6 +5,7 @@ import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recipe.repository.*;
 
 import org.springframework.data.domain.Page;
@@ -62,7 +63,7 @@ public class RecipeService {
         if (categoryId != null
                 && !categoryRepository.existsByCategoryIdAndStatusAndType(
                 categoryId,
-                "ACTIVE",
+                RecipeStatus.ACTIVE.name(),
                 "RECIPE"
         )) {
             throw new ResponseStatusException(

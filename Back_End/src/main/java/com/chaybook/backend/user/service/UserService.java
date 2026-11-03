@@ -12,6 +12,7 @@ import com.chaybook.backend.media.dto.MediaUploadResponse;
 import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.user.dto.*;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.exception.IncorrectCurrentPasswordException;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -195,7 +196,7 @@ public class UserService {
                         "User not found"
                 ));
 
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (UserStatus.ACTIVE.name().equals(user.getStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"
@@ -274,7 +275,7 @@ public class UserService {
                         "User not found"
                 ));
 
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (UserStatus.ACTIVE.name().equals(user.getStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"

@@ -26,6 +26,7 @@ public interface AdminArticleService {
             AdminArticleRequest request
     );
 
+
     AdminArticleResponse updateArticle(
             Integer authenticatedUserId,
             Integer articleId,

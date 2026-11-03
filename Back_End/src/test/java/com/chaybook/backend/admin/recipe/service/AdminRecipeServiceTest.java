@@ -123,8 +123,8 @@ class AdminRecipeServiceImplTest {
 
         when(categoryRepository.findById(CATEGORY_ID))
                 .thenReturn(Optional.of(category));
-        when(ingredientRepository.findAllById(anyIterable()))
-                .thenReturn(List.of(ingredient));
+        when(ingredientRepository.findByIdForUpdate(INGREDIENT_ID))
+                .thenReturn(Optional.of(ingredient));
         when(recipeIngredientRepository.findIngredientsByRecipeId(anyInt()))
                 .thenReturn(List.of());
 
@@ -171,8 +171,8 @@ class AdminRecipeServiceImplTest {
 
         when(recipeRepository.findByIdForUpdate(RECIPE_ID))
                 .thenReturn(Optional.of(recipe));
-        when(ingredientRepository.findAllById(anyIterable()))
-                .thenReturn(List.of(ingredient()));
+        when(ingredientRepository.findByIdForUpdate(INGREDIENT_ID))
+                .thenReturn(Optional.of(ingredient()));
         when(recipeIngredientRepository.findIngredientsByRecipeId(RECIPE_ID))
                 .thenReturn(List.of());
         when(recipeIngredientRepository.saveAllAndFlush(anyList()))
