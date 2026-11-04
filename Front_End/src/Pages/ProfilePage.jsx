@@ -6,6 +6,7 @@ import Button from "../components/common/Button";
 
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileSidebar from "../components/profile/ProfileSidebar";
+import SocialConnections from "../components/profile/SocialConnections";
 
 import PostCard from "../components/post/PostCard";
 import CreatePostModal from "../components/community/CreatePostModal";
@@ -150,7 +151,9 @@ function ProfilePage() {
       .catch((categoryLoadError) => {
         console.error("Không thể tải danh mục:", categoryLoadError);
         if (!cancelled) {
-          setCategoryError(categoryLoadError.message || "Không thể tải danh mục.");
+          setCategoryError(
+            categoryLoadError.message || "Không thể tải danh mục.",
+          );
         }
       })
       .finally(() => {
@@ -166,7 +169,9 @@ function ProfilePage() {
     await createPost(postData);
     setIsCreatePostOpen(false);
     setFeedbackIsError(false);
-    setFeedbackMessage("Bài viết đã được gửi thành công và đang chờ ban quản trị duyệt!");
+    setFeedbackMessage(
+      "Bài viết đã được gửi thành công và đang chờ ban quản trị duyệt!",
+    );
 
     try {
       const data = await getMyProfile();
@@ -174,7 +179,10 @@ function ProfilePage() {
       setPosts(Array.isArray(data.posts) ? data.posts : []);
       setError(null);
     } catch (refreshError) {
-      console.error("Bài viết đã được gửi nhưng không thể tải lại profile:", refreshError);
+      console.error(
+        "Bài viết đã được gửi nhưng không thể tải lại profile:",
+        refreshError,
+      );
       setFeedbackIsError(false);
       setFeedbackMessage(
         "Bài viết đã được gửi và đang chờ duyệt, nhưng không thể làm mới danh sách bài viết.",
@@ -188,7 +196,9 @@ function ProfilePage() {
     const normalizedFilter = activeStatus.toUpperCase();
 
     return posts.filter((post) => {
-      const normalizedStatus = String(post.status || "").trim().toUpperCase();
+      const normalizedStatus = String(post.status || "")
+        .trim()
+        .toUpperCase();
       const matchesStatus =
         normalizedFilter === "ALL" ||
         (normalizedFilter === "REJECTED"
@@ -206,10 +216,25 @@ function ProfilePage() {
 
   const statusCount = {
     ALL: posts.length,
-    APPROVED: posts.filter((p) => String(p.status || "").trim().toUpperCase() === "APPROVED").length,
-    PENDING: posts.filter((p) => String(p.status || "").trim().toUpperCase() === "PENDING").length,
+    APPROVED: posts.filter(
+      (p) =>
+        String(p.status || "")
+          .trim()
+          .toUpperCase() === "APPROVED",
+    ).length,
+    PENDING: posts.filter(
+      (p) =>
+        String(p.status || "")
+          .trim()
+          .toUpperCase() === "PENDING",
+    ).length,
     REJECTED: posts.filter((p) =>
-      ["REJECTED", "DENIED"].includes(String(p.status || "").trim().toUpperCase())).length,
+      ["REJECTED", "DENIED"].includes(
+        String(p.status || "")
+          .trim()
+          .toUpperCase(),
+      ),
+    ).length,
   };
 
   // 3. Chuẩn hóa post data cho PostCard
@@ -344,8 +369,15 @@ function ProfilePage() {
   };
 
   const handleEdit = (post) => {
-    if (!["PENDING", "REJECTED", "DENIED"].includes(String(post.status || "").trim().toUpperCase()) ||
-        pendingPostActionId != null) return;
+    if (
+      !["PENDING", "REJECTED", "DENIED"].includes(
+        String(post.status || "")
+          .trim()
+          .toUpperCase(),
+      ) ||
+      pendingPostActionId != null
+    )
+      return;
     setFeedbackMessage("");
     setFeedbackIsError(false);
     setEditingPost(post);
@@ -354,25 +386,34 @@ function ProfilePage() {
   const handleDelete = async (post) => {
     const postId = post.postId ?? post.id;
     if (!postId || pendingPostActionId != null) return;
-    if (!window.confirm("Bạn có chắc muốn xóa bài viết bị từ chối này không?")) return;
+    if (!window.confirm("Bạn có chắc muốn xóa bài viết bị từ chối này không?"))
+      return;
 
     setPendingPostActionId(postId);
     setFeedbackMessage("");
     setFeedbackIsError(false);
     try {
       await deletePost(postId);
-      setPosts((current) => current.filter((item) => (item.postId ?? item.id) !== postId));
-      setProfile((current) => current
-        ? {
-            ...current,
-            posts: (current.posts || []).filter((item) => (item.postId ?? item.id) !== postId),
-          }
-        : current);
+      setPosts((current) =>
+        current.filter((item) => (item.postId ?? item.id) !== postId),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).filter(
+                (item) => (item.postId ?? item.id) !== postId,
+              ),
+            }
+          : current,
+      );
       setFeedbackMessage("Đã xóa bài viết.");
     } catch (deleteError) {
       console.error("Không thể xóa bài viết:", deleteError);
       setFeedbackIsError(true);
-      setFeedbackMessage(deleteError.message || "Không thể xóa bài viết. Vui lòng thử lại.");
+      setFeedbackMessage(
+        deleteError.message || "Không thể xóa bài viết. Vui lòng thử lại.",
+      );
     } finally {
       setPendingPostActionId(null);
     }
@@ -381,25 +422,34 @@ function ProfilePage() {
   const handleWithdraw = async (post) => {
     const postId = post.postId ?? post.id;
     if (post.status !== "PENDING" || pendingPostActionId != null) return;
-    if (!window.confirm("Bạn có chắc muốn rút bài viết đang chờ duyệt không?")) return;
+    if (!window.confirm("Bạn có chắc muốn rút bài viết đang chờ duyệt không?"))
+      return;
 
     setPendingPostActionId(postId);
     setFeedbackMessage("");
     setFeedbackIsError(false);
     try {
       await withdrawPost(postId);
-      setPosts((current) => current.filter((item) => (item.postId ?? item.id) !== postId));
-      setProfile((current) => current
-        ? {
-            ...current,
-            posts: (current.posts || []).filter((item) => (item.postId ?? item.id) !== postId),
-          }
-        : current);
+      setPosts((current) =>
+        current.filter((item) => (item.postId ?? item.id) !== postId),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).filter(
+                (item) => (item.postId ?? item.id) !== postId,
+              ),
+            }
+          : current,
+      );
       setFeedbackMessage("Đã rút bài viết khỏi hàng chờ duyệt.");
     } catch (withdrawError) {
       console.error("Không thể rút bài viết:", withdrawError);
       setFeedbackIsError(true);
-      setFeedbackMessage(withdrawError.message || "Không thể rút bài viết. Vui lòng thử lại.");
+      setFeedbackMessage(
+        withdrawError.message || "Không thể rút bài viết. Vui lòng thử lại.",
+      );
     } finally {
       setPendingPostActionId(null);
     }
@@ -421,15 +471,21 @@ function ProfilePage() {
         imageUrl: result.imageUrl,
         status: "PENDING",
       };
-      setPosts((current) => current.map((item) =>
-        (item.postId ?? item.id) === postId ? updatedPost : item));
-      setProfile((current) => current
-        ? {
-            ...current,
-            posts: (current.posts || []).map((item) =>
-              (item.postId ?? item.id) === postId ? updatedPost : item),
-          }
-        : current);
+      setPosts((current) =>
+        current.map((item) =>
+          (item.postId ?? item.id) === postId ? updatedPost : item,
+        ),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).map((item) =>
+                (item.postId ?? item.id) === postId ? updatedPost : item,
+              ),
+            }
+          : current,
+      );
       setEditingPost(null);
       setFeedbackIsError(false);
       setFeedbackMessage("Đã cập nhật bài viết và gửi lại để duyệt.");
@@ -437,9 +493,14 @@ function ProfilePage() {
       try {
         const refreshedProfile = await getMyProfile();
         setProfile(refreshedProfile);
-        setPosts(Array.isArray(refreshedProfile.posts) ? refreshedProfile.posts : []);
+        setPosts(
+          Array.isArray(refreshedProfile.posts) ? refreshedProfile.posts : [],
+        );
       } catch (refreshError) {
-        console.error("Bài viết đã cập nhật nhưng không thể làm mới profile:", refreshError);
+        console.error(
+          "Bài viết đã cập nhật nhưng không thể làm mới profile:",
+          refreshError,
+        );
       }
     } finally {
       setPendingPostActionId(null);
@@ -558,6 +619,7 @@ function ProfilePage() {
             "
             >
               {/* ================= POSTS HEADER ================= */}
+              <SocialConnections />
               <div
                 className="
                 bg-white
@@ -675,7 +737,9 @@ function ProfilePage() {
                         onEdit={() => handleEdit(post)}
                         onDelete={() => handleDelete(post)}
                         onWithdraw={() => handleWithdraw(post)}
-                        isPendingAction={pendingPostActionId === (post.postId ?? post.id)}
+                        isPendingAction={
+                          pendingPostActionId === (post.postId ?? post.id)
+                        }
                         isActionDisabled={pendingPostActionId != null}
                       />
                     );
