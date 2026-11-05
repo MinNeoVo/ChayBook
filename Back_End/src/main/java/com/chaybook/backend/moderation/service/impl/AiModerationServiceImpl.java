@@ -1,9 +1,9 @@
 package com.chaybook.backend.moderation.service.impl;
 
 import com.chaybook.backend.community.entity.Post;
-import com.chaybook.backend.moderation.client.GroqModerationClient;
 import com.chaybook.backend.moderation.dto.ModerationAssessment;
 import com.chaybook.backend.moderation.entity.AiModeration;
+import com.chaybook.backend.moderation.provider.ModerationProvider;
 import com.chaybook.backend.moderation.repository.AiModerationRepository;
 import com.chaybook.backend.moderation.service.AiModerationService;
 import org.slf4j.Logger;
@@ -18,14 +18,14 @@ public class AiModerationServiceImpl implements AiModerationService {
             LoggerFactory.getLogger(AiModerationServiceImpl.class);
 
     private final AiModerationRepository moderationRepository;
-    private final GroqModerationClient groqModerationClient;
+    private final ModerationProvider moderationProvider;
 
     public AiModerationServiceImpl(
             AiModerationRepository moderationRepository,
-            GroqModerationClient groqModerationClient
+            ModerationProvider moderationProvider
     ) {
         this.moderationRepository = moderationRepository;
-        this.groqModerationClient = groqModerationClient;
+        this.moderationProvider = moderationProvider;
     }
 
     @Override
@@ -48,15 +48,14 @@ public class AiModerationServiceImpl implements AiModerationService {
         AiModeration moderation = new AiModeration();
         moderation.setPost(post);
         moderation.setModerationStatus("PROCESSING");
-
         moderation = moderationRepository.saveAndFlush(moderation);
 
         try {
-            ModerationAssessment assessment =
-                    groqModerationClient.evaluate(
-                            post.getTitle(),
-                            post.getContent()
-                    );
+            ModerationAssessment assessment = moderationProvider.evaluate(
+                    post.getTitle(),
+                    post.getContent(),
+                    post.getImageUrl()
+            );
 
             moderation.setResult(assessment.result());
             moderation.setReason(assessment.reason());

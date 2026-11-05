@@ -20,7 +20,7 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class AdminPostVideoServiceImpl implements AdminPostVideoService {
 
-    private static final Set<String> CONTENT_TYPES = Set.of("POST", "VIDEO");
+    private static final Set<String> CONTENT_TYPES = Set.of("POST");
 
     private final AdminPostVideoRepository repository;
     private final UserRepository userRepository;
@@ -61,7 +61,7 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
                 && !CONTENT_TYPES.contains(normalizedType)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "type chỉ nhận ALL, POST hoặc VIDEO"
+                    "type chỉ nhận ALL hoặc POST"
             );
         }
 
@@ -142,7 +142,7 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
         if (!CONTENT_TYPES.contains(normalizedType)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "type phải là POST hoặc VIDEO"
+                    "type phải là POST"
             );
         }
 

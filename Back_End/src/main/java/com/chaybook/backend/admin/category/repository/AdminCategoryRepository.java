@@ -47,9 +47,6 @@ public interface AdminCategoryRepository
             OR EXISTS (
                 SELECT 1 FROM post WHERE category_id = :id
             )
-            OR EXISTS (
-                SELECT 1 FROM video WHERE category_id = :id
-            )
         THEN 1 ELSE 0 END
         """, nativeQuery = true)
     int findUsageFlag(@Param("id") Integer categoryId);

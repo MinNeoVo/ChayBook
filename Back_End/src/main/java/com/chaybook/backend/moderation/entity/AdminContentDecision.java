@@ -2,7 +2,7 @@ package com.chaybook.backend.moderation.entity;
 
 import com.chaybook.backend.community.entity.Post;
 import com.chaybook.backend.user.entity.User;
-import com.chaybook.backend.video.entity.Video;
+
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Nationalized;
@@ -21,10 +21,6 @@ public class AdminContentDecision {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "video_id")
-    private Video video;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "admin_id", nullable = false)
@@ -51,14 +47,12 @@ public class AdminContentDecision {
 
     public AdminContentDecision(
             Post post,
-            Video video,
             User admin,
             String previousStatus,
             String decision,
             String reason
     ) {
         this.post = post;
-        this.video = video;
         this.admin = admin;
         this.previousStatus = previousStatus;
         this.decision = decision;
@@ -75,14 +69,6 @@ public class AdminContentDecision {
 
     public void setPost(Post post) {
         this.post = post;
-    }
-
-    public Video getVideo() {
-        return video;
-    }
-
-    public void setVideo(Video video) {
-        this.video = video;
     }
 
     public User getAdmin() {
