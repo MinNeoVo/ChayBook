@@ -1,6 +1,6 @@
-import { History, RotateCcw } from "lucide-react";
+import { History, SlidersHorizontal, RotateCcw } from "lucide-react";
 
-function AIHeader({ onReset, onOpenHistory, disabled = false }) {
+function AIHeader({ onReset, onOpenHistory, onOpenPreferences }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 bg-white px-4 py-3 sm:px-6 rounded-2xl border border-gray-100 shadow-xs">
       {/* Left: Bot Identity & Status */}
@@ -12,7 +12,7 @@ function AIHeader({ onReset, onOpenHistory, disabled = false }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-            Trợ lý dinh dưỡng AI
+            AI Nutrition Assistant
           </h1>
           <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-chaybook-primary border border-emerald-100">
             ChayBot v2.4
@@ -21,7 +21,7 @@ function AIHeader({ onReset, onOpenHistory, disabled = false }) {
 
         <span className="hidden md:inline-block text-xs text-gray-400">•</span>
         <span className="hidden md:inline-block text-xs font-medium text-gray-500">
-          Hướng dẫn dinh dưỡng dựa trên thực vật
+          Plant-first clinical guidance
         </span>
       </div>
 
@@ -30,25 +30,33 @@ function AIHeader({ onReset, onOpenHistory, disabled = false }) {
         <button
           type="button"
           onClick={onOpenHistory}
-          disabled={disabled}
-          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-chaybook-primary hover:bg-chaybook-bg transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          title={disabled ? "Chờ AI trả lời xong để chuyển hội thoại" : "Lịch sử cuộc hội thoại"}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-chaybook-primary hover:bg-chaybook-bg transition-colors cursor-pointer"
+          title="Recent Sessions (UI preview)"
         >
           <History className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Lịch sử cuộc hội thoại</span>
+          <span className="hidden sm:inline">Recent Sessions</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenPreferences}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-chaybook-primary hover:bg-chaybook-bg transition-colors cursor-pointer"
+          title="Diet Preferences (UI preview)"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Diet Preferences</span>
         </button>
 
         {onReset && (
           <button
             type="button"
             onClick={onReset}
-            disabled={disabled}
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            title={disabled ? "Chờ AI trả lời xong để tạo hội thoại mới" : "Đặt lại cuộc trò chuyện"}
-            aria-label="Đặt lại cuộc trò chuyện"
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            title="Reset to default conversation"
+            aria-label="Reset conversation"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span className="hidden lg:inline">Đặt lại</span>
+            <span className="hidden lg:inline">Reset</span>
           </button>
         )}
       </div>
