@@ -34,11 +34,12 @@ public class RecipeController {
     public ResponseEntity<Page<RecipeSummaryResponse>> getRecipes(
             @RequestParam(name = "categoryId", required = false) Integer categoryId,
             @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "ingredient", required = false) String ingredient,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(
-                recipeService.getRecipes(categoryId, keyword, page, size)
+                recipeService.getRecipes(categoryId, keyword, ingredient, page, size)
         );
     }
 

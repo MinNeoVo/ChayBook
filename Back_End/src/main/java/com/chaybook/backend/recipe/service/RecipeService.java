@@ -46,6 +46,16 @@ public class RecipeService {
             int page,
             int size
     ) {
+        return getRecipes(categoryId, keyword, null, page, size);
+    }
+
+    public Page<RecipeSummaryResponse> getRecipes(
+            Integer categoryId,
+            String keyword,
+            String ingredient,
+            int page,
+            int size
+    ) {
         if (page < 0 || size < 1 || size > 10) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -73,6 +83,7 @@ public class RecipeService {
         }
 
         String normalizedKeyword = normalizeKeyword(keyword);
+        String normalizedIngredient = normalizeKeyword(ingredient);
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -85,6 +96,7 @@ public class RecipeService {
         recipes = recipeRepository.searchRecipes(
                 categoryId,
                 normalizedKeyword,
+                normalizedIngredient,
                 pageable
         );
 

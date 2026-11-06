@@ -6,7 +6,7 @@ const API_ORIGIN = new URL(API_BASE_URL).origin;
 export async function getRecipes(
   categoryId = null,
   keyword = "",
-  { signal, page = 0, size = 10 } = {},
+  { signal, page = 0, size = 10, ingredient = "" } = {},
 ) {
   const query = new URLSearchParams();
   query.set("page", String(page));
@@ -18,6 +18,8 @@ export async function getRecipes(
       : String(categoryId).trim();
 
   const normalizedKeyword = typeof keyword === "string" ? keyword.trim() : "";
+  const normalizedIngredient =
+    typeof ingredient === "string" ? ingredient.trim() : "";
 
   if (normalizedCategoryId) {
     query.set("categoryId", normalizedCategoryId);
@@ -25,6 +27,10 @@ export async function getRecipes(
 
   if (normalizedKeyword) {
     query.set("keyword", normalizedKeyword);
+  }
+
+  if (normalizedIngredient) {
+    query.set("ingredient", normalizedIngredient);
   }
 
   const queryString = query.toString();
