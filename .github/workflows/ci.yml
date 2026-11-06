@@ -29,10 +29,11 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-
       - name: Run backend tests
+        env:
+              GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: mvn -B clean test
-
+      
   frontend:
     name: Frontend - Build
     runs-on: ubuntu-latest
