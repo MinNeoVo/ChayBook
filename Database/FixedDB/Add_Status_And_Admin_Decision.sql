@@ -138,6 +138,6 @@ BEGIN CATCH
     IF @@TRANCOUNT > 0
         ROLLBACK TRANSACTION;
 
-    THROW;
+    ;THROW; -- Thêm dấu chấm phẩy ngay trước THROW
 END CATCH;
 GO

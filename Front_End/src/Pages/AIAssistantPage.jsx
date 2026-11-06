@@ -7,7 +7,7 @@ import SuggestionChips from "../components/ai/SuggestionChips";
 
 import { useAuth } from "../context/useAuth";
 
-import { X, Check } from "lucide-react";
+import { X } from "lucide-react";
 
 import {
   sendAIMessage,
@@ -35,6 +35,8 @@ function AIAssistantPage() {
   const [activeModal, setActiveModal] = useState(null);
 
   const handleOpenHistory = async () => {
+    if (isTyping) return;
+
     setActiveModal("sessions");
     setHistoryError("");
     setConversations([]);
@@ -57,6 +59,8 @@ function AIAssistantPage() {
   };
 
   const handleSelectConversation = async (conversation) => {
+    if (isTyping) return;
+
     const id = conversation.conversationId;
     setLoadingConversationId(id);
     setHistoryError("");
@@ -161,6 +165,8 @@ function AIAssistantPage() {
   };
 
   const handleReset = () => {
+    if (isTyping) return;
+
     // Bắt đầu hội thoại mới
     setMessages([]);
     setConversationId(null);
@@ -170,6 +176,8 @@ function AIAssistantPage() {
   };
 
   const handleClearAll = () => {
+    if (isTyping) return;
+
     // Xóa nội dung trên giao diện và bắt đầu hội thoại mới khi gửi tiếp
     setMessages([]);
     setConversationId(null);
@@ -185,7 +193,7 @@ function AIAssistantPage() {
         <AIHeader
           onReset={handleReset}
           onOpenHistory={handleOpenHistory}
-          onOpenPreferences={() => setActiveModal("preferences")}
+          disabled={isTyping}
         />
 
         {/* Message count */}
@@ -199,7 +207,8 @@ function AIAssistantPage() {
             <button
               type="button"
               onClick={handleClearAll}
-              className="cursor-pointer text-gray-400 transition-colors hover:text-red-500"
+              disabled={isTyping}
+              className="cursor-pointer text-gray-400 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Clear conversation
             </button>
@@ -239,7 +248,7 @@ function AIAssistantPage() {
           <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
             <div className="flex shrink-0 items-center justify-between border-b border-gray-100 p-5 pb-3">
               <h3 className="text-base font-bold text-gray-900">
-                Phiên gần đây (bản xem trước)
+                Lịch sử cuộc hội thoại
               </h3>
 
               <button
@@ -279,7 +288,7 @@ function AIAssistantPage() {
                     key={conversation.conversationId}
                     type="button"
                     onClick={() => handleSelectConversation(conversation)}
-                    disabled={loadingConversationId !== null}
+                    disabled={isTyping || loadingConversationId !== null}
                     className="w-full rounded-xl border border-gray-100 bg-gray-50 p-3 text-left transition-colors hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
                   >
                     <p className="text-sm font-semibold text-gray-800">
@@ -313,72 +322,6 @@ function AIAssistantPage() {
         </div>
       )}
 
-      {/* =========================
-          PREFERENCES MODAL
-          ========================= */}
-      {activeModal === "preferences" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-base font-bold text-gray-900">
-                Tùy chọn chế độ ăn (bản xem trước)
-              </h3>
-
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="cursor-pointer text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 py-4">
-              <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    Chế độ ăn chay
-                  </p>
-
-                  <span className="text-xs text-gray-500">
-                    Ăn chay có trứng và sữa
-                  </span>
-                </div>
-
-                <Check className="h-4 w-4 text-chaybook-primary" />
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    Không dùng hạt và đậu phộng
-                  </p>
-
-                  <span className="text-xs text-gray-500">
-                    Đã đồng bộ từ hồ sơ
-                  </span>
-                </div>
-
-                <Check className="h-4 w-4 text-chaybook-primary" />
-              </div>
-            </div>
-
-            <p className="text-center text-xs text-gray-400">
-              Tính năng đồng bộ tùy chọn chế độ ăn với hồ sơ sẽ được bổ sung sau.
-            </p>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="cursor-pointer rounded-xl bg-chaybook-primary px-4 py-2 text-xs font-semibold text-white"
-              >
-                Hoàn tất
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
