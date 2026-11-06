@@ -1,7 +1,9 @@
-package com.chaybook.backend.moderation.provider.groq;
+package com.chaybook.backend.moderation.client;
 
 import com.chaybook.backend.moderation.config.GroqProperties;
 import com.chaybook.backend.moderation.dto.ModerationAssessment;
+import com.chaybook.backend.moderation.provider.groq.GroqModerationProvider;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
