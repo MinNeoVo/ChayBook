@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
 import VerifyResetOtpPage from "./Pages/VerifyResetOtpPage";
 import ResetPasswordPage from "./Pages/ResetPasswordPage";
+import SocialAuthCallbackPage from "./Pages/SocialAuthCallbackPage";
 
 import ContentPage from "./Pages/ContentPage";
 import ContentPageDetail from "./Pages/ContentPageDetail";
@@ -57,6 +58,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<SocialAuthCallbackPage />} />
 
         <Route path="/content" element={<ContentPage />} />
         <Route path="/content/:id" element={<ContentPageDetail />} />
