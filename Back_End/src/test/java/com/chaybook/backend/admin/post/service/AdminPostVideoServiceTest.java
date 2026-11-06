@@ -28,30 +28,32 @@ class AdminPostVideoServiceTest {
     @ParameterizedTest
     @CsvSource({"PENDING,APPROVED", "PENDING,REJECTED", "APPROVED,REJECTED", "APPROVED,REMOVED", "REJECTED,APPROVED"})
     void writesAllowedTransitionsUsingBothTypeAndId(String current, String next) {
-        when(repository.findStatus("VIDEO", 7)).thenReturn(current);
-        when(repository.updateStatus("VIDEO", 7, current, next)).thenReturn(1);
+        when(repository.findStatus("POST", 7)).thenReturn(current);
+        when(repository.updateStatus("POST", 7, current, next)).thenReturn(1);
         service.updateStatus(
                 1,
-                "VIDEO",
+                "POST",
                 7,
                 next,
                 "REJECTED".equals(next) ? "Lý do thử nghiệm" : null
-        );        verify(repository).updateStatus("VIDEO", 7, current, next);
-        verify(repository, never()).updateStatus(eq("POST"), anyInt(), anyString(), anyString());
+        );
+        verify(repository).updateStatus("POST", 7, current, next);
+        verify(repository, never()).updateStatus(eq("VIDEO"), anyInt(), anyString(), anyString());
     }
 
     @Test void refusesInvalidTransitionsWithoutWriting() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
-// Case chuyển POST sang REMOVED:
-        service.updateStatus(1, "POST", 7, "REMOVED", null);
+        // Case chuyển POST từ PENDING sang REMOVED không hợp lệ -> ném 409 CONFLICT:
+        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "REMOVED", null));
         verify(repository, never()).updateStatus(anyString(), anyInt(), anyString(), anyString());
     }
 
     @Test void detectsConcurrentModeration() {
         when(repository.findStatus("POST", 7)).thenReturn("PENDING");
         when(repository.updateStatus("POST", 7, "PENDING", "APPROVED")).thenReturn(0);
-// Case chuyển POST sang APPROVED:
-        service.updateStatus(1, "POST", 7, "APPROVED", null);    }
+        // Case cập nhật đồng thời (updated == 0) -> ném 409 CONFLICT:
+        assertStatus(HttpStatus.CONFLICT, () -> service.updateStatus(1, "POST", 7, "APPROVED", null));
+    }
 
     @Test void rejectsInvalidFiltersAndOverflowBeforeQuerying() {
         assertStatus(HttpStatus.BAD_REQUEST, () -> service.getSubmissions(1, "ARTICLE", "ALL", "", 0, 7));
