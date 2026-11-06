@@ -15,7 +15,9 @@ function Navbar() {
     { name: "Bài viết", path: "/content" },
     ...(isLoggedIn ? [{ name: "Cộng đồng", path: "/community" }] : []),
     { name: "Trợ lý AI", path: "/ai-assistant" },
-    { name: "Nhận diện nguyên liệu", path: "/ingredient-recognition" },
+    ...(isLoggedIn
+      ? [{ name: "Nhận diện nguyên liệu", path: "/ingredient-recognition" }]
+      : []),
     { name: "Công thức", path: "/recipes" },
     ...(isLoggedIn ? [{ name: "Địa điểm", path: "/places" }] : []),
     { name: "Thực đơn", path: "/meal-plan" },
