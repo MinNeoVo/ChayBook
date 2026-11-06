@@ -1,4 +1,4 @@
-package com.chaybook.backend.moderation.client;
+package com.chaybook.backend.moderation.provider.groq;
 
 import com.chaybook.backend.moderation.config.GroqProperties;
 import com.chaybook.backend.moderation.dto.ModerationAssessment;
@@ -10,7 +10,7 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class GroqModerationClientIntegrationTest {
+class GroqModerationProviderIntegrationTest {
 
     @Test
     void shouldCallGroqAndReturnModerationAssessment() {
@@ -18,7 +18,8 @@ class GroqModerationClientIntegrationTest {
 
         assertNotNull(
                 apiKey,
-                "Chưa tìm thấy biến môi trường GROQ_API_KEY. Hãy khởi động lại IntelliJ/terminal sau khi cấu hình biến."
+                "Chưa tìm thấy biến môi trường GROQ_API_KEY. "
+                        + "Hãy khởi động lại IntelliJ/terminal sau khi cấu hình biến."
         );
         assertTrue(
                 !apiKey.isBlank(),
@@ -26,11 +27,15 @@ class GroqModerationClientIntegrationTest {
         );
 
         String baseUrl = System.getenv()
-                .getOrDefault("GROQ_BASE_URL", "https://api.groq.com/openai/v1");
+                .getOrDefault(
+                        "GROQ_BASE_URL",
+                        "https://api.groq.com/openai/v1"
+                );
         String model = System.getenv()
                 .getOrDefault("GROQ_MODEL", "qwen/qwen3.8-27b");
 
-        GroqProperties properties = new GroqProperties(baseUrl, apiKey, model);
+        GroqProperties properties =
+                new GroqProperties(baseUrl, apiKey, model);
 
         RestClient restClient = RestClient.builder()
                 .baseUrl(baseUrl)
@@ -40,15 +45,16 @@ class GroqModerationClientIntegrationTest {
                 })
                 .build();
 
-        GroqModerationClient moderationClient = new GroqModerationClient(
+        GroqModerationProvider provider = new GroqModerationProvider(
                 restClient,
                 properties,
                 JsonMapper.builder().build()
         );
 
-        ModerationAssessment assessment = moderationClient.evaluate(
+        ModerationAssessment assessment = provider.evaluate(
                 "Bài viết thử nghiệm",
-                "Tôi muốn chia sẻ một công thức nấu món rau củ đơn giản."
+                "Tôi muốn chia sẻ một công thức nấu món rau củ đơn giản.",
+                null
         );
 
         assertNotNull(assessment, "Groq không trả về kết quả.");
@@ -56,7 +62,8 @@ class GroqModerationClientIntegrationTest {
         assertNotNull(assessment.reason(), "Lý do moderation bị thiếu.");
         assertNotNull(assessment.confidence(), "Confidence bị thiếu.");
         assertTrue(
-                assessment.confidence() >= 0.0 && assessment.confidence() <= 1.0,
+                assessment.confidence() >= 0.0
+                        && assessment.confidence() <= 1.0,
                 "Confidence phải nằm trong khoảng từ 0 đến 1."
         );
 

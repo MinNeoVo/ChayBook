@@ -56,43 +56,7 @@ public class AdminPostVideoRepository {
             ORDER BY d.decided_at DESC, d.decision_id DESC
         ) admin_decision
 
-        UNION ALL
-
-        SELECT
-            v.video_id AS content_id,
-            'VIDEO' AS content_type,
-            v.title AS title,
-            CAST(COALESCE(v.description, N'') AS NVARCHAR(MAX)) AS description,
-            COALESCE(NULLIF(LTRIM(RTRIM(u.full_name)), ''), u.username) AS creator,
-            v.created_at AS submitted_at,
-            v.status AS status,
-            v.thumbnail_url AS thumbnail_url,
-            v.video_url AS media_url,
-            ai.result AS ai_result,
-            ai.reason AS ai_reason,
-            ai.confidence AS ai_confidence,
-            ai.moderation_status AS moderation_status,
-            admin_decision.reason AS admin_reason
-        FROM VIDEO v
-        LEFT JOIN [USER] u ON u.user_id = v.created_by
-        OUTER APPLY (
-            SELECT TOP 1
-                am.result,
-                am.reason,
-                am.confidence,
-                am.moderation_status
-            FROM AI_MODERATION am
-            WHERE am.video_id = v.video_id
-            ORDER BY am.created_at DESC, am.moderation_id DESC
-        ) ai
-        OUTER APPLY (
-            SELECT TOP 1 d.reason
-            FROM ADMIN_CONTENT_DECISION d
-            WHERE d.video_id = v.video_id
-              AND d.decision = 'REJECTED'
-              AND UPPER(v.status) = 'REJECTED'
-            ORDER BY d.decided_at DESC, d.decision_id DESC
-        ) admin_decision
+ 
         """;
 
     private static final String FILTERED_CONTENT = """
@@ -184,8 +148,7 @@ public class AdminPostVideoRepository {
                     COALESCE(SUM(CASE WHEN UPPER(status) = 'REJECTED' THEN 1 ELSE 0 END), 0) AS rejected_count
                 FROM (
                     SELECT status FROM POST
-                    UNION ALL
-                    SELECT status FROM VIDEO
+               
                 ) submissions
                 WHERE UPPER(COALESCE(status, '')) <> 'REMOVED'
                 """).getSingleResult();
@@ -224,9 +187,7 @@ public class AdminPostVideoRepository {
     }
 
     public String findStatus(String type, Integer id) {
-        String sql = "POST".equals(type)
-                ? "SELECT status FROM POST WHERE post_id = :id"
-                : "SELECT status FROM VIDEO WHERE video_id = :id";
+        String sql = "SELECT status FROM POST WHERE post_id = :id";
 
         try {
             Object result = entityManager.createNativeQuery(sql)
@@ -244,17 +205,11 @@ public class AdminPostVideoRepository {
             String currentStatus,
             String nextStatus
     ) {
-        String sql = "POST".equals(type)
-                ? """
-                  UPDATE POST
-                  SET status = :nextStatus, updated_at = GETDATE()
-                  WHERE post_id = :id AND status = :currentStatus
-                  """
-                : """
-                  UPDATE VIDEO
-                  SET status = :nextStatus, updated_at = GETDATE()
-                  WHERE video_id = :id AND status = :currentStatus
-                  """;
+        String sql = """
+        UPDATE POST
+        SET status = :nextStatus, updated_at = GETDATE()
+        WHERE post_id = :id AND status = :currentStatus
+        """;
 
         return entityManager.createNativeQuery(sql)
                 .setParameter("nextStatus", nextStatus)
@@ -326,7 +281,7 @@ public class AdminPostVideoRepository {
         boolean isPost = "POST".equals(type);
         boolean hasReason = reason != null && !reason.isBlank();
 
-        String contentColumn = isPost ? "post_id" : "video_id";
+        String contentColumn = "post_id";
         String reasonColumn = hasReason ? ", reason" : "";
         String reasonValue = hasReason ? ", :reason" : "";
 
@@ -357,7 +312,7 @@ public class AdminPostVideoRepository {
             Integer adminId
     ) {
         boolean isPost = "POST".equals(type);
-        String contentColumn = isPost ? "post_id" : "video_id";
+        String contentColumn = "post_id";
 
         String sql = """
             UPDATE AI_MODERATION

@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
 
 
 import java.nio.charset.StandardCharsets;
@@ -74,7 +75,9 @@ public LoginResult login(LoginRequest request) {
 
     User user = userOpt.get();
 
-    if (!passwordEncoder.matches(
+    String passwordHash = user.getPasswordHash();
+
+    if (passwordHash == null || passwordHash.isBlank() || !passwordEncoder.matches(
             request.getPassword(),
             user.getPasswordHash()
     )) {
@@ -84,13 +87,8 @@ public LoginResult login(LoginRequest request) {
         );
     }
 
-    // Case 3: Tài khoản bị disable
-    if ("DISABLED".equalsIgnoreCase(user.getStatus())) {
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Your account has been disabled."
-        );
-    }
+    // Case 3: Tài khoản bị chưa active
+    requireActive(user);
 
    String token = jwtService.generateToken(
         user.getUserId(),
@@ -264,33 +262,57 @@ return new LoginResult(response, token);
         mailSender.send(message);
     }
 
-    public MeResponse getCurrentUser(org.springframework.security.core.Authentication authentication) {
-
-    JwtAuthenticationToken jwtAuthentication =
-            (JwtAuthenticationToken) authentication;
-
-    String userIdString =
-            jwtAuthentication.getTokenAttributes()
-                    .get("sub")
-                    .toString();
-
-    Integer userId = Integer.valueOf(userIdString);
-
-    User user = userRepository.findById(userId)
-            .orElseThrow(() ->
-                    new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "User not found"
-                    )
+    public MeResponse getCurrentUser(Authentication authentication) {
+        if(!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Please log in."
             );
+        }
 
-    return new MeResponse(
-            user.getUserId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getFullName(),
-            user.getAvatarUrl(),
-            user.getRole()
-    );
-}
+        Integer userId;
+        try{
+            userId = Integer.valueOf(jwtAuthentication.getToken().getSubject());
+        } catch (NumberFormatException exception){
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid authentication."
+            );
+        }
+
+        if(userId <= 0){
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid authentication."
+            );
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Please log in again."
+                        )
+                );
+        
+        requireActive(user);
+
+        return new MeResponse(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getAvatarUrl(),
+                user.getRole()
+        );
+    }
+
+    private void requireActive(User user) {
+        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Your account is not active."
+            );
+        }
+    }
 }

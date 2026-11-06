@@ -282,6 +282,14 @@ public class UserService {
             );
         }
 
+        if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "This account has no local password. "
+                                + "Use the verified-email password reset flow to set one."
+                );
+        }
+
         if (request.currentPassword()
                 .getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new IncorrectCurrentPasswordException();
