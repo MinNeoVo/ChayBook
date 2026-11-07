@@ -153,7 +153,10 @@ class ShopRecommendationServiceTest {
         assertEquals("Example address", shop.address());
         assertEquals(0.001, shop.longitude());
         assertEquals(111, shop.distanceMeters(), 1);
-        assertTrue(shop.reason().contains("Lau nam chay"));
+        assertEquals(
+                "Quán ăn chay gần vị trí tìm kiếm; thực đơn chưa được xác minh.",
+                shop.reason()
+        );
         assertEquals("UNVERIFIED", shop.dishAvailability());
         assertEquals("GEOAPIFY_CATEGORY", shop.dietaryEvidence());
         assertEquals("https://www.openstreetmap.org/?mlat=0&mlon=0.001", shop.mapUrl());

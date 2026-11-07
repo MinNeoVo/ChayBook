@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./Pages/LoginPage";
+import RegisterPage from "./Pages/RegisterPage";
 import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
 import VerifyResetOtpPage from "./Pages/VerifyResetOtpPage";
 import ResetPasswordPage from "./Pages/ResetPasswordPage";
@@ -14,12 +14,12 @@ import HomePage from "./Pages/HomePage";
 import ProfilePage from "./Pages/ProfilePage";
 import CommunityPage from "./Pages/CommunityPage";
 
-import RecipesPage from "./pages/RecipesPage";
+import RecipesPage from "./Pages/RecipesPage";
 import RecipeDetailPage from "./Pages/RecipeDetailPage";
 import BmiPage from "./Pages/BmiPage";
 import MealPlanPage from "./Pages/MealPlanPage";
 import AIAssistantPage from "./Pages/AIAssistantPage";
-import IngredientRecognitionPage from "./pages/IngredientRecognitionPage";
+import IngredientRecognitionPage from "./Pages/IngredientRecognitionPage";
 import PlacesPage from "./Pages/PlacesPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -57,12 +57,12 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<HomePage />} />
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/auth/callback" element={<SocialAuthCallbackPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/callback" element={<SocialAuthCallbackPage />} />
 
           <Route path="/content" element={<ContentPage />} />
           <Route path="/content/:id" element={<ContentPageDetail />} />
