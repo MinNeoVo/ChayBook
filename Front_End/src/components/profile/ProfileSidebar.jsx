@@ -59,7 +59,9 @@ function ProfileSidebar() {
     <aside className="lg:col-span-4 flex flex-col gap-6">
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900">Thông tin sức khỏe</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            Thông tin sức khỏe
+          </h2>
           <Activity size={20} className="text-chaybook-primary" />
         </div>
 
@@ -117,7 +119,9 @@ function ProfileSidebar() {
           </div>
 
           {allergiesLoading ? (
-            <p className="text-sm text-gray-600">Đang tải thông tin dị ứng...</p>
+            <p className="text-sm text-gray-600">
+              Đang tải thông tin dị ứng...
+            </p>
           ) : allergiesError ? (
             <p role="alert" className="text-sm text-red-600">
               {allergiesError}
@@ -205,6 +209,31 @@ function ProfileSidebar() {
         >
           Chỉnh sửa giới thiệu
         </button>
+      </div>
+
+      {/* Công thức riêng từ video */}
+      <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm">
+        <div>
+          <h3 className="text-lg font-bold text-gray-900">Công thức của tôi</h3>
+
+          <p className="mt-1 text-sm text-gray-600">
+            Phân tích video và lưu những công thức bạn đã xem lại vào kho riêng.
+          </p>
+        </div>
+
+        <Link
+          to="/video-analysis"
+          className="flex w-full items-center justify-center rounded-xl bg-chaybook-primary px-4 py-3 text-sm font-semibold text-white transition hover:bg-chaybook-hover"
+        >
+          Phân tích công thức từ video
+        </Link>
+
+        <Link
+          to="/my-recipes"
+          className="flex w-full items-center justify-center rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-chaybook-primary transition hover:bg-green-50"
+        >
+          Xem công thức riêng
+        </Link>
       </div>
 
       {/* Quick Actions */}

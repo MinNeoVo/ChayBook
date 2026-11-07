@@ -45,6 +45,9 @@ import AdminArticleManagement, {
 import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
 import AdminIngredientPage from "./Pages/admin/AdminIngredientPage";
 import ScrollToTop from "./components/common/ScrollToTop";
+import VideoAnalysisPage from "./Pages/VideoAnalysisPage";
+import MyRecipesPage from "./Pages/MyRecipesPage";
+import MyRecipeDetailPage from "./Pages/MyRecipeDetailPage";
 
 function App() {
   return (
@@ -81,6 +84,16 @@ function App() {
             <Route
               path="/ingredient-recognition"
               element={<IngredientRecognitionPage />}
+            />
+            <Route path="/video-analysis" element={<VideoAnalysisPage />} />
+            <Route
+              path="/video-analysis/:submissionId"
+              element={<VideoAnalysisPage />}
+            />
+            <Route path="/my-recipes" element={<MyRecipesPage />} />
+            <Route
+              path="/my-recipes/:userRecipeId"
+              element={<MyRecipeDetailPage />}
             />
           </Route>
         </Route>
