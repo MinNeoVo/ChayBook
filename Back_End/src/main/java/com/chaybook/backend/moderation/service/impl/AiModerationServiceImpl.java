@@ -1,6 +1,7 @@
 package com.chaybook.backend.moderation.service.impl;
 
 import com.chaybook.backend.community.entity.Post;
+import com.chaybook.backend.community.repository.PostRepository;
 import com.chaybook.backend.moderation.dto.ModerationAssessment;
 import com.chaybook.backend.moderation.entity.AiModeration;
 import com.chaybook.backend.moderation.provider.ModerationProvider;
@@ -18,13 +19,16 @@ public class AiModerationServiceImpl implements AiModerationService {
             LoggerFactory.getLogger(AiModerationServiceImpl.class);
 
     private final AiModerationRepository moderationRepository;
+    private final PostRepository postRepository;
     private final ModerationProvider moderationProvider;
 
     public AiModerationServiceImpl(
             AiModerationRepository moderationRepository,
+            PostRepository postRepository,
             ModerationProvider moderationProvider
     ) {
         this.moderationRepository = moderationRepository;
+        this.postRepository = postRepository;
         this.moderationProvider = moderationProvider;
     }
 

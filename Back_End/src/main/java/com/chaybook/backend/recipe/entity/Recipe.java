@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.entity;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -73,7 +74,7 @@ public class Recipe {
 
     @Nationalized
     @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
+    private String status = RecipeStatus.ACTIVE.name();
 
     public Recipe() {
     }

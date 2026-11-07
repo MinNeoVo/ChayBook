@@ -11,6 +11,9 @@ import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
 import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.moderation.entity.AiModeration;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
+import com.chaybook.backend.moderation.event.PostModerationRequestedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
@@ -31,6 +34,7 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final AiModerationService aiModerationService;
     private final MediaService mediaService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PostService(
             PostRepository postRepository,
@@ -39,7 +43,8 @@ public class PostService {
             UserRepository userRepository,
             CategoryRepository categoryRepository,
             AiModerationService aiModerationService,
-            MediaService mediaService
+            MediaService mediaService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
@@ -48,6 +53,7 @@ public class PostService {
         this.categoryRepository = categoryRepository;
         this.aiModerationService = aiModerationService;
         this.mediaService = mediaService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -236,22 +242,36 @@ public PostCreateResponse createPost(
                 "Provide either a media URL or a file, not both"
         );
     }
+    MediaUploadResponse uploadedMedia = null;
+    String storedMediaUrl;
 
-    String imageUrl = mediaUrl == null || mediaUrl.isBlank()
-            ? uploadPostMedia(image)
-            : normalizeImageUrl(mediaUrl);
+    if (mediaUrl != null && !mediaUrl.isBlank()) {
+        storedMediaUrl = normalizeImageUrl(mediaUrl);
+    } else {
+        uploadedMedia = uploadPostMedia(image);
+        storedMediaUrl = uploadedMedia == null ? null : uploadedMedia.getUrl();
+    }
 
     Post post = new Post();
     post.setUser(currentUser);
     post.setCategory(category);
     post.setTitle(title.strip());
     post.setContent(content.strip());
-    post.setImageUrl(imageUrl);
+
+// URL video hoặc ảnh đều được lưu tại image_url để có URL phát/hiển thị.
+    post.setImageUrl(storedMediaUrl);
+
+    if (uploadedMedia != null) {
+        post.setMediaType(uploadedMedia.getMediaType());
+        post.setMediaPublicId(uploadedMedia.getPublicId());
+    }
+
     post.setStatus(PostStatus.PENDING.name());
-
     Post savedPost = postRepository.saveAndFlush(post);
-    aiModerationService.moderatePost(savedPost);
 
+    eventPublisher.publishEvent(
+            new PostModerationRequestedEvent(savedPost.getPostId())
+    );
     PostCreateResponse.PostData postData =
             new PostCreateResponse.PostData(
                     savedPost.getPostId(),
@@ -270,20 +290,20 @@ public PostCreateResponse createPost(
     );
 }
 
-private String uploadPostMedia(MultipartFile image) {
-    if (image == null || image.isEmpty()) {
-        return null;
-    }
+    private MediaUploadResponse uploadPostMedia(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
 
-    try {
-        return mediaService.upload(image).getUrl();
-    } catch (IllegalArgumentException exception) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage()
-        );
+        try {
+            return mediaService.upload(image);
+        } catch (IllegalArgumentException exception) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    exception.getMessage()
+            );
+        }
     }
-}
 
     @Transactional
     public PostMessageResponse updatePost(
