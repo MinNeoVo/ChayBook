@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.chaybook.backend.admin.article.service.AdminArticleService;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.user.enums.UserStatus;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                     "Tài khoản không còn tồn tại"
             ));
 
-    if (!UserStatus.ACTIVE.name().equals(user.getStatus())
+        if (user.getStatusValue() != UserStatus.ACTIVE
             || !"ADMIN".equals(user.getRole())) {
         throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -100,7 +101,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
             );
         }
 
-        if (!"ACTIVE".equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"
@@ -119,7 +120,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         article.setTitle(request.title().strip());
         article.setContent(request.content());
         article.setCoverImage(request.coverImage());
-        article.setStatus(request.status());
+        article.setStatus(request.status() == null ? null : ArticleStatus.valueOf(request.status()));
     }
 
     private String normalizeOptionalStatus(String status) {
@@ -154,7 +155,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                 article.getTitle(),
                 article.getContent(),
                 article.getCoverImage(),
-                article.getStatus(),
+                article.getStatusValue().name(),
                 article.getCreatedAt(),
                 article.getUpdatedAt()
         );
@@ -167,7 +168,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                         ? null : article.getCategory().getCategoryId(),
                 article.getTitle(),
                 article.getCoverImage(),
-                article.getStatus(),
+                article.getStatusValue().name(),
                 article.getUpdatedAt()
         );
     }
@@ -216,7 +217,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         Page<Article> articles = articleRepository.search(
                 keyword,
                 categoryId,
-                normalizedStatus,
+                normalizedStatus == null ? null : ArticleStatus.valueOf(normalizedStatus),
                 pageable
         );
 
@@ -288,11 +289,11 @@ public class AdminArticleServiceImpl implements AdminArticleService {
 
         Article article = requireArticle(articleId);
 
-        if (ArticleStatus.DELETED.name().equals(article.getStatus())) {
+        if (article.getStatusValue() == ArticleStatus.DELETED) {
             return;
         }
 
-        article.setStatus(ArticleStatus.DELETED.name());
+        article.setStatus(ArticleStatus.DELETED);
         articleRepository.saveAndFlush(article);
     }
 }

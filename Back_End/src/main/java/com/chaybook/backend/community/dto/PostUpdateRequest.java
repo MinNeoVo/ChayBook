@@ -13,6 +13,10 @@ public record PostUpdateRequest(
         String content,
 
         @Size(max = 255, message = "Image URL must not exceed 255 characters")
-        String imageUrl
+        String imageUrl,
+
+        String mediaType,
+
+        String mediaPublicId
 )  {
 }

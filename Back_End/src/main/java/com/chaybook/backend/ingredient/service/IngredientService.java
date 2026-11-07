@@ -24,7 +24,7 @@ public class IngredientService {
     }
 
     public List<IngredientResponse> getIngredients() {
-        return ingredientRepository.findByStatus(IngredientStatus.ACTIVE.name(), Sort.by(Sort.Direction.ASC, "ingredientId"))
+        return ingredientRepository.findByStatus(IngredientStatus.ACTIVE, Sort.by(Sort.Direction.ASC, "ingredientId"))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -42,7 +42,7 @@ public class IngredientService {
 
         Ingredient ingredient = ingredientRepository
                 .findByIngredientIdAndStatus(ingredientId,
-                        IngredientStatus.ACTIVE.name())
+                        IngredientStatus.ACTIVE)
                 .orElseThrow(() -> new IngredientException(
                         HttpStatus.NOT_FOUND,
                         "Ingredient not found"

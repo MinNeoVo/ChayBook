@@ -12,6 +12,8 @@ public record PostResponse(
         String title,
         String content,
         String imageUrl,
+        String mediaType,
+        String mediaPublicId,
         String status,
         LocalDateTime createdAt,
         long likeCount,

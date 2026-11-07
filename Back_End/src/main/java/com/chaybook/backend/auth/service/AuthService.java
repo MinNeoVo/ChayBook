@@ -308,7 +308,7 @@ return new LoginResult(response, token);
     }
 
     private void requireActive(User user) {
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != com.chaybook.backend.user.enums.UserStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active."

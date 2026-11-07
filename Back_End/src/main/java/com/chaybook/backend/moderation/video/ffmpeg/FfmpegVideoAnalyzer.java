@@ -45,25 +45,55 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
             }
 
             boolean hasAudio = hasAudioTrack(videoFile);
-            List<String> frames = extractFrames(videoFile, workDir, duration);
+            String failureReason = null;
 
-            byte[] audio = hasAudio
-                    ? extractAudio(videoFile, workDir)
-                    : null;
-
-            if (frames.isEmpty()) {
-                return new VideoAnalysis(
-                        List.of(),
-                        audio,
-                        hasAudio,
-                        "FFmpeg không trích xuất được frame video."
+            List<String> frames;
+            try {
+                frames = extractFrames(videoFile, workDir, duration);
+                if (frames.size() < 2) {
+                    failureReason = appendFailure(
+                            failureReason,
+                            "FFmpeg trích xuất được ít hơn 2 frame; phần hình ảnh chưa được kiểm tra đầy đủ."
+                    );
+                }
+            } catch (Exception exception) {
+                frames = List.of();
+                failureReason = appendFailure(
+                        failureReason,
+                        "Lỗi tại bước trích xuất frame bằng FFmpeg."
                 );
             }
 
-            return new VideoAnalysis(frames, audio, hasAudio, null);
+            byte[] audio = null;
+            if (hasAudio) {
+                try {
+                    audio = extractAudio(videoFile, workDir);
+                } catch (Exception exception) {
+                    failureReason = appendFailure(
+                            failureReason,
+                            "Lỗi tại bước trích xuất audio bằng FFmpeg."
+                    );
+                }
+            }
+
+            if (frames.isEmpty()) {
+                failureReason = appendFailure(
+                        failureReason,
+                        "Không trích xuất được frame để kiểm tra hình ảnh."
+                );
+            }
+
+            return new VideoAnalysis(
+                    frames,
+                    audio,
+                    hasAudio,
+                    failureReason
+            );
 
         } catch (Exception exception) {
-            return failed("Không thể phân tích video bằng FFmpeg.");
+            return failed(
+                    "Không thể tải, đọc thông tin hoặc phân tích video bằng FFmpeg."
+            );
         } finally {
             deleteDirectory(workDir);
         }
@@ -118,7 +148,6 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
             double duration
     ) throws Exception {
         double[] timestamps = {
-                0,
                 duration / 2,
                 Math.max(0, duration - 0.5)
         };
@@ -128,21 +157,30 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
         for (int index = 0; index < timestamps.length; index++) {
             Path framePath = workDir.resolve("frame-" + index + ".jpg");
 
-            runCommand(List.of(
-                    properties.ffmpegPath(),
-                    "-y",
-                    "-ss", String.format(java.util.Locale.ROOT, "%.2f", timestamps[index]),
-                    "-i", videoFile.toString(),
-                    "-frames:v", "1",
-                    "-vf", "scale=-2:720",
-                    "-q:v", "3",
-                    framePath.toString()
-            ));
+            try {
+                runCommand(List.of(
+                        properties.ffmpegPath(),
+                        "-y",
+                        "-ss",
+                        String.format(java.util.Locale.ROOT, "%.2f", timestamps[index]),
+                        "-i",
+                        videoFile.toString(),
+                        "-frames:v",
+                        "1",
+                        "-vf",
+                        "scale=-2:240",
+                        "-q:v",
+                        "3",
+                        framePath.toString()
+                ));
 
-            if (Files.exists(framePath) && Files.size(framePath) > 0) {
-                String base64 = Base64.getEncoder()
-                        .encodeToString(Files.readAllBytes(framePath));
-                frames.add("data:image/jpeg;base64," + base64);
+                if (Files.exists(framePath) && Files.size(framePath) > 0) {
+                    String base64 = Base64.getEncoder()
+                            .encodeToString(Files.readAllBytes(framePath));
+                    frames.add("data:image/jpeg;base64," + base64);
+                }
+            } catch (Exception exception) {
+                // Tiếp tục thử các timestamp còn lại; analyze() sẽ đánh dấu thiếu frame.
             }
         }
 
@@ -217,5 +255,12 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
                     });
         } catch (IOException ignored) {
         }
+    }
+
+    private String appendFailure(String current, String next) {
+        if (current == null || current.isBlank()) {
+            return next;
+        }
+        return current + " " + next;
     }
 }

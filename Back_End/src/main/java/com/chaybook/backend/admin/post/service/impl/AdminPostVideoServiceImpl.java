@@ -249,7 +249,7 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
                         "Tài khoản không còn tồn tại"
                 ));
 
-        if (!UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())
+        if (user.getStatusValue() != UserStatus.ACTIVE
                 || !"ADMIN".equalsIgnoreCase(user.getRole())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

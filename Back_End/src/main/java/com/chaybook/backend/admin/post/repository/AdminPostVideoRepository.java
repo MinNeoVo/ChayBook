@@ -29,7 +29,12 @@ public class AdminPostVideoRepository {
             p.created_at AS submitted_at,
             p.status AS status,
             p.image_url AS thumbnail_url,
-            CAST(NULL AS VARCHAR(255)) AS media_url,
+            CASE
+                WHEN LOWER(COALESCE(p.media_type, '')) = 'video'
+                THEN p.image_url
+                ELSE NULL
+            END AS media_url,
+            p.media_type AS media_type,
             ai.result AS ai_result,
             ai.reason AS ai_reason,
             ai.confidence AS ai_confidence,
@@ -105,6 +110,7 @@ public class AdminPostVideoRepository {
                     status,
                     thumbnail_url,
                     media_url,
+                    media_type,
                     ai_result,
                     ai_reason,
                     ai_confidence,
@@ -168,6 +174,7 @@ public class AdminPostVideoRepository {
                        status, 
                        thumbnail_url, 
                        media_url,
+                       media_type,
                        ai_result,
                        ai_reason,
                      ai_confidence,
@@ -244,9 +251,10 @@ public class AdminPostVideoRepository {
                 stringValue(row[8]),
                 stringValue(row[9]),
                 stringValue(row[10]),
-                doubleValue(row[11]),
-                stringValue(row[12]),
-                stringValue(row[13])
+                stringValue(row[11]),
+                doubleValue(row[12]),
+                stringValue(row[13]),
+                stringValue(row[14])
         );
     }
 

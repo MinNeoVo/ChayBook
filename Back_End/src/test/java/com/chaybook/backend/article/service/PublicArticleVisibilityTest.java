@@ -1,6 +1,7 @@
 package com.chaybook.backend.article.service;
 
 import com.chaybook.backend.article.entity.Article;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.article.repository.ArticleRepository;
 import com.chaybook.backend.article.service.impl.ArticleServiceImpl;
 import com.chaybook.backend.category.repository.CategoryRepository;
@@ -30,22 +31,22 @@ class PublicArticleVisibilityTest {
     }
 
     @Test void defaultAndBlankPublicFiltersOnlyQueryPublishedRows() {
-        when(articles.findByStatus(eq("PUBLISHED"), any(Pageable.class)))
+        when(articles.findByStatus(eq(ArticleStatus.PUBLISHED), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(article("PUBLISHED"))));
         for (String filter : new String[]{null, "", "  ", " published "}) {
             var page = service.getArticles(null, filter, 0, 6);
             assertEquals(1, page.getTotalElements());
             assertEquals("PUBLISHED", page.getContent().getFirst().status());
         }
-        verify(articles, times(4)).findByStatus(eq("PUBLISHED"), any(Pageable.class));
+        verify(articles, times(4)).findByStatus(eq(ArticleStatus.PUBLISHED), any(Pageable.class));
         verifyNoMoreInteractions(articles);
     }
 
     @Test void categoryFilteringCannotBypassPublishedRestriction() {
-        when(articles.findByCategory_CategoryIdAndStatus(eq(3), eq("PUBLISHED"), any(Pageable.class)))
+        when(articles.findByCategory_CategoryIdAndStatus(eq(3), eq(ArticleStatus.PUBLISHED), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(article("PUBLISHED"))));
         assertEquals(1, service.getArticles(3, null, 0, 10).getTotalElements());
-        verify(articles).findByCategory_CategoryIdAndStatus(eq(3), eq("PUBLISHED"), any(Pageable.class));
+        verify(articles).findByCategory_CategoryIdAndStatus(eq(3), eq(ArticleStatus.PUBLISHED), any(Pageable.class));
         verifyNoMoreInteractions(articles);
     }
 

@@ -188,7 +188,9 @@ public class PostService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
-                    post.getStatus(),
+                    post.getMediaType(),
+                    post.getMediaPublicId(),
+                    post.getStatusValue().name(),
                     post.getCreatedAt(),
                     likeCounts.getOrDefault(postId, 0L),
                     bookmarkCounts.getOrDefault(postId, 0L),
@@ -210,7 +212,9 @@ public PostCreateResponse createPost(
         String title,
         String content,
         MultipartFile image,
-        String mediaUrl
+        String mediaUrl,
+        String mediaType,
+        String mediaPublicId
 ) {
     User currentUser = requireActiveUser(currentUserId);
 
@@ -264,9 +268,12 @@ public PostCreateResponse createPost(
     if (uploadedMedia != null) {
         post.setMediaType(uploadedMedia.getMediaType());
         post.setMediaPublicId(uploadedMedia.getPublicId());
+    } else if (storedMediaUrl != null) {
+        post.setMediaType(mediaType);
+        post.setMediaPublicId(mediaPublicId);
     }
 
-    post.setStatus(PostStatus.PENDING.name());
+    post.setStatus(PostStatus.PENDING);
     Post savedPost = postRepository.saveAndFlush(post);
 
     eventPublisher.publishEvent(
@@ -280,7 +287,9 @@ public PostCreateResponse createPost(
                     savedPost.getTitle(),
                     savedPost.getContent(),
                     savedPost.getImageUrl(),
-                    savedPost.getStatus(),
+                    savedPost.getMediaType(),
+                    savedPost.getMediaPublicId(),
+                    savedPost.getStatusValue().name(),
                     savedPost.getCreatedAt()
             );
 
@@ -341,6 +350,19 @@ public PostCreateResponse createPost(
                 ? post.getImageUrl()
                 : normalizeImageUrl(request.imageUrl());
 
+        boolean mediaUrlChanged =
+                !Objects.equals(post.getImageUrl(), newImageUrl);
+        String newMediaType = mediaUrlChanged
+                ? request.mediaType()
+                : request.mediaType() == null
+                        ? post.getMediaType()
+                        : request.mediaType();
+        String newMediaPublicId = mediaUrlChanged
+                ? request.mediaPublicId()
+                : request.mediaPublicId() == null
+                        ? post.getMediaPublicId()
+                        : request.mediaPublicId();
+
         Category newCategory = post.getCategory();
 
         Integer oldCategoryId = post.getCategory() == null
@@ -360,6 +382,8 @@ public PostCreateResponse createPost(
                 !Objects.equals(post.getTitle(), newTitle)
                         || !Objects.equals(post.getContent(), newContent)
                         || !Objects.equals(post.getImageUrl(), newImageUrl)
+                        || !Objects.equals(post.getMediaType(), newMediaType)
+                        || !Objects.equals(post.getMediaPublicId(), newMediaPublicId)
                         || !Objects.equals(oldCategoryId, newCategoryId);
 
         // Không gọi setter hoặc save khi dữ liệu không đổi.
@@ -370,10 +394,12 @@ public PostCreateResponse createPost(
         post.setTitle(newTitle);
         post.setContent(newContent);
         post.setImageUrl(newImageUrl);
+        post.setMediaType(newMediaType);
+        post.setMediaPublicId(newMediaPublicId);
         post.setCategory(newCategory);
 
         // Nội dung đã thay đổi nên phải duyệt lại.
-        post.setStatus(PostStatus.PENDING.name());
+        post.setStatus(PostStatus.PENDING);
 
         // Không đổi tác giả, createdAt hoặc các tương tác.
         postRepository.saveAndFlush(post);
@@ -401,7 +427,7 @@ public PostCreateResponse createPost(
         }
 
         // Xóa mềm: không xóa bản ghi hoặc dữ liệu liên quan.
-        post.setStatus(PostStatus.REMOVED.name());
+        post.setStatus(PostStatus.REMOVED);
 
         postRepository.saveAndFlush(post);
 
@@ -423,7 +449,7 @@ public PostCreateResponse createPost(
                 ));
 
         // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if (PostStatus.REMOVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() == PostStatus.REMOVED) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"
@@ -482,7 +508,7 @@ public PostCreateResponse createPost(
 
         Post post = requirePostForWrite(postId);
 
-        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts can receive interactions"
@@ -550,7 +576,7 @@ public PostCreateResponse createPost(
         // Kiểm tra ID, khóa bài trong transaction và chặn bài DELETED.
         Post post = requirePostForWrite(postId);
 
-        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts allow interaction changes"
@@ -590,8 +616,7 @@ public PostCreateResponse createPost(
                         "User not found"
                 ));
 
-        if (user.getStatus() == null
-                || !UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.FORBIDDEN,
                     "User account is not active"
@@ -619,7 +644,7 @@ public PostCreateResponse createPost(
                         "Category not found"
                 ));
 
-        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"

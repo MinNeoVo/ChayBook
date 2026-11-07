@@ -58,10 +58,28 @@ export async function createPost(postData) {
 
   if (postData.image instanceof File) {
     const uploadedMedia = await uploadMedia(postData.image);
-    if (typeof uploadedMedia?.url !== "string" || !uploadedMedia.url.startsWith("https://")) {
+
+    if (
+        typeof uploadedMedia?.url !== "string" ||
+        !uploadedMedia.url.startsWith("https://")
+    ) {
       throw new Error("Cloudinary did not return a secure media URL.");
     }
+
+    if (!["image", "video"].includes(uploadedMedia.mediaType)) {
+      throw new Error("Cloudinary returned an unsupported media type.");
+    }
+
+    if (
+        typeof uploadedMedia.publicId !== "string" ||
+        !uploadedMedia.publicId.trim()
+    ) {
+      throw new Error("Cloudinary did not return a public ID.");
+    }
+
     formData.append("imageUrl", uploadedMedia.url);
+    formData.append("mediaType", uploadedMedia.mediaType);
+    formData.append("mediaPublicId", uploadedMedia.publicId);
   }
 
   return apiFetch("/posts", {
@@ -76,12 +94,22 @@ export async function updatePost(postId, postData) {
   }
 
   let imageUrl = postData.imageUrl ?? "";
+  let mediaType = postData.mediaType ?? null;
+  let mediaPublicId = postData.mediaPublicId ?? null;
   if (postData.image instanceof File) {
     const uploadedMedia = await uploadMedia(postData.image);
     if (typeof uploadedMedia?.url !== "string" || !uploadedMedia.url.startsWith("https://")) {
       throw new Error("Cloudinary did not return a secure media URL.");
     }
+    if (!["image", "video"].includes(uploadedMedia.mediaType)) {
+      throw new Error("Cloudinary returned an unsupported media type.");
+    }
+    if (typeof uploadedMedia.publicId !== "string" || !uploadedMedia.publicId.trim()) {
+      throw new Error("Cloudinary did not return a public ID.");
+    }
     imageUrl = uploadedMedia.url;
+    mediaType = uploadedMedia.mediaType;
+    mediaPublicId = uploadedMedia.publicId;
   }
 
   const response = await apiFetch(`/posts/${encodeURIComponent(postId)}`, {
@@ -91,9 +119,11 @@ export async function updatePost(postId, postData) {
       title: postData.title.trim(),
       content: postData.content.trim(),
       imageUrl,
+      mediaType,
+      mediaPublicId,
     },
   });
-  return { ...response, imageUrl };
+  return { ...response, imageUrl, mediaType, mediaPublicId };
 }
 
 export async function withdrawPost(postId) {

@@ -184,7 +184,7 @@ public class ChatbotService {
 
         String normalizedMessage = normalizeForSearch(userMessage);
         return recipeRepository.findAll().stream()
-                .filter(recipe -> "ACTIVE".equalsIgnoreCase(recipe.getStatus()))
+                .filter(recipe -> recipe.getStatusValue() == com.chaybook.backend.recipe.enums.RecipeStatus.ACTIVE)
                 .filter(recipe -> recipe.getName() != null && !recipe.getName().isBlank())
                 .filter(recipe -> normalizedMessage.contains(normalizeForSearch(recipe.getName())))
                 .toList();
