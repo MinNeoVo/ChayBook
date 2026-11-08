@@ -170,7 +170,7 @@ public class AdminDashboardStatisticsService {
                         "Authenticated user no longer exists"
                 ));
 
-        if (!UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())
+        if (user.getStatusValue() != UserStatus.ACTIVE
                 || !"ADMIN".equalsIgnoreCase(user.getRole())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

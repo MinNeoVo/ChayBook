@@ -1,5 +1,6 @@
 package com.chaybook.backend.recognition.entity;
 
+import com.chaybook.backend.recognition.enums.RecognitionStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,7 +24,8 @@ public class AiRecognition {
     private String imageUrl;
 
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private RecognitionStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -33,7 +35,7 @@ public class AiRecognition {
     }
 
     public AiRecognition(User user, String imageUrl,
-                         String status, LocalDateTime createdAt) {
+                         RecognitionStatus status, LocalDateTime createdAt) {
         this.user = user;
         this.imageUrl = imageUrl;
         this.status = status;
@@ -61,10 +63,18 @@ public class AiRecognition {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : RecognitionStatus.valueOf(status);
+    }
+
+    public RecognitionStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(RecognitionStatus status) {
         this.status = status;
     }
 

@@ -2,6 +2,7 @@ package com.chaybook.backend.admin.article.service;
 
 import com.chaybook.backend.admin.article.repository.AdminArticleRepository;
 import com.chaybook.backend.admin.article.service.impl.AdminArticleServiceImpl;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.admin.category.repository.AdminCategoryRepository;
 import com.chaybook.backend.media.dto.MediaUploadResponse;
 import com.chaybook.backend.media.service.MediaService;
@@ -82,7 +83,7 @@ class AdminArticleIntegrationTest {
         var service = new AdminArticleServiceImpl(articles, mock(AdminCategoryRepository.class), users);
         service.getArticles(1, "soup", null, "DRAFT", 2, 6, "oldest");
         var page = ArgumentCaptor.forClass(Pageable.class);
-        verify(articles).search(eq("soup"), isNull(), eq("DRAFT"), page.capture());
+        verify(articles).search(eq("soup"), isNull(), eq(ArticleStatus.DRAFT), page.capture());
         assertEquals(2, page.getValue().getPageNumber());
         assertEquals(Sort.Direction.ASC, page.getValue().getSort().getOrderFor("createdAt").getDirection());
         assertThrows(ResponseStatusException.class, () -> service.getArticles(1, "", null, null, 0, 6, "unknown"));

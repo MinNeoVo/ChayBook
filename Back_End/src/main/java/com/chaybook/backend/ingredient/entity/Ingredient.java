@@ -22,7 +22,8 @@ public class Ingredient {
     private String description;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
+    @Enumerated(EnumType.STRING)
+    private IngredientStatus status = IngredientStatus.ACTIVE;
 
     @ManyToMany(mappedBy = "ingredients", fetch = FetchType.LAZY)
     private Set<Allergy> allergies = new HashSet<>();
@@ -34,7 +35,7 @@ public class Ingredient {
 
         this.name = name;
         this.description = description;
-        this.status = IngredientStatus.ACTIVE.name();
+        this.status = IngredientStatus.ACTIVE;
     }
 
     public Set<Allergy> getAllergies() {
@@ -66,10 +67,18 @@ public class Ingredient {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : IngredientStatus.valueOf(status);
+    }
+
+    public IngredientStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(IngredientStatus status) {
         this.status = status;
     }
 }

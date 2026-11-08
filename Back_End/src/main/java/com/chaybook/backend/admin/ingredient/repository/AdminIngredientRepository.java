@@ -1,6 +1,7 @@
 package com.chaybook.backend.admin.ingredient.repository;
 
 import com.chaybook.backend.ingredient.entity.Ingredient;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ public interface AdminIngredientRepository
     @Query("""
         SELECT i
         FROM Ingredient i
-        WHERE (:status = '' OR i.status = :status)
+        WHERE (:status IS NULL OR i.status = :status)
         AND (
             :keyword = ''
             OR LOCATE(LOWER(:keyword), LOWER(i.name)) > 0
@@ -25,7 +26,7 @@ public interface AdminIngredientRepository
         """)
     Page<Ingredient> search(
             @Param("keyword") String keyword,
-            @Param("status") String status,
+            @Param("status") IngredientStatus status,
             Pageable pageable
     );
 

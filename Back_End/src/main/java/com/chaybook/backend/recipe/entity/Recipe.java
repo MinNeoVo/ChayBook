@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.entity;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -73,7 +74,8 @@ public class Recipe {
 
     @Nationalized
     @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
+    @Enumerated(EnumType.STRING)
+    private RecipeStatus status = RecipeStatus.ACTIVE;
 
     public Recipe() {
     }
@@ -99,10 +101,18 @@ public class Recipe {
 
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : RecipeStatus.valueOf(status);
+    }
+
+    public RecipeStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(RecipeStatus status) {
         this.status = status;
     }
 

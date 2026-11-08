@@ -63,7 +63,11 @@ public class AdminIngredientServiceImpl
                 Sort.by(Sort.Direction.ASC, "ingredientId")
         );
 
-        return ingredientRepository.search(keyword, normalizedStatus, pageable)
+        return ingredientRepository.search(
+                        keyword,
+                        normalizedStatus.isBlank() ? null : IngredientStatus.valueOf(normalizedStatus),
+                        pageable
+                )
                 .map(this::toResponse);
     }
 
@@ -116,7 +120,7 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
-        if (!"ACTIVE".equals(ingredient.getStatus())) {
+        if (ingredient.getStatusValue() != IngredientStatus.ACTIVE) {
             throw new ResponseStatusException(
                 HttpStatus.CONFLICT,
                 "Vui lòng hoàn tác trước khi chỉnh sửa nguyên liệu đã xóa."
@@ -143,7 +147,7 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
-        if(IngredientStatus.DELETED.name().equals(ingredient.getStatus())) {
+        if (ingredient.getStatusValue() == IngredientStatus.DELETED) {
             return;
         }
 
@@ -154,7 +158,7 @@ public class AdminIngredientServiceImpl
             );
         }
 
-        ingredient.setStatus(IngredientStatus.ACTIVE.name());
+        ingredient.setStatus(IngredientStatus.DELETED);
         ingredientRepository.saveAndFlush(ingredient);
     }
 
@@ -168,11 +172,11 @@ public class AdminIngredientServiceImpl
 
         Ingredient ingredient = requireIngredientForWrite(ingredientId);
 
-        if (IngredientStatus.ACTIVE.name().equals(ingredient.getStatus())) {
+        if (ingredient.getStatusValue() == IngredientStatus.ACTIVE) {
             return toResponse(ingredient);
         }
 
-        ingredient.setStatus("ACTIVE");
+        ingredient.setStatus(IngredientStatus.ACTIVE);
 
         Ingredient saved = ingredientRepository.saveAndFlush(ingredient);
 
@@ -194,7 +198,7 @@ public class AdminIngredientServiceImpl
                 ));
 
         if (!"ADMIN".equals(user.getRole())
-                || !UserStatus.ACTIVE.name().equals(user.getStatus())) {
+                || user.getStatusValue() != UserStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Chỉ tài khoản admin đang hoạt động mới được thực hiện thao tác này."
@@ -251,7 +255,7 @@ public class AdminIngredientServiceImpl
                 ingredient.getIngredientId(),
                 ingredient.getName(),
                 ingredient.getDescription(),
-                ingredient.getStatus()
+                ingredient.getStatusValue().name()
         );
     }
 

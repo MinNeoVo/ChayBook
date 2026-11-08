@@ -1,6 +1,7 @@
 package com.chaybook.backend.article.entity;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -36,7 +37,8 @@ public class Article {
     private String coverImage;
 
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ArticleStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -63,7 +65,7 @@ public class Article {
         this.title = title;
         this.content = content;
         this.coverImage = coverImage;
-        this.status = status;
+        setStatus(status);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -114,10 +116,18 @@ public class Article {
     }
 
     public String getStatus() {
+        return status == null ? null : status.name();
+    }
+
+    public ArticleStatus getStatusValue() {
         return status;
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : ArticleStatus.valueOf(status);
+    }
+
+    public void setStatus(ArticleStatus status) {
         this.status = status;
     }
 
