@@ -2,17 +2,19 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-# Install FFmpeg
+# Install FFmpeg and FFprobe
 RUN apt-get update \
     && apt-get install -y ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify FFmpeg installation
+# Verify FFmpeg and FFprobe installation
 RUN ffmpeg -version
 RUN ffprobe -version
 
+# Copy source code
 COPY . .
 
+# Build Spring Boot application
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
