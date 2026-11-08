@@ -1,6 +1,7 @@
 // import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import Avatar from "./Avatar.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 import { useAuth } from "../../context/useAuth";
 
@@ -104,8 +105,9 @@ function Navbar() {
             </Link>
           )}
 
-          {/* Profile */}
-          {/* Profile */}
+          {/* Notifications + Profile */}
+          {isLoggedIn && <NotificationBell />}
+
           {isLoggedIn && (
             <Link
               to="/profile"

@@ -4,9 +4,11 @@ import com.chaybook.backend.admin.post.dto.AdminPostVideoResponse;
 import com.chaybook.backend.admin.post.enums.AdminContentStatus;
 import com.chaybook.backend.admin.post.repository.AdminPostVideoRepository;
 import com.chaybook.backend.admin.post.service.AdminPostVideoService;
+import com.chaybook.backend.notification.service.NotificationService;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +26,24 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
 
     private final AdminPostVideoRepository repository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public AdminPostVideoServiceImpl(
             AdminPostVideoRepository repository,
             UserRepository userRepository
     ) {
+        this(repository, userRepository, null);
+    }
+
+    @Autowired
+    public AdminPostVideoServiceImpl(
+            AdminPostVideoRepository repository,
+            UserRepository userRepository,
+            NotificationService notificationService
+    ) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -233,6 +246,15 @@ public class AdminPostVideoServiceImpl implements AdminPostVideoService {
                 contentId,
                 admin.getUserId()
         );
+
+        if (notificationService != null) {
+            notificationService.notifyAuthorPostDecision(
+                    contentId,
+                    admin.getUserId(),
+                    nextStatus.name(),
+                    reason
+            );
+        }
     }
 
     private User requireActiveAdmin(Integer adminId) {
