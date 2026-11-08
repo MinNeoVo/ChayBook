@@ -17,22 +17,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # =========================
+      # Deploy Backend
+      # =========================
       - name: Deploy Backend to Render
         run: |
           echo "Deploying backend to Render..."
+
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
-      - name: Deploy Frontend to Vercel
+      # =========================
+      # Deploy Frontend
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Pull Vercel environment
+        working-directory: Front_End
         run: |
-          echo "Deploying frontend to Vercel..."
+          vercel pull --yes \
+            --environment=production \
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
-          npm install -g vercel
+      - name: Build Vercel
+        working-directory: Front_End
+        run: |
+          vercel build --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
-          vercel deploy Front_End \
-            --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --yes
+      - name: Deploy Vercel
+        working-directory: Front_End
+        run: |
+          vercel deploy --prebuilt --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
+      # =========================
+      # Check Backend
+      # =========================
       - name: Wait for Render
         run: |
           echo "Waiting for Render backend..."
@@ -47,6 +79,9 @@ jobs:
             --retry-delay 10 \
             https://chaybook.onrender.com/api/test
 
+      # =========================
+      # Summary
+      # =========================
       - name: Deployment Summary
         run: |
           echo "======================================"
@@ -61,22 +96,3 @@ jobs:
           echo ""
           echo "Status: SUCCESS"
           echo "======================================"
-
-      - name: Pull Vercel environment
-        working-directory: Front_End
-        run: |
-          npx vercel pull --yes \
-          --environment=production \
-          --token="${{ secrets.VERCEL_TOKEN }}"
-
-      - name: Build Vercel
-        working-directory: Front_End
-        run: |
-          npx vercel build --prod \
-          --token="${{ secrets.VERCEL_TOKEN }}"
-
-      - name: Deploy Vercel
-        working-directory: Front_End
-        run: |
-          npx vercel deploy --prebuilt --prod \
-          --token="${{ secrets.VERCEL_TOKEN }}"
