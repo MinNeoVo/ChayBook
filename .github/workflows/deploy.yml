@@ -24,16 +24,15 @@ jobs:
           ref: ${{ github.event.workflow_run.head_sha }}
 
       # =========================
-      # Deploy Backend
+      # Deploy Backend to Render
       # =========================
       - name: Deploy Backend to Render
         run: |
           echo "Deploying backend to Render..."
-
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
       # =========================
-      # Deploy Frontend
+      # Setup Node
       # =========================
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,6 +42,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
+      # =========================
+      # Deploy Frontend to Vercel
+      # =========================
       - name: Pull Vercel environment
         working-directory: Front_End
         run: |
