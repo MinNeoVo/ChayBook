@@ -45,27 +45,61 @@ jobs:
       # =========================
       # Deploy Frontend to Vercel
       # =========================
-      - name: Pull Vercel environment
+            # =========================
+      # Setup Node
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # =========================
+      # Configure Vercel Project
+      # =========================
+      - name: Configure Vercel Project
+        working-directory: Front_End
+        run: |
+          mkdir -p .vercel
+
+          cat > .vercel/project.json <<EOF
+          {
+            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
+          }
+          EOF
+
+          echo "Vercel project configured"
+
+      # =========================
+      # Pull Vercel Environment
+      # =========================
+      - name: Pull Vercel Environment
         working-directory: Front_End
         run: |
           vercel pull --yes \
             --environment=production \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --scope="${{ secrets.VERCEL_ORG_ID }}"
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
+      # =========================
+      # Build Vercel
+      # =========================
       - name: Build Vercel
         working-directory: Front_End
         run: |
           vercel build --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --scope="${{ secrets.VERCEL_ORG_ID }}"
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
+      # =========================
+      # Deploy Vercel
+      # =========================
       - name: Deploy Vercel
         working-directory: Front_End
         run: |
           vercel deploy --prebuilt --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --scope="${{ secrets.VERCEL_ORG_ID }}"
+            --token="${{ secrets.VERCEL_TOKEN }}"
 
       # =========================
       # Check Backend
