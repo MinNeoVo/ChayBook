@@ -15,15 +15,18 @@ import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 
 import org.springframework.http.HttpStatus;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.security.core.Authentication;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -37,8 +40,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthOtpChallengeRepository otpRepository;
-    private final JavaMailSender mailSender;
-    private final String mailFrom;
+    private final Resend resend;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(
@@ -46,14 +48,12 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthOtpChallengeRepository otpRepository,
-            JavaMailSender mailSender,
-            @Value("${app.mail.from:}") String mailFrom) {
+            @Value("${RESEND_API_KEY}") String resendApiKey) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.otpRepository = otpRepository;
-        this.mailSender = mailSender;
-        this.mailFrom = mailFrom;
+        this.resend = new Resend(resendApiKey);
     }
 
     public LoginResult login(LoginRequest request) {
@@ -245,34 +245,34 @@ public class AuthService {
     }
 
     private void sendOtp(String email, String code, String subject) {
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        if (mailFrom != null && !mailFrom.isBlank()) {
-            message.setFrom(mailFrom);
-        }
-
-        message.setTo(email);
-        message.setSubject(subject);
-        message.setText(
-                "Mã OTP của bạn là " + code
-                        + ". Mã có hiệu lực trong 10 phút và chỉ sử dụng một lần.");
-
-        System.out.println("========== BEFORE MAIL SEND ==========");
-        System.out.println("To: " + email);
-        System.out.println("From: " + mailFrom);
-
         try {
-            mailSender.send(message);
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from("onboarding@resend.dev")
+                    .to(email)
+                    .subject(subject)
+                    .html(
+                            "<div style='font-family: Arial, sans-serif;'>" +
+                                    "<h2>ChayBook</h2>" +
+                                    "<p>Mã OTP của bạn là:</p>" +
+                                    "<h1>" + code + "</h1>" +
+                                    "<p>Mã có hiệu lực trong <strong>10 phút</strong> " +
+                                    "và chỉ sử dụng một lần.</p>" +
+                                    "</div>")
+                    .build();
 
-            System.out.println("========== MAIL SEND SUCCESS ==========");
-        } catch (Exception e) {
-            System.err.println("========== MAIL SEND FAILED ==========");
-            System.err.println("Exception type: " + e.getClass().getName());
-            System.err.println("Exception message: " + e.getMessage());
+            resend.emails().send(params);
+
+            System.out.println("========== RESEND SUCCESS ==========");
+            System.out.println("OTP email sent successfully.");
+            System.out.println("===================================");
+
+        } catch (ResendException e) {
+            System.err.println("========== RESEND FAILED ==========");
+            System.err.println("Message: " + e.getMessage());
             e.printStackTrace();
-            System.err.println("======================================");
+            System.err.println("==================================");
 
-            throw e;
+            throw new RuntimeException("Không thể gửi email OTP.", e);
         }
     }
 
