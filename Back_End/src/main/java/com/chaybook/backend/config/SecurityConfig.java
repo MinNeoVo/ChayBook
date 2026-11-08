@@ -79,6 +79,7 @@ public class SecurityConfig {
 
                                 .authorizeHttpRequests(auth -> auth
 
+                                                .requestMatchers("/api/test").permitAll()
                                                 // Cho phép CORS preflight request
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -139,7 +140,7 @@ public class SecurityConfig {
 
                 configuration.setAllowedOrigins(List.of(
                                 "http://localhost:5173",
-                                "https://chay-book.vercel.app/"));
+                                "https://chay-book.vercel.app"));
 
                 configuration.setAllowedMethods(List.of(
                                 "GET",
