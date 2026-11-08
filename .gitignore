@@ -32,3 +32,6 @@ dist/
 .env.*
 !.env.example
 node_modules
+
+.vercel
+.env*
