@@ -48,19 +48,22 @@ jobs:
         run: |
           vercel pull --yes \
             --environment=production \
-            --token="${{ secrets.VERCEL_TOKEN }}"
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
 
       - name: Build Vercel
         working-directory: Front_End
         run: |
           vercel build --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}"
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
 
       - name: Deploy Vercel
         working-directory: Front_End
         run: |
           vercel deploy --prebuilt --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}"
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --scope="${{ secrets.VERCEL_ORG_ID }}"
 
       # =========================
       # Check Backend
