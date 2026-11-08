@@ -17,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 // import java.util.UUID;
 
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -85,7 +84,7 @@ public class AuthController {
                 ResponseCookie cookie = ResponseCookie
                                 .from("CHAYBOOK_TOKEN", result.token())
                                 .httpOnly(true)
-                                .secure(false) // localhost HTTP
+                                .secure(true) // localhost HTTP
                                 .sameSite("None")
                                 .path("/")
                                 .maxAge(Duration.ofMillis(jwtExpiration))
@@ -110,8 +109,8 @@ public class AuthController {
 
                 ResponseCookie cookie = ResponseCookie.from("CHAYBOOK_TOKEN", "")
                                 .httpOnly(true)
-                                .secure(false)
-                                .sameSite("Lax")
+                                .secure(true)
+                                .sameSite("None")
                                 .path("/")
                                 .maxAge(0)
                                 .build();
