@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Bot,
@@ -35,6 +35,7 @@ import { posts } from "../data/contentData";
 function AiQuickAssistant() {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
+  const navigate = useNavigate();
 
   const handleAskAi = (e) => {
     e.preventDefault();
@@ -46,9 +47,10 @@ function AiQuickAssistant() {
       return;
     }
 
-    setResponse(
-      `Dựa trên "${value}", bạn có thể thử đậu phụ áp chảo gừng ăn cùng bông cải hấp và cơm gạo lứt.`,
-    );
+    setResponse("");
+    navigate("/ai-assistant", {
+      state: { initialPrompt: value },
+    });
   };
 
   return (

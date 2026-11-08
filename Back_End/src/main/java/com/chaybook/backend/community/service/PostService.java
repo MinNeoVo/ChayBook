@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import com.chaybook.backend.moderation.service.AiModerationService;
+import com.chaybook.backend.notification.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class PostService {
@@ -35,6 +37,7 @@ public class PostService {
     private final AiModerationService aiModerationService;
     private final MediaService mediaService;
     private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
 
     public PostService(
             PostRepository postRepository,
@@ -46,6 +49,31 @@ public class PostService {
             MediaService mediaService,
             ApplicationEventPublisher eventPublisher
     ) {
+        this(
+                postRepository,
+                postInteractionRepository,
+                commentRepository,
+                userRepository,
+                categoryRepository,
+                aiModerationService,
+                mediaService,
+                eventPublisher,
+                null
+        );
+    }
+
+    @Autowired
+    public PostService(
+            PostRepository postRepository,
+            PostInteractionRepository postInteractionRepository,
+            CommentRepository commentRepository,
+            UserRepository userRepository,
+            CategoryRepository categoryRepository,
+            AiModerationService aiModerationService,
+            MediaService mediaService,
+            ApplicationEventPublisher eventPublisher,
+            NotificationService notificationService
+    ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
         this.commentRepository = commentRepository;
@@ -54,6 +82,7 @@ public class PostService {
         this.aiModerationService = aiModerationService;
         this.mediaService = mediaService;
         this.eventPublisher = eventPublisher;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -279,6 +308,15 @@ public PostCreateResponse createPost(
     eventPublisher.publishEvent(
             new PostModerationRequestedEvent(savedPost.getPostId())
     );
+
+    if (notificationService != null) {
+        notificationService.notifyAdminsNewPost(
+                currentUser,
+                savedPost.getPostId(),
+                savedPost.getTitle()
+        );
+    }
+
     PostCreateResponse.PostData postData =
             new PostCreateResponse.PostData(
                     savedPost.getPostId(),

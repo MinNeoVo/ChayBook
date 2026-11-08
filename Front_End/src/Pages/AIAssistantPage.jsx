@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AIHeader from "../components/ai/AIHeader";
 import ChatMessageList from "../components/ai/ChatMessageList";
@@ -17,22 +18,95 @@ import {
 
 function AIAssistantPage() {
   const { user, loading: isAuthLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [initialPrompt] = useState(() => {
+    const promptFromState = location.state?.initialPrompt;
+    return typeof promptFromState === "string" ? promptFromState.trim() : "";
+  });
+  const hasSentInitialPromptRef = useRef(false);
 
   // Lưu ID của cuộc hội thoại hiện đang mở
   const [conversationId, setConversationId] = useState(null);
 
-  // Không còn tin nhắn mẫu
-  const [messages, setMessages] = useState([]);
+  // Khởi tạo tin nhắn đầu tiên ngay nếu người dùng chuyển từ AiQuickAssistant ở HomePage sang
+  const [messages, setMessages] = useState(() => {
+    if (!initialPrompt) return [];
+    const formattedTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return [
+      {
+        id: `user-init-${Date.now()}`,
+        role: "user",
+        content: initialPrompt,
+        createdAt: formattedTime,
+      },
+    ];
+  });
   const [conversations, setConversations] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [loadingConversationId, setLoadingConversationId] = useState(null);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(() => Boolean(initialPrompt));
   const [error, setError] = useState(null);
-  const [lastUserPrompt, setLastUserPrompt] = useState("");
+  const [lastUserPrompt, setLastUserPrompt] = useState(() => initialPrompt);
   const [guestTrialExhausted, setGuestTrialExhausted] = useState(false);
 
   const [activeModal, setActiveModal] = useState(null);
+
+  useEffect(() => {
+    if (!initialPrompt || isAuthLoading || hasSentInitialPromptRef.current) {
+      return;
+    }
+
+    hasSentInitialPromptRef.current = true;
+    navigate(location.pathname, { replace: true, state: null });
+
+    sendAIMessage(initialPrompt, null)
+      .then((aiMessage) => {
+        if (aiMessage.conversationId != null) {
+          setConversationId(aiMessage.conversationId);
+        }
+
+        setMessages((prev) => [...prev, aiMessage]);
+        if (!user && aiMessage.guestQuestionsRemaining === 0) {
+          setGuestTrialExhausted(true);
+        }
+      })
+      .catch((err) => {
+        console.error("AI Assistant error:", err);
+
+        let errorMessage = "Không thể tạo câu trả lời. Vui lòng thử lại.";
+
+        if (err.status === 429) {
+          errorMessage =
+            "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          setMessages((prev) =>
+            prev.filter((message) => !String(message.id).startsWith("user-init-")),
+          );
+          setGuestTrialExhausted(true);
+        } else if (err.status === 503) {
+          errorMessage =
+            "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
+        } else if (err.status === 401) {
+          errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        setError({
+          message: errorMessage,
+          status: err.status,
+          originalPrompt: initialPrompt,
+        });
+      })
+      .finally(() => {
+        setIsTyping(false);
+      });
+  }, [initialPrompt, isAuthLoading, location.pathname, navigate, user]);
 
   const handleOpenHistory = async () => {
     if (isTyping) return;

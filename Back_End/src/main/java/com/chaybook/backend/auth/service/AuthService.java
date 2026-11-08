@@ -1,6 +1,5 @@
 package com.chaybook.backend.auth.service;
 
-
 import com.chaybook.backend.auth.dto.LoginRequest;
 import com.chaybook.backend.auth.dto.LoginResponse;
 import com.chaybook.backend.auth.dto.MeResponse;
@@ -15,7 +14,6 @@ import com.chaybook.backend.security.JwtService;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -27,13 +25,11 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.Authentication;
 
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import java.security.SecureRandom;
 import java.util.Base64;
-
 
 @Service
 public class AuthService {
@@ -51,8 +47,7 @@ public class AuthService {
             JwtService jwtService,
             AuthOtpChallengeRepository otpRepository,
             JavaMailSender mailSender,
-            @Value("${app.mail.from:}") String mailFrom
-    ) {
+            @Value("${app.mail.from:}") String mailFrom) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -61,55 +56,48 @@ public class AuthService {
         this.mailFrom = mailFrom;
     }
 
-public LoginResult login(LoginRequest request) {
+    public LoginResult login(LoginRequest request) {
 
-    Optional<User> userOpt =
-            userRepository.findByEmailIgnoreCase(request.getEmail());
+        Optional<User> userOpt = userRepository.findByEmailIgnoreCase(request.getEmail());
 
-    if (userOpt.isEmpty()) {
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No account found with this email."
-        );
-    }
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No account found with this email.");
+        }
 
-    User user = userOpt.get();
+        User user = userOpt.get();
 
-    String passwordHash = user.getPasswordHash();
+        String passwordHash = user.getPasswordHash();
 
-    if (passwordHash == null || passwordHash.isBlank() || !passwordEncoder.matches(
-            request.getPassword(),
-            user.getPasswordHash()
-    )) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Incorrect email or password."
-        );
-    }
+        if (passwordHash == null || passwordHash.isBlank() || !passwordEncoder.matches(
+                request.getPassword(),
+                user.getPasswordHash())) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Incorrect email or password.");
+        }
 
-    // Case 3: Tài khoản bị chưa active
-    requireActive(user);
+        // Case 3: Tài khoản bị chưa active
+        requireActive(user);
 
-   String token = jwtService.generateToken(
-        user.getUserId(),
-        user.getEmail(),
-        user.getRole()
-);
-
-LoginResponse response = new LoginResponse(
-        "Login successful",
-        new LoginResponse.UserData(
+        String token = jwtService.generateToken(
                 user.getUserId(),
-                user.getUsername(),
                 user.getEmail(),
-                user.getFullName(),
-                user.getAvatarUrl(),
-                user.getRole()
-        )
-);
+                user.getRole());
 
-return new LoginResult(response, token);
-}
+        LoginResponse response = new LoginResponse(
+                "Login successful",
+                new LoginResponse.UserData(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getFullName(),
+                        user.getAvatarUrl(),
+                        user.getRole()));
+
+        return new LoginResult(response, token);
+    }
 
     @Transactional
     public void startRegistration(RegisterRequest request) {
@@ -117,22 +105,19 @@ return new LoginResult(response, token);
         if (request.password().getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Mật khẩu không được vượt quá 72 ký tự"
-            );
+                    "Mật khẩu không được vượt quá 72 ký tự");
         }
 
         if (userRepository.existsByUsernameIgnoreCase(request.username())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Username đã được sử dụng"
-            );
+                    "Username đã được sử dụng");
         }
 
         if (userRepository.existsByEmailIgnoreCase(request.email())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Email đã được sử dụng"
-            );
+                    "Email đã được sử dụng");
         }
 
         String code = newOtp();
@@ -154,7 +139,8 @@ return new LoginResult(response, token);
 
     @Transactional(noRollbackFor = ResponseStatusException.class)
     public RegisterResponse verifyRegistration(VerifyRegistrationRequest request) {
-        AuthOtpChallenge challenge = getValidChallenge(request.email().strip().toLowerCase(), "REGISTER", request.code());
+        AuthOtpChallenge challenge = getValidChallenge(request.email().strip().toLowerCase(), "REGISTER",
+                request.code());
         if (userRepository.existsByEmailIgnoreCase(challenge.getEmail())
                 || userRepository.existsByUsernameIgnoreCase(challenge.getUsername())) {
             otpRepository.delete(challenge);
@@ -175,7 +161,8 @@ return new LoginResult(response, token);
     public void requestPasswordReset(String email) {
         String normalizedEmail = email.strip().toLowerCase();
         Optional<User> account = userRepository.findByEmailIgnoreCase(normalizedEmail);
-        if (account.isEmpty()) return;
+        if (account.isEmpty())
+            return;
         String code = newOtp();
         AuthOtpChallenge challenge = otpRepository
                 .findByEmailAndPurpose(normalizedEmail, "PASSWORD_RESET")
@@ -213,14 +200,17 @@ return new LoginResult(response, token);
         }
         String email = request.email().strip().toLowerCase();
         AuthOtpChallenge challenge = otpRepository.findByEmailAndPurpose(email, "PASSWORD_RESET")
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."));
         if (!challenge.isVerified()
                 || challenge.getExpiresAt().isBefore(LocalDateTime.now())
                 || !passwordEncoder.matches(request.resetToken(), challenge.getOtpHash())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Yêu cầu đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
         }
         User user = userRepository.findByEmailIgnoreCase(challenge.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu đặt lại mật khẩu không hợp lệ."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Yêu cầu đặt lại mật khẩu không hợp lệ."));
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
         otpRepository.delete(challenge);
@@ -228,7 +218,8 @@ return new LoginResult(response, token);
 
     private AuthOtpChallenge getValidChallenge(String email, String purpose, String code) {
         AuthOtpChallenge challenge = otpRepository.findByEmailAndPurpose(email, purpose)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Mã OTP không hợp lệ hoặc đã hết hạn."));
         if (challenge.getExpiresAt().isBefore(LocalDateTime.now())) {
             otpRepository.delete(challenge);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã OTP không hợp lệ hoặc đã hết hạn.");
@@ -255,46 +246,63 @@ return new LoginResult(response, token);
 
     private void sendOtp(String email, String code, String subject) {
         SimpleMailMessage message = new SimpleMailMessage();
-        if (mailFrom != null && !mailFrom.isBlank()) message.setFrom(mailFrom);
+
+        if (mailFrom != null && !mailFrom.isBlank()) {
+            message.setFrom(mailFrom);
+        }
+
         message.setTo(email);
         message.setSubject(subject);
-        message.setText("Mã OTP của bạn là " + code + ". Mã có hiệu lực trong 10 phút và chỉ sử dụng một lần.");
-        mailSender.send(message);
+        message.setText(
+                "Mã OTP của bạn là " + code
+                        + ". Mã có hiệu lực trong 10 phút và chỉ sử dụng một lần.");
+
+        System.out.println("========== BEFORE MAIL SEND ==========");
+        System.out.println("To: " + email);
+        System.out.println("From: " + mailFrom);
+
+        try {
+            mailSender.send(message);
+
+            System.out.println("========== MAIL SEND SUCCESS ==========");
+        } catch (Exception e) {
+            System.err.println("========== MAIL SEND FAILED ==========");
+            System.err.println("Exception type: " + e.getClass().getName());
+            System.err.println("Exception message: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("======================================");
+
+            throw e;
+        }
     }
 
     public MeResponse getCurrentUser(Authentication authentication) {
-        if(!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
+        if (!(authentication instanceof JwtAuthenticationToken jwtAuthentication)) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Please log in."
-            );
+                    "Please log in.");
         }
 
         Integer userId;
-        try{
+        try {
             userId = Integer.valueOf(jwtAuthentication.getToken().getSubject());
-        } catch (NumberFormatException exception){
+        } catch (NumberFormatException exception) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Invalid authentication."
-            );
+                    "Invalid authentication.");
         }
 
-        if(userId <= 0){
+        if (userId <= 0) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Invalid authentication."
-            );
+                    "Invalid authentication.");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Please log in again."
-                        )
-                );
-        
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Please log in again."));
+
         requireActive(user);
 
         return new MeResponse(
@@ -303,16 +311,14 @@ return new LoginResult(response, token);
                 user.getEmail(),
                 user.getFullName(),
                 user.getAvatarUrl(),
-                user.getRole()
-        );
+                user.getRole());
     }
 
     private void requireActive(User user) {
         if (user.getStatusValue() != com.chaybook.backend.user.enums.UserStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Your account is not active."
-            );
+                    "Your account is not active.");
         }
     }
 }
