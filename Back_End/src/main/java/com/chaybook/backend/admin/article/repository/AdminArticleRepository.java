@@ -1,6 +1,7 @@
 package com.chaybook.backend.admin.article.repository;
 
 import com.chaybook.backend.article.entity.Article;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,7 @@ public interface AdminArticleRepository
     Page<Article> search(
             @Param("q") String q,
             @Param("categoryId") Integer categoryId,
-            @Param("status") String status,
+            @Param("status") ArticleStatus status,
             Pageable pageable
     );
 }

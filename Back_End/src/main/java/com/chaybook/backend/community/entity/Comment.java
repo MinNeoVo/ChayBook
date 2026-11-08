@@ -22,7 +22,8 @@ public class Comment {
     private Comment replyToComment;
 
     @Column(name = "status", nullable = false, length = 20)
-    private String status = CommentStatus.ACTIVE.name();
+    @Enumerated(EnumType.STRING)
+    private CommentStatus status;
 
     @Column(name = "edited_at")
     private LocalDateTime editedAt;
@@ -108,7 +109,7 @@ public class Comment {
     }
     
     public boolean isDeleted() {
-        return CommentStatus.DELETED.name().equals(status);
+        return status == CommentStatus.DELETED;
     }
 
     public Comment getParentComment() {
@@ -120,7 +121,7 @@ public class Comment {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public LocalDateTime getEditedAt() {
@@ -138,6 +139,14 @@ public class Comment {
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : CommentStatus.valueOf(status);
+    }
+
+    public CommentStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(CommentStatus status) {
         this.status = status;
     }
 

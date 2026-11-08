@@ -105,17 +105,22 @@ public class ChatbotService {
             userMsg.setMessage(userMessage);
             messageRepository.save(userMsg);
 
-            // 4. Tìm recipe được nhắc đến để bổ sung dữ liệu và link thật từ database.
-            List<Recipe> relatedRecipes = findRelevantRecipes(userMessage);
-            String contextData = buildRecipeContext(relatedRecipes);
+            String aiReply;
+            if (isMealPlanRequest(userMessage)) {
+                aiReply = "Bạn có thể tạo thực đơn tại trang sau:\n\n"
+                        + "[Đi đến trang tạo thực đơn](/meal-plan)";
+            } else {
+                // 4. Tìm recipe được nhắc đến để bổ sung dữ liệu và link thật từ database.
+                List<Recipe> relatedRecipes = findRelevantRecipes(userMessage);
+                String contextData = buildRecipeContext(relatedRecipes);
 
-            // 5. Ghép Prompt với Guardrails
-            String fullPrompt = buildPrompt(contextData, userMessage);
+                // 5. Ghép Prompt với Guardrails
+                String fullPrompt = buildPrompt(contextData, userMessage);
 
-            // 6. Gọi Gemini API
-            String aiReply = geminiClient.generateContent(fullPrompt);
-            aiReply = appendRecipeLinks(aiReply, relatedRecipes);
-            aiReply = appendMealPlanLink(aiReply, userMessage);
+                // 6. Gọi Gemini API
+                aiReply = geminiClient.generateContent(fullPrompt);
+                aiReply = appendRecipeLinks(aiReply, relatedRecipes);
+            }
 
             // 7. Lưu tin nhắn của AI
             AiMessage aiMsg = new AiMessage();
@@ -179,7 +184,7 @@ public class ChatbotService {
 
         String normalizedMessage = normalizeForSearch(userMessage);
         return recipeRepository.findAll().stream()
-                .filter(recipe -> "ACTIVE".equalsIgnoreCase(recipe.getStatus()))
+                .filter(recipe -> recipe.getStatusValue() == com.chaybook.backend.recipe.enums.RecipeStatus.ACTIVE)
                 .filter(recipe -> recipe.getName() != null && !recipe.getName().isBlank())
                 .filter(recipe -> normalizedMessage.contains(normalizeForSearch(recipe.getName())))
                 .toList();
@@ -206,22 +211,15 @@ public class ChatbotService {
         return aiReply + "\n\n**Xem công thức trong ChayBook:**\n" + links;
     }
 
-    private String appendMealPlanLink(String aiReply, String userMessage) {
+    private boolean isMealPlanRequest(String userMessage) {
         String normalizedMessage = normalizeForSearch(userMessage);
-        boolean asksForMealPlan = normalizedMessage.contains("mealplan")
+        return normalizedMessage.contains("mealplan")
                 || normalizedMessage.contains("meal plan")
                 || normalizedMessage.contains("tao thuc don")
                 || normalizedMessage.contains("lap thuc don")
                 || normalizedMessage.contains("len thuc don")
                 || normalizedMessage.contains("goi y thuc don")
                 || normalizedMessage.contains("xay dung thuc don");
-
-        if (!asksForMealPlan || aiReply.contains("/meal-plan")) {
-            return aiReply;
-        }
-
-        return aiReply + "\n\n**Muốn tạo thực đơn cá nhân hóa?**\n"
-                + "[Đi đến trang tạo thực đơn](/meal-plan)";
     }
 
     private String normalizeForSearch(String value) {

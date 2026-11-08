@@ -3,6 +3,7 @@ package com.chaybook.backend.admin.article.service;
 import com.chaybook.backend.media.dto.MediaUploadResponse;
 import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.user.repository.UserRepository;
+import com.chaybook.backend.user.enums.UserStatus;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class AdminArticleImageService {
     public String upload(Integer adminId, MultipartFile file) {
         var admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in again"));
-        if (!"ADMIN".equals(admin.getRole()) || !"ACTIVE".equals(admin.getStatus())) {
+        if (!"ADMIN".equals(admin.getRole()) || admin.getStatusValue() != UserStatus.ACTIVE) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "An active administrator is required");
         }
         if (file == null || file.isEmpty()) {

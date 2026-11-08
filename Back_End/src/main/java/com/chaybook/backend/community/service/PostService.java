@@ -11,6 +11,9 @@ import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
 import com.chaybook.backend.media.service.MediaService;
 import com.chaybook.backend.moderation.entity.AiModeration;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
+import com.chaybook.backend.moderation.event.PostModerationRequestedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
@@ -31,6 +34,7 @@ public class PostService {
     private final CategoryRepository categoryRepository;
     private final AiModerationService aiModerationService;
     private final MediaService mediaService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PostService(
             PostRepository postRepository,
@@ -39,7 +43,8 @@ public class PostService {
             UserRepository userRepository,
             CategoryRepository categoryRepository,
             AiModerationService aiModerationService,
-            MediaService mediaService
+            MediaService mediaService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
@@ -48,6 +53,7 @@ public class PostService {
         this.categoryRepository = categoryRepository;
         this.aiModerationService = aiModerationService;
         this.mediaService = mediaService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional(readOnly = true)
@@ -182,7 +188,9 @@ public class PostService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
-                    post.getStatus(),
+                    post.getMediaType(),
+                    post.getMediaPublicId(),
+                    post.getStatusValue().name(),
                     post.getCreatedAt(),
                     likeCounts.getOrDefault(postId, 0L),
                     bookmarkCounts.getOrDefault(postId, 0L),
@@ -204,7 +212,9 @@ public PostCreateResponse createPost(
         String title,
         String content,
         MultipartFile image,
-        String mediaUrl
+        String mediaUrl,
+        String mediaType,
+        String mediaPublicId
 ) {
     User currentUser = requireActiveUser(currentUserId);
 
@@ -236,22 +246,39 @@ public PostCreateResponse createPost(
                 "Provide either a media URL or a file, not both"
         );
     }
+    MediaUploadResponse uploadedMedia = null;
+    String storedMediaUrl;
 
-    String imageUrl = mediaUrl == null || mediaUrl.isBlank()
-            ? uploadPostMedia(image)
-            : normalizeImageUrl(mediaUrl);
+    if (mediaUrl != null && !mediaUrl.isBlank()) {
+        storedMediaUrl = normalizeImageUrl(mediaUrl);
+    } else {
+        uploadedMedia = uploadPostMedia(image);
+        storedMediaUrl = uploadedMedia == null ? null : uploadedMedia.getUrl();
+    }
 
     Post post = new Post();
     post.setUser(currentUser);
     post.setCategory(category);
     post.setTitle(title.strip());
     post.setContent(content.strip());
-    post.setImageUrl(imageUrl);
-    post.setStatus(PostStatus.PENDING.name());
 
+// URL video hoặc ảnh đều được lưu tại image_url để có URL phát/hiển thị.
+    post.setImageUrl(storedMediaUrl);
+
+    if (uploadedMedia != null) {
+        post.setMediaType(uploadedMedia.getMediaType());
+        post.setMediaPublicId(uploadedMedia.getPublicId());
+    } else if (storedMediaUrl != null) {
+        post.setMediaType(mediaType);
+        post.setMediaPublicId(mediaPublicId);
+    }
+
+    post.setStatus(PostStatus.PENDING);
     Post savedPost = postRepository.saveAndFlush(post);
-    aiModerationService.moderatePost(savedPost);
 
+    eventPublisher.publishEvent(
+            new PostModerationRequestedEvent(savedPost.getPostId())
+    );
     PostCreateResponse.PostData postData =
             new PostCreateResponse.PostData(
                     savedPost.getPostId(),
@@ -260,7 +287,9 @@ public PostCreateResponse createPost(
                     savedPost.getTitle(),
                     savedPost.getContent(),
                     savedPost.getImageUrl(),
-                    savedPost.getStatus(),
+                    savedPost.getMediaType(),
+                    savedPost.getMediaPublicId(),
+                    savedPost.getStatusValue().name(),
                     savedPost.getCreatedAt()
             );
 
@@ -270,20 +299,20 @@ public PostCreateResponse createPost(
     );
 }
 
-private String uploadPostMedia(MultipartFile image) {
-    if (image == null || image.isEmpty()) {
-        return null;
-    }
+    private MediaUploadResponse uploadPostMedia(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
 
-    try {
-        return mediaService.upload(image).getUrl();
-    } catch (IllegalArgumentException exception) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                exception.getMessage()
-        );
+        try {
+            return mediaService.upload(image);
+        } catch (IllegalArgumentException exception) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    exception.getMessage()
+            );
+        }
     }
-}
 
     @Transactional
     public PostMessageResponse updatePost(
@@ -321,6 +350,19 @@ private String uploadPostMedia(MultipartFile image) {
                 ? post.getImageUrl()
                 : normalizeImageUrl(request.imageUrl());
 
+        boolean mediaUrlChanged =
+                !Objects.equals(post.getImageUrl(), newImageUrl);
+        String newMediaType = mediaUrlChanged
+                ? request.mediaType()
+                : request.mediaType() == null
+                        ? post.getMediaType()
+                        : request.mediaType();
+        String newMediaPublicId = mediaUrlChanged
+                ? request.mediaPublicId()
+                : request.mediaPublicId() == null
+                        ? post.getMediaPublicId()
+                        : request.mediaPublicId();
+
         Category newCategory = post.getCategory();
 
         Integer oldCategoryId = post.getCategory() == null
@@ -340,6 +382,8 @@ private String uploadPostMedia(MultipartFile image) {
                 !Objects.equals(post.getTitle(), newTitle)
                         || !Objects.equals(post.getContent(), newContent)
                         || !Objects.equals(post.getImageUrl(), newImageUrl)
+                        || !Objects.equals(post.getMediaType(), newMediaType)
+                        || !Objects.equals(post.getMediaPublicId(), newMediaPublicId)
                         || !Objects.equals(oldCategoryId, newCategoryId);
 
         // Không gọi setter hoặc save khi dữ liệu không đổi.
@@ -350,10 +394,12 @@ private String uploadPostMedia(MultipartFile image) {
         post.setTitle(newTitle);
         post.setContent(newContent);
         post.setImageUrl(newImageUrl);
+        post.setMediaType(newMediaType);
+        post.setMediaPublicId(newMediaPublicId);
         post.setCategory(newCategory);
 
         // Nội dung đã thay đổi nên phải duyệt lại.
-        post.setStatus(PostStatus.PENDING.name());
+        post.setStatus(PostStatus.PENDING);
 
         // Không đổi tác giả, createdAt hoặc các tương tác.
         postRepository.saveAndFlush(post);
@@ -381,7 +427,7 @@ private String uploadPostMedia(MultipartFile image) {
         }
 
         // Xóa mềm: không xóa bản ghi hoặc dữ liệu liên quan.
-        post.setStatus(PostStatus.REMOVED.name());
+        post.setStatus(PostStatus.REMOVED);
 
         postRepository.saveAndFlush(post);
 
@@ -403,7 +449,7 @@ private String uploadPostMedia(MultipartFile image) {
                 ));
 
         // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if (PostStatus.REMOVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() == PostStatus.REMOVED) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"
@@ -462,7 +508,7 @@ private String uploadPostMedia(MultipartFile image) {
 
         Post post = requirePostForWrite(postId);
 
-        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts can receive interactions"
@@ -530,7 +576,7 @@ private String uploadPostMedia(MultipartFile image) {
         // Kiểm tra ID, khóa bài trong transaction và chặn bài DELETED.
         Post post = requirePostForWrite(postId);
 
-        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts allow interaction changes"
@@ -570,8 +616,7 @@ private String uploadPostMedia(MultipartFile image) {
                         "User not found"
                 ));
 
-        if (user.getStatus() == null
-                || !UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.FORBIDDEN,
                     "User account is not active"
@@ -599,7 +644,7 @@ private String uploadPostMedia(MultipartFile image) {
                         "Category not found"
                 ));
 
-        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"
