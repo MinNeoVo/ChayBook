@@ -80,7 +80,7 @@ public class AuthController {
                 }
 
                 LoginResult result = authService.login(request);
-
+                // ok
                 ResponseCookie cookie = ResponseCookie
                                 .from("CHAYBOOK_TOKEN", result.token())
                                 .httpOnly(true)
