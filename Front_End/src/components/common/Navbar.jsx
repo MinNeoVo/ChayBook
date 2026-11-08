@@ -16,10 +16,12 @@ function Navbar() {
     ...(isLoggedIn ? [{ name: "Cộng đồng", path: "/community" }] : []),
     { name: "Trợ lý AI", path: "/ai-assistant" },
     ...(isLoggedIn
-      ? [{ name: "Nhận diện nguyên liệu", path: "/ingredient-recognition" }]
+      ? [{ name: "Nhận diện", path: "/ingredient-recognition" }]
       : []),
     { name: "Công thức", path: "/recipes" },
     ...(isLoggedIn ? [{ name: "Địa điểm", path: "/places" }] : []),
+    ...(isLoggedIn ? [{ name: "Phân tích", path: "/video-analysis" }] : []),
+
     { name: "Thực đơn", path: "/meal-plan" },
   ];
 
