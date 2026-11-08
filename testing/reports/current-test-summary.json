@@ -1,0 +1,11 @@
+{
+  "baseline": 240,
+  "current": 74,
+  "removed": 166,
+  "counts": {
+    "PASS_FULL_ACCEPTANCE": 74
+  },
+  "releaseVerdict": "REDUCED_SUITE_PASS_FULL_ACCEPTANCE",
+  "source": "testing/reports/current-case-results.json",
+  "note": "Reduced Test Suite — 74 cases retained from original 240. Historical execution and acceptance evidence are preserved outside the active suite."
+}

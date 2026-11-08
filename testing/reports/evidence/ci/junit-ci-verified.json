@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 2,
+  "verification": {
+    "status": "VERIFIED",
+    "repository": "MinNeoVo/ChayBook",
+    "workflow": "ChayBook CI",
+    "runId": "42486795409",
+    "commitSha": "af18f322833039f754571c1b8b663129f4551f13",
+    "completedAt": "2026-11-08T13:50:03Z",
+    "sourceUrl": "https://github.com/MinNeoVo/ChayBook/actions/runs/42486795409",
+    "branch": "ci/upload-surefire-artifact",
+    "event": "push"
+  },
+  "historicalReference": {
+    "pullRequest": 83,
+    "relationship": "HISTORICAL_REFERENCE_ONLY"
+  },
+  "provenance": {
+    "metadataPath": "testing/reports/evidence/ci/run-42486795409/github-actions-run-42486795409.json",
+    "metadataSha256": "4b2126ece36c9913323e385447fc9358435334eb8561956363d4c7cefdc476fa"
+  },
+  "archive": {
+    "path": "testing/reports/evidence/ci/run-42486795409/junit-surefire-42486795409-backend.zip",
+    "sha256": "239db06548f6128db22eccf5c4c95f07a407af1f3fbc183fd0cb26667997a714",
+    "bytes": 79111
+  },
+  "artifacts": [
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.article.service.AdminArticleIntegrationTest.xml",
+      "sha256": "194d1e035756908199bf68efbeae2d52da329d12af9515a36df5ab399a7f9350"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.post.service.AdminPostVideoServiceTest.xml",
+      "sha256": "c3bd4906639d39ed77f894f77c8102affbe851429def344910e481c8d41e2c24"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.dashboard.service.AdminDashboardStatisticsServiceTest.xml",
+      "sha256": "d027a7524e669ca89ae6f1e76fd05d71950b340841ac5b345b0e88125515b240"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.AdminApiSecurityTest.xml",
+      "sha256": "d34b113bb2b44ffcce956f53a7af27841cc59666ba5443d196724acf63341593"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.recipe.service.AdminRecipeServiceImplTest.xml",
+      "sha256": "dd78f8acb0e09160a71f2f053a1c7962740daebb45c5d58a19b87c092c8605de"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.allergy.service.AllergyServiceTest.xml",
+      "sha256": "c911af530aaaa9eab1c6ff48f119a5eb17c1978578328d33e87c97286fe8c37c"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.admin.user.service.AdminUserAuthorizationTest.xml",
+      "sha256": "1fae82c99d3c8e3fbce92fcf0b6ba2f42cd328fc1b8e726eb7874c0305311974"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.article.service.PublicArticleVisibilityTest.xml",
+      "sha256": "710ead6b2e2d3aa9e8c44b330a5ba080b6d420de788849ddc9f0b0d3ba19cd5c"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.assistant.service.GuestTrialLimiterTest.xml",
+      "sha256": "1d4ace7ef987ead236479e14983b059c5e1f63874495cd7524877862a269d196"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.mealplan.service.MealPlanServiceTest.xml",
+      "sha256": "4cf12cea5e00689b152fb090597a19a744ae8c3d9a4788a970d8fc990b332688"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.moderation.client.GroqModerationProviderIntegrationTest.xml",
+      "sha256": "e4b65c1217534792ef095e7b240ce0e2a86e14d537707c292510722ab68dd4ee"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.ShopModuleStartupTest.xml",
+      "sha256": "6e4c5c8e9b2e54864716a0877936baa239ffe6dc41d5d3081fd0a4d71558fe41"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.config.GeoapifyConfigTest.xml",
+      "sha256": "4b97e0b8659469ca11649b9d9bf60a7ef4369f5e2e3e580236d9ec84211a20fc"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.context.RecommendationContextResolversTest.xml",
+      "sha256": "f190f948c33a8919eeb467593b5d6bb1b11b47324e2c7ac75ebc9f936c9daba9"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.controller.ShopControllerTest.xml",
+      "sha256": "865882324138563b4cdb78d05a7a3250fa0772ad3f4ff228b370167c2a3dfc19"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.dto.ShopRecommendationRequestTest.xml",
+      "sha256": "961a2ac8c07abcef3e7eb50c19e2326e71143cbb9b045b03743942b2c0e953b9"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.policy.ShopRecommendationPolicyTest.xml",
+      "sha256": "a073763f52e2c8c143138b38e0e41c71b3ae25353826183385525d8ed16fc8c0"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.provider.geoapify.GeoapifyPlacesSearchProviderTest.xml",
+      "sha256": "ddddc4e202809c3722cd162ef46759437cb03b00065ca774d5bf30339328d0d3"
+    },
+    {
+      "path": "testing/reports/evidence/ci/run-42486795409/TEST-com.chaybook.backend.shop.service.ShopRecommendationServiceTest.xml",
+      "sha256": "1330d8669d2c6398c249986cc2baf2f61144602725a5e6ecc9aee41887b55daf"
+    }
+  ],
+  "expected": {
+    "executions": 127,
+    "classes": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}
