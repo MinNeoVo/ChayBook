@@ -1,6 +1,7 @@
 package com.chaybook.backend.ingredient.repository;
 
 import com.chaybook.backend.ingredient.entity.Ingredient;
+import com.chaybook.backend.ingredient.enums.IngredientStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,11 +15,11 @@ import java.util.Optional;
 public interface IngredientRepository
         extends JpaRepository<Ingredient, Integer> {
 
-    List<Ingredient> findByStatus(String status, Sort sort);
+    List<Ingredient> findByStatus(IngredientStatus status, Sort sort);
 
     Optional<Ingredient> findByIngredientIdAndStatus(
             Integer ingredientId,
-            String status
+            IngredientStatus status
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -33,6 +34,6 @@ public interface IngredientRepository
 
     Optional<Ingredient> findByNameIgnoreCaseAndStatus(
             String name,
-            String status
+            IngredientStatus status
     );
 }

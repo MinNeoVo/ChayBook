@@ -107,7 +107,7 @@ public class SocialAccountServiceImpl implements SocialAccountService {
         user.setEmail(email);
         user.setPasswordHash(null);
         user.setRole("USER");
-        user.setStatus("ACTIVE");
+        user.setStatus(com.chaybook.backend.user.enums.UserStatus.ACTIVE);
         user.setFullName(displayName(identity.displayName(), user.getUsername()));
         user.setAvatarUrl(avatarUrl(identity.avatarUrl()));
         try {
@@ -132,7 +132,7 @@ public class SocialAccountServiceImpl implements SocialAccountService {
     }
 
     private User requireActive(User user) {
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != com.chaybook.backend.user.enums.UserStatus.ACTIVE) {
             throw new SocialAuthException(HttpStatus.FORBIDDEN, "ACCOUNT_DISABLED", "Tài khoản không còn hoạt động.");
         }
         return user;

@@ -150,7 +150,7 @@ public class SocialLinkServiceImpl implements SocialLinkService {
                 )
         );
 
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != com.chaybook.backend.user.enums.UserStatus.ACTIVE) {
             throw new SocialAuthException(
                     HttpStatus.FORBIDDEN,
                     "ACCOUNT_DISABLED",

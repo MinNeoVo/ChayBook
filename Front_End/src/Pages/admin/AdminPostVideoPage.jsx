@@ -105,6 +105,7 @@ function toRecord(item) {
   const validDate = submitted && !Number.isNaN(submitted.getTime());
   return {
     ...item,
+    mediaType: item.mediaType,
     adminReason: item.status === "REJECTED" ? item.adminReason : null,
     thumbnailUrl: resolveAdminMediaUrl(item.thumbnailUrl),
     videoUrl: resolveAdminMediaUrl(item.mediaUrl),
@@ -669,16 +670,17 @@ function ModerationDialog({
   }
 
   if (kind === "detail") {
-    const mediaType = record.type === "VIDEO" ? "Video" : "Post";
+    const isVideo = record.type === "VIDEO" || record.mediaType?.toLowerCase() === "video";
+    const mediaType = isVideo ? "Video" : "Post";
 
     return (
       <ModalShell
-        title={`Chi tiết ${record.type === "VIDEO" ? "video" : "bài viết"}`}
-        icon={record.type === "VIDEO" ? Video : FileImage}
+        title={`Chi tiết ${isVideo ? "video" : "bài viết"}`}
+        icon={isVideo ? Video : FileImage}
         onClose={onClose}
         width="max-w-xl"
       >
-        {record.type === "VIDEO" ? (
+        {isVideo ? (
           <VideoPreview key={`${record.type}-${record.id}`} record={record} />
         ) : record.thumbnailUrl ? (
           <ContentThumbnail record={record} large />

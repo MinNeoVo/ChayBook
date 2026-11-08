@@ -2,6 +2,7 @@ package com.chaybook.backend.category.service.impl;
 
 import com.chaybook.backend.category.dto.CategoryResponse;
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -34,13 +35,13 @@ public class CategoryServiceImpl {
 
         if (normalizedType == null) {
             categories = categoryRepository.findByStatus(
-                    "ACTIVE",
+                    CategoryStatus.ACTIVE,
                     sort
             );
         } else {
             categories = categoryRepository.findByTypeAndStatus(
                     normalizedType,
-                    "ACTIVE",
+                    CategoryStatus.ACTIVE,
                     sort
             );
         }
@@ -72,7 +73,7 @@ public class CategoryServiceImpl {
         }
 
         Category category = categoryRepository.findById(categoryId)
-                .filter(item -> "ACTIVE".equals(item.getStatus()))
+                .filter(item -> item.getStatusValue() == com.chaybook.backend.category.enums.CategoryStatus.ACTIVE)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Category not found"

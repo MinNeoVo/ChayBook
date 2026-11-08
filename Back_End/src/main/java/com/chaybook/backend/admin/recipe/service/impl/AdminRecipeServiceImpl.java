@@ -137,7 +137,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                 recipe.getProtein(),
                 recipe.getCarbs(),
                 recipe.getFat(),
-                recipe.getStatus(),
+                recipe.getStatusValue().name(),
                 recipe.getCreatedAt(),
                 recipe.getUpdatedAt(),
                 ingredients
@@ -153,7 +153,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                 category == null ? null : category.getName(),
                 recipe.getName(),
                 recipe.getImageUrl(),
-                recipe.getStatus()
+                recipe.getStatusValue().name()
         );
     }
 
@@ -229,7 +229,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
 
-        if (!RecipeStatus.ACTIVE.name().equals(recipe.getStatus())) {
+        if (recipe.getStatusValue() != RecipeStatus.ACTIVE) {
             throw new RecipeException(
                     HttpStatus.CONFLICT,
                     "Cannot update a deleted recipe"
@@ -274,8 +274,8 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
 
         Recipe recipe = requireRecipeForUpdate(recipeId);
 
-        if (!RecipeStatus.DELETED.name().equals(recipe.getStatus())) {
-            recipe.setStatus(RecipeStatus.DELETED.name());
+        if (recipe.getStatusValue() != RecipeStatus.DELETED) {
+            recipe.setStatus(RecipeStatus.DELETED);
             recipeRepository.saveAndFlush(recipe);
         }
 
@@ -298,7 +298,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Please log in again"
                 ));
 
-        if (!UserStatus.ACTIVE.name().equals(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new RecipeException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"
@@ -329,7 +329,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Category not found"
                 ));
 
-        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new RecipeException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"
@@ -392,7 +392,7 @@ public class AdminRecipeServiceImpl implements AdminRecipeService {
                         "Không tìm thấy nguyên liệu có mã " + ingredientId + "."
                 ));
 
-        if (!IngredientStatus.ACTIVE.name().equals(ingredient.getStatus())) {
+        if (ingredient.getStatusValue() != IngredientStatus.ACTIVE) {
                 throw new RecipeException(
                         HttpStatus.CONFLICT,
                         "Nguyên liệu \"" + ingredient.getName()

@@ -105,6 +105,10 @@ public ResponseEntity<PostCreateResponse> createPost(
         MultipartFile image,
         @RequestParam(value = "imageUrl", required = false)
         String imageUrl,
+        @RequestParam(value = "mediaType", required = false)
+        String mediaType,
+        @RequestParam(value = "mediaPublicId", required = false)
+        String mediaPublicId,
         @AuthenticationPrincipal Jwt jwt
 ) {
     Integer currentUserId = getCurrentUserId(jwt);
@@ -115,7 +119,9 @@ public ResponseEntity<PostCreateResponse> createPost(
             title,
             content,
             image,
-            imageUrl
+            imageUrl,
+            mediaType,
+            mediaPublicId
     );
 
     return ResponseEntity

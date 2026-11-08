@@ -125,7 +125,7 @@ public class RecognitionServiceImpl implements RecognitionService {
                 new AiRecognition(
                         user,
                         uploadedImage.getUrl(),
-                        status.name(),
+                        status,
                         null
                 )
         );
@@ -138,7 +138,7 @@ public class RecognitionServiceImpl implements RecognitionService {
             Optional<Ingredient> matchedIngredient =
                     ingredientRepository.findByNameIgnoreCaseAndStatus(
                             detected.detectedName(),
-                            IngredientStatus.ACTIVE.name()
+                            IngredientStatus.ACTIVE
                     );
 
             Ingredient ingredient = matchedIngredient.orElse(null);
@@ -176,7 +176,7 @@ public class RecognitionServiceImpl implements RecognitionService {
                         ? List.of()
                         : recognitionRecipeRepository.findSuggestions(
                                 new ArrayList<>(matchedIngredientIds),
-                                RecipeStatus.ACTIVE.name()
+                                RecipeStatus.ACTIVE
                         ).stream()
                         .limit(5)
                         .toList();

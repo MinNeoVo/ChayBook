@@ -1,6 +1,7 @@
 package com.chaybook.backend.community.entity;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.community.enums.PostStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -36,7 +37,8 @@ public class Post {
     private String imageUrl;
 
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PostStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -62,7 +64,7 @@ public class Post {
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.status = status;
+        setStatus(status);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.mediaType = mediaType;
@@ -116,10 +118,18 @@ public class Post {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : PostStatus.valueOf(status);
+    }
+
+    public PostStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(PostStatus status) {
         this.status = status;
     }
 

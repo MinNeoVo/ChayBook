@@ -2,6 +2,7 @@ package com.chaybook.backend.article.service.impl;
 
 import com.chaybook.backend.article.dto.ArticleResponse;
 import com.chaybook.backend.article.entity.Article;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.article.repository.ArticleRepository;
 import com.chaybook.backend.article.service.ArticleService;
 import com.chaybook.backend.category.repository.CategoryRepository;
@@ -55,7 +56,7 @@ public Page<ArticleResponse> getArticles(
         );
     }
 
-    String normalizedStatus = normalizeStatus(status);
+    ArticleStatus normalizedStatus = normalizeStatus(status);
 
     Pageable pageable = PageRequest.of(
             page,
@@ -66,7 +67,7 @@ public Page<ArticleResponse> getArticles(
     Page<Article> articles;
 
     // Public reads never expose drafts, including an explicit status=DRAFT query.
-    if ("DRAFT".equals(normalizedStatus)) {
+    if (normalizedStatus == ArticleStatus.DRAFT) {
         return Page.empty(pageable);
     }
 
@@ -111,7 +112,7 @@ public Page<ArticleResponse> getArticles(
         }
 
         return articleRepository.findById(articleId)
-                .filter(article -> "PUBLISHED".equals(article.getStatus()))
+                .filter(article -> article.getStatusValue() == ArticleStatus.PUBLISHED)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Article not found"
@@ -119,9 +120,9 @@ public Page<ArticleResponse> getArticles(
     }
 
 
-    private String normalizeStatus(String status) {
+    private ArticleStatus normalizeStatus(String status) {
         if (status == null || status.isBlank()) {
-            return "PUBLISHED";
+            return ArticleStatus.PUBLISHED;
         }
 
         String normalizedStatus = status.strip()
@@ -135,7 +136,7 @@ public Page<ArticleResponse> getArticles(
             );
         }
 
-        return normalizedStatus;
+        return ArticleStatus.valueOf(normalizedStatus);
     }
 
 
@@ -155,7 +156,7 @@ public Page<ArticleResponse> getArticles(
                 article.getTitle(),
                 article.getContent(),
                 article.getCoverImage(),
-                article.getStatus(),
+                article.getStatusValue().name(),
                 article.getCreatedAt(),
                 article.getUpdatedAt()
         );

@@ -2,6 +2,7 @@ package com.chaybook.backend.recognition.repository;
 
 import com.chaybook.backend.recipe.entity.RecipeIngredient;
 import com.chaybook.backend.recipe.entity.RecipeIngredientId;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recognition.dto.RecipeSuggestionResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -40,6 +41,6 @@ public interface RecognitionRecipeRepository
             """)
     List<RecipeSuggestionResponse> findSuggestions(
             @Param("ingredientIds") List<Integer> ingredientIds,
-            @Param("activeStatus") String activeStatus
+            @Param("activeStatus") RecipeStatus activeStatus
     );
 }

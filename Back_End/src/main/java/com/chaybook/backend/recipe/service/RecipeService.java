@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.service;
 
 
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.recipe.dto.*;
@@ -73,7 +74,7 @@ public class RecipeService {
         if (categoryId != null
                 && !categoryRepository.existsByCategoryIdAndStatusAndType(
                 categoryId,
-                RecipeStatus.ACTIVE.name(),
+                CategoryStatus.ACTIVE,
                 "RECIPE"
         )) {
             throw new ResponseStatusException(

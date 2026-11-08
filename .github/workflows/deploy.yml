@@ -1,0 +1,127 @@
+name: ChayBook Deploy
+
+on:
+  workflow_run:
+    workflows:
+      - "ChayBook CI"
+    types:
+      - completed
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    name: Deploy Production
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # =========================
+      # Checkout source code
+      # =========================
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # =========================
+      # Deploy Backend to Render
+      # =========================
+      - name: Deploy Backend to Render
+        run: |
+          echo "Deploying backend to Render..."
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+      # =========================
+      # Setup Node.js
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # =========================
+      # Install Vercel CLI
+      # =========================
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # =========================
+      # Configure Vercel Project
+      # =========================
+      - name: Configure Vercel Project
+        run: |
+          mkdir -p .vercel
+
+          cat > .vercel/project.json <<EOF
+          {
+            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
+          }
+          EOF
+
+          echo "Vercel project configured"
+
+      # =========================
+      # Pull Vercel Environment
+      # =========================
+      - name: Pull Vercel Environment
+        run: |
+          vercel pull --yes \
+            --environment=production \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Build Frontend
+      # =========================
+      - name: Build Vercel
+        run: |
+          vercel build --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Deploy Frontend
+      # =========================
+      - name: Deploy Vercel
+        run: |
+          vercel deploy --prebuilt --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Wait for Render
+      # =========================
+      - name: Wait for Render
+        run: |
+          echo "Waiting for Render backend..."
+          sleep 30
+
+      # =========================
+      # Check Backend
+      # =========================
+      - name: Check Backend
+        run: |
+          echo "Checking backend..."
+
+          curl --fail \
+            --retry 5 \
+            --retry-delay 10 \
+            https://chaybook.onrender.com/api/test
+
+      # =========================
+      # Deployment Summary
+      # =========================
+      - name: Deployment Summary
+        run: |
+          echo "======================================"
+          echo "   CHAYBOOK DEPLOYMENT SUCCESSFUL"
+          echo "======================================"
+          echo ""
+          echo "Backend:"
+          echo "https://chaybook.onrender.com"
+          echo ""
+          echo "Frontend:"
+          echo "Vercel Production"
+          echo ""
+          echo "Status: SUCCESS"
+          echo "======================================"

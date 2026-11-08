@@ -139,7 +139,9 @@ public class UserService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
-                    post.getStatus(),
+                    post.getMediaType(),
+                    post.getMediaPublicId(),
+                    post.getStatusValue().name(),
                     post.getCreatedAt(),
                     likeCounts.getOrDefault(postId, 0L),
                     bookmarkCounts.getOrDefault(postId, 0L),
@@ -157,7 +159,7 @@ public class UserService {
                 user.getFullName(),
                 user.getAvatarUrl(),
                 user.getRole(),
-                user.getStatus(),
+                user.getStatusValue().name(),
                 user.getCreatedAt(),
                 postResponses
         );
@@ -196,7 +198,7 @@ public class UserService {
                         "User not found"
                 ));
 
-        if (UserStatus.ACTIVE.name().equals(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"
@@ -235,7 +237,7 @@ public class UserService {
                         savedUser.getFullName(),
                         savedUser.getAvatarUrl(),
                         savedUser.getRole(),
-                        savedUser.getStatus()
+                        savedUser.getStatusValue().name()
                 )
         );
     }
@@ -275,7 +277,7 @@ public class UserService {
                         "User not found"
                 ));
 
-        if (UserStatus.ACTIVE.name().equals(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Your account is not active"
