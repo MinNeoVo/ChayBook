@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,7 +58,9 @@ class GroqModerationProviderIntegrationTest {
         ModerationAssessment assessment = provider.evaluate(
                 "Bài viết thử nghiệm",
                 "Tôi muốn chia sẻ một công thức nấu món rau củ đơn giản.",
-                null
+                null,
+                List.of(),
+                false
         );
 
         assertNotNull(assessment, "Groq không trả về kết quả.");

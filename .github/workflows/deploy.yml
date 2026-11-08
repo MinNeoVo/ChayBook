@@ -17,27 +17,88 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # =========================
+      # Checkout source code
+      # =========================
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      # =========================
+      # Deploy Backend to Render
+      # =========================
       - name: Deploy Backend to Render
         run: |
           echo "Deploying backend to Render..."
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
 
-      - name: Deploy Frontend to Vercel
+      # =========================
+      # Setup Node.js
+      # =========================
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # =========================
+      # Install Vercel CLI
+      # =========================
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # =========================
+      # Configure Vercel Project
+      # =========================
+      - name: Configure Vercel Project
         run: |
-          echo "Deploying frontend to Vercel..."
+          mkdir -p .vercel
 
-          npm install -g vercel
+          cat > .vercel/project.json <<EOF
+          {
+            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
+          }
+          EOF
 
-          vercel deploy Front_End \
-            --prod \
-            --token="${{ secrets.VERCEL_TOKEN }}" \
-            --yes
+          echo "Vercel project configured"
 
+      # =========================
+      # Pull Vercel Environment
+      # =========================
+      - name: Pull Vercel Environment
+        run: |
+          vercel pull --yes \
+            --environment=production \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Build Frontend
+      # =========================
+      - name: Build Vercel
+        run: |
+          vercel build --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Deploy Frontend
+      # =========================
+      - name: Deploy Vercel
+        run: |
+          vercel deploy --prebuilt --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}"
+
+      # =========================
+      # Wait for Render
+      # =========================
       - name: Wait for Render
         run: |
           echo "Waiting for Render backend..."
           sleep 30
 
+      # =========================
+      # Check Backend
+      # =========================
       - name: Check Backend
         run: |
           echo "Checking backend..."
@@ -47,6 +108,9 @@ jobs:
             --retry-delay 10 \
             https://chaybook.onrender.com/api/test
 
+      # =========================
+      # Deployment Summary
+      # =========================
       - name: Deployment Summary
         run: |
           echo "======================================"
@@ -61,22 +125,3 @@ jobs:
           echo ""
           echo "Status: SUCCESS"
           echo "======================================"
-
-      - name: Pull Vercel environment
-        working-directory: Front_End
-        run: |
-          npx vercel pull --yes \
-          --environment=production \
-          --token="${{ secrets.VERCEL_TOKEN }}"
-
-      - name: Build Vercel
-        working-directory: Front_End
-        run: |
-          npx vercel build --prod \
-          --token="${{ secrets.VERCEL_TOKEN }}"
-
-      - name: Deploy Vercel
-        working-directory: Front_End
-        run: |
-          npx vercel deploy --prebuilt --prod \
-          --token="${{ secrets.VERCEL_TOKEN }}"

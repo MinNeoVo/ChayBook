@@ -16,6 +16,7 @@ public record AdminPostVideoResponse(
         String status,
         String thumbnailUrl,
         String mediaUrl,
+        String mediaType,
         String aiResult,
         String aiReason,
         Double aiConfidence,

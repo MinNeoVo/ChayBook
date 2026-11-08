@@ -1,6 +1,7 @@
 package com.chaybook.backend.category.repository;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,19 +16,19 @@ public interface CategoryRepository
     );
 
     List<Category> findByStatus(
-            String status,
+            CategoryStatus status,
             Sort sort
     );
 
     List<Category> findByTypeAndStatus(
             String type,
-            String status,
+            CategoryStatus status,
             Sort sort
     );
 
     boolean existsByCategoryIdAndStatusAndType(
             Integer categoryId,
-            String status,
+            CategoryStatus status,
             String type
     );
 }

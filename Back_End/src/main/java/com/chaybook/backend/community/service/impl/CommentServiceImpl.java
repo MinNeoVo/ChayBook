@@ -135,7 +135,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(request.content().strip());
         comment.setParentComment(root);
         comment.setReplyToComment(target);
-        comment.setStatus(CommentStatus.ACTIVE.name());
+        comment.setStatus(CommentStatus.ACTIVE);
 
         Comment saved = commentRepository.saveAndFlush(comment);
 
@@ -202,7 +202,7 @@ public class CommentServiceImpl implements CommentService {
 
         // Gửi lại cùng yêu cầu DELETE vẫn cho kết quả ổn định.
         if (!comment.isDeleted()) {
-            comment.setStatus(CommentStatus.DELETED.name());
+            comment.setStatus(CommentStatus.DELETED);
             comment.setContent("");
             commentRepository.saveAndFlush(comment);
         }
@@ -226,7 +226,7 @@ public class CommentServiceImpl implements CommentService {
                         "Tài khoản không còn tồn tại"
                 ));
 
-        if (!UserStatus.ACTIVE.name().equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw error(
                     HttpStatus.FORBIDDEN,
                     "ACCOUNT_INACTIVE",
@@ -261,7 +261,7 @@ public class CommentServiceImpl implements CommentService {
                         "Không tìm thấy bài viết"
                 ));
 
-        if (!PostStatus.APPROVED.name().equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw error(
                     HttpStatus.NOT_FOUND,
                     "POST_NOT_FOUND",
@@ -393,7 +393,7 @@ public class CommentServiceImpl implements CommentService {
                         : root.getCommentId(),
                 deleted ? null : toAuthor(comment.getUser()),
                 deleted ? null : comment.getContent(),
-                comment.getStatus(),
+                comment.getStatusValue().name(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getEditedAt(),

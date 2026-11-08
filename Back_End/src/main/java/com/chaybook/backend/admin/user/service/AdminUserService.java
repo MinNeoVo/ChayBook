@@ -35,7 +35,7 @@ public class AdminUserService {
         }
         User admin = userRepository.findById(authenticatedUserId)
                 .orElseThrow(() -> new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in again"));
-        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || !UserStatus.ACTIVE.name().equalsIgnoreCase(admin.getStatus())) {
+        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || admin.getStatusValue() != UserStatus.ACTIVE) {
             throw new AdminUserException(HttpStatus.FORBIDDEN, "An active administrator account is required");
         }
     }
@@ -88,10 +88,10 @@ public class AdminUserService {
             );
         }
 
-        String newStatus = request.status();
+        UserStatus newStatus;
 
         try {
-            UserStatus.valueOf(newStatus);
+            newStatus = UserStatus.valueOf(request.status());
         } catch (IllegalArgumentException exception) {
             throw new AdminUserException(
                     HttpStatus.BAD_REQUEST,
@@ -112,7 +112,7 @@ public class AdminUserService {
             );
         }
 
-        if (!newStatus.equals(user.getStatus())) {
+        if (newStatus != user.getStatusValue()) {
             user.setStatus(newStatus);
             userRepository.saveAndFlush(user);
         }
@@ -120,7 +120,7 @@ public class AdminUserService {
         return new UpdateUserStatusResponse(
                 "User status updated successfully",
                 user.getUserId(),
-                user.getStatus()
+                user.getStatusValue().name()
         );
     }
 
@@ -130,7 +130,7 @@ public class AdminUserService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getStatus(),
+                user.getStatusValue().name(),
                 user.getCreatedAt()
         );
     }

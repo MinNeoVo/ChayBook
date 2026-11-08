@@ -50,7 +50,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                     "Tài khoản không còn tồn tại"
             ));
 
-    if (!UserStatus.ACTIVE.name().equals(user.getStatus())
+    if (user.getStatusValue() != UserStatus.ACTIVE
             || !"ADMIN".equals(user.getRole())) {
         throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -119,7 +119,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                 category.getName(),
                 category.getType(),
                 category.getDescription(),
-                category.getStatus()
+                category.getStatusValue().name()
         );
     }
 
@@ -193,7 +193,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         Category category = requireCategoryForWrite(categoryId);
 
-        if (!CategoryStatus.ACTIVE.name().equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Cannot update a deleted category"
@@ -226,11 +226,11 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         Category category = requireCategoryForWrite(categoryId);
 
-        if (CategoryStatus.DELETED.name().equals(category.getStatus())) {
+        if (category.getStatusValue() == CategoryStatus.DELETED) {
             return;
         }
 
-        category.setStatus(CategoryStatus.DELETED.name());
+        category.setStatus(CategoryStatus.DELETED);
         categoryRepository.saveAndFlush(category);
     }
 

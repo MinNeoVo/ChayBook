@@ -469,6 +469,8 @@ function ProfilePage() {
         categoryId: postData.categoryId,
         image: result.imageUrl,
         imageUrl: result.imageUrl,
+        mediaType: result.mediaType,
+        mediaPublicId: result.mediaPublicId,
         status: "PENDING",
       };
       setPosts((current) =>
