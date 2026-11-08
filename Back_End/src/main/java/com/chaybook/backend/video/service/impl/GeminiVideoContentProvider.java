@@ -106,6 +106,25 @@ public class GeminiVideoContentProvider implements VideoContentProvider {
     }
 
     private String generate(PreparedVideo video, VideoWork work, String task, String operation) {
+        long maximumSecond = work.source()
+                .durationSeconds()
+                .longValue();
+
+        task = task + "\n" + """
+                Quy tắc timestamp bắt buộc:
+                - startSecond và endSecond là tổng số giây tính từ đầu video.
+                - Đổi phút:giây bằng công thức phút * 60 + giây.
+                - Ví dụ 3:16 là 196 giây, không phải 316.
+                - Ví dụ 5:35 là 335 giây, không phải 535.
+                - Mọi timestamp phải nằm trong khoảng 0 đến %d.
+                - endSecond phải lớn hơn hoặc bằng startSecond.
+                - Mỗi bằng chứng dùng trường description, không dùng reason.
+                - Không tạo timestamp khi không xác định được bằng chứng.
+                - Chỉ trả PRESENT khi xác định được đoạn có nội dung công thức.
+                - Thông tin văn bản chưa biết dùng null nếu schema cho phép,
+                không dùng chuỗi rỗng.
+                """.formatted(maximumSecond);
+                
         if (!"v1".equals(work.policyVersion())) throw failure("UNSUPPORTED_POLICY_VERSION");
         String dietary = switch (work.dietaryRule()) {
             case LACTO_OVO -> "LACTO_OVO: cho phép trứng và sữa; cấm thịt, cá, hải sản và "
@@ -123,7 +142,8 @@ public class GeminiVideoContentProvider implements VideoContentProvider {
                         Map.of("fileData", fileData),
                         Map.of("text", "Thời lượng đã kiểm tra: " + work.source().durationSeconds()
                                 + " giây.\n" + task)))),
-                "generationConfig", Map.of("responseMimeType", "application/json", "temperature", 0));
+                "generationConfig", Map.of("responseMimeType", "application/json", "responseJsonSchema",
+                                        GeminiVideoSchema.forOperation(operation, work), "temperature", 0));
         try {
             String response = client.post().uri("https://generativelanguage.googleapis.com/v1beta/models/"
                             + p.model() + ":generateContent")

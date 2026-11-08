@@ -6,9 +6,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class VideoResultValidator {
+    private static final Logger log = LoggerFactory.getLogger(VideoResultValidator.class);
+
     public void review(VideoReviewAssessment value, BigDecimal duration) {
         require(value != null);
         check(value.foodTopic(), duration);
@@ -51,15 +55,43 @@ public class VideoResultValidator {
         // Missing evidence is handled as UNKNOWN by VideoReviewPolicy.
     }
 
-    private void evidence(List<VideoEvidence> values, BigDecimal duration) {
+    private void evidence(
+            List<VideoEvidence> values,
+            BigDecimal duration
+    ) {
         require(values != null && values.size() <= 100);
-        for (var item : values) {
-            require(item != null && item.startSecond() != null && item.endSecond() != null);
-            require(item.startSecond() >= 0 && item.endSecond() >= item.startSecond());
-            require(BigDecimal.valueOf(item.endSecond()).compareTo(duration) <= 0);
+
+        for (int index = 0; index < values.size(); index++) {
+            VideoEvidence item = values.get(index);
+
+            require(
+                    item != null
+                            && item.startSecond() != null
+                            && item.endSecond() != null
+            );
+
+            boolean validTimestamp =
+                    item.startSecond() >= 0
+                            && item.endSecond() >= item.startSecond()
+                            && BigDecimal.valueOf(item.endSecond())
+                                    .compareTo(duration) <= 0;
+
+            if (!validTimestamp) {
+                log.warn(
+                        "Video AI timestamp invalid: index={}, "
+                                + "startSecond={}, endSecond={}, durationSeconds={}",
+                        index,
+                        item.startSecond(),
+                        item.endSecond(),
+                        duration
+                );
+            }
+
+            require(validTimestamp);
             text(item.description(), 2000);
         }
     }
+
     private void strings(List<String> values, int count, int length) {
         require(values != null && values.size() <= count);
         for (String value : values) text(value, length);

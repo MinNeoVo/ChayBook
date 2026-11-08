@@ -193,11 +193,6 @@ export default function VideoSourceForm() {
           />
           Tạo thêm bản tóm tắt video
         </label>
-
-        <p className="text-sm text-gray-600">
-          Chấp nhận món chay có trứng và sữa. Video sẽ được kiểm tra trước khi
-          phân tích.
-        </p>
       </fieldset>
 
       {error && (

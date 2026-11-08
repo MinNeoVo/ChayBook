@@ -11,7 +11,6 @@ import { useVideoAnalysis } from "../hooks/useVideoAnalysis";
 
 import {
   ANALYSIS_EDITABLE,
-  formatVideoTime,
   positiveId,
   statusLabel,
   videoError,
@@ -24,38 +23,46 @@ function VideoJob({ submissionId }) {
     useVideoAnalysis(submissionId);
 
   if (loading) {
-    return <VideoProgress title="Đang tải phiên xử lý…" description="Đang lấy trạng thái mới nhất của video." />;
+    return (
+      <VideoProgress
+        title="Đang tải trạng thái video…"
+        description="Đang lấy kết quả xử lý mới nhất."
+      />
+    );
   }
 
+  // Mã vẫn được dùng để chọn thông báo phù hợp cho người dùng.
   const code =
     analysis?.errorCode ||
     submission?.errorCode ||
     (submission?.decisionCode !== "ACCEPTED" ? submission?.decisionCode : null);
 
+  const accepted = submission?.status === "ACCEPTED";
+
+  // Chỉ hiển thị nội dung trích xuất của video được chấp nhận.
+  const extracted = accepted ? analysis?.extracted : null;
+
   const editable =
-    submission?.status === "ACCEPTED" &&
-    ANALYSIS_EDITABLE.includes(analysis?.status) &&
-    analysis?.draft;
+    accepted && ANALYSIS_EDITABLE.includes(analysis?.status) && analysis?.draft;
 
-  const highlights =
-    analysis?.extracted?.recipeHighlights ||
-    submission?.review?.recipeEvidence ||
-    [];
-
-  const checks = [
-    ["Chủ đề thức ăn", submission?.review?.foodTopic],
-    ["Món chay", submission?.review?.vegetarianFood],
-  ];
+  const highlights = accepted
+    ? extracted?.recipeHighlights || submission?.review?.recipeEvidence || []
+    : [];
 
   return (
     <div className="space-y-6">
-      {submission && !error && (
-        waiting ? (
-          <p className="text-sm text-gray-600">Mỗi tài khoản xử lý một video tại một thời điểm.</p>
+      {submission &&
+        !error &&
+        (waiting ? (
+          <p className="text-sm text-gray-600">
+            Mỗi tài khoản xử lý một video tại một thời điểm.
+          </p>
         ) : (
-          <Link to="/video-analysis" className="inline-block text-sm underline">Gửi video khác</Link>
-        )
-      )}
+          <Link to="/video-analysis" className="inline-block text-sm underline">
+            Gửi video khác
+          </Link>
+        ))}
+
       {error && (
         <div
           role="alert"
@@ -92,32 +99,7 @@ function VideoJob({ submissionId }) {
               </h2>
             )}
 
-            {code && (
-              <div className="space-y-1 text-amber-800">
-                <p>{videoError(code)}</p>
-                <p className="text-xs">Mã xử lý: {code} · Phiên #{submission.submissionId}</p>
-              </div>
-            )}
-
-            {checks.map(
-              ([label, check]) =>
-                check && (
-                  <div key={label} className="text-sm">
-                    <p>
-                      <strong>{label}:</strong> {check.reason}
-                    </p>
-
-                    <ul className="mt-1 list-disc pl-5 text-gray-600">
-                      {check.evidence?.map((item, index) => (
-                        <li key={index}>
-                          {formatVideoTime(item.startSecond)}–
-                          {formatVideoTime(item.endSecond)}: {item.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ),
-            )}
+            {code && <p className="text-amber-800">{videoError(code)}</p>}
 
             {analysis?.status === "CONFIRMED" && (
               <Link
@@ -135,7 +117,7 @@ function VideoJob({ submissionId }) {
             highlights={highlights}
           />
 
-          <VideoExtractionView extracted={analysis?.extracted} />
+          <VideoExtractionView extracted={extracted} />
 
           {editable && (
             <VideoDraftEditor
@@ -150,7 +132,7 @@ function VideoJob({ submissionId }) {
             />
           )}
 
-          {analysis?.status === "PARTIAL" && !analysis.draft && (
+          {accepted && analysis?.status === "PARTIAL" && !analysis.draft && (
             <p className="rounded-xl bg-amber-50 p-4 text-amber-900">
               Chưa có dữ liệu đủ căn cứ để tạo bản nháp. Bạn có thể gửi video rõ
               hơn.
@@ -182,13 +164,11 @@ export default function VideoAnalysisPage() {
       </div>
 
       {submissionId ? (
-        <>
-          {id ? (
-            <VideoJob key={id} submissionId={id} />
-          ) : (
-            <p role="alert">Mã tiếp nhận không hợp lệ.</p>
-          )}
-        </>
+        id ? (
+          <VideoJob key={id} submissionId={id} />
+        ) : (
+          <p role="alert">Đường dẫn video không hợp lệ.</p>
+        )
       ) : (
         <VideoAnalysisEntry />
       )}
