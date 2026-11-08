@@ -2,6 +2,15 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
+# Install FFmpeg
+RUN apt-get update \
+    && apt-get install -y ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify FFmpeg installation
+RUN ffmpeg -version
+RUN ffprobe -version
+
 COPY . .
 
 RUN chmod +x mvnw
