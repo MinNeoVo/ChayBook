@@ -11,7 +11,7 @@ import {
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 import EditProfileModal from "./EditProfileModal";
-import ChangePasswordModal from "./ChangePasswordModal";
+import API_BASE_URL from "../../services/app";
 
 function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
   const [showEditModal, setShowEditModal] = useState(false);
@@ -41,7 +41,7 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
   const roleLabel = role === "ADMIN" ? "Administrator" : "User";
 
   // Resolve avatar URL (relative → absolute)
-  const API_ORIGIN = "http://localhost:8080";
+  const API_ORIGIN = new URL(API_BASE_URL).origin;
   const resolvedAvatarUrl =
     avatarUrl && !avatarUrl.startsWith("http")
       ? `${API_ORIGIN}${avatarUrl.startsWith("/") ? "" : "/"}${avatarUrl}`
