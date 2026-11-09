@@ -15,20 +15,23 @@ import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.entity.User;
 
 import org.springframework.http.HttpStatus;
-
+import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.security.core.Authentication;
-import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.time.LocalDateTime;
 import java.security.SecureRandom;
@@ -36,11 +39,16 @@ import java.util.Base64;
 
 @Service
 public class AuthService {
+    private static final String BREVO_SEND_EMAIL_URL = "https://api.brevo.com/v3/smtp/email";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthOtpChallengeRepository otpRepository;
-    private final Resend resend;
+    private final RestClient restClient;
+    private final String brevoApiKey;
+    private final String brevoSenderEmail;
+    private final String brevoSenderName;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public AuthService(
@@ -48,12 +56,25 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthOtpChallengeRepository otpRepository,
-            @Value("${RESEND_API_KEY}") String resendApiKey) {
+            @Value("${brevo.api-key:}") String brevoApiKey,
+            @Value("${brevo.sender-email:}") String brevoSenderEmail,
+            @Value("${brevo.sender-name:ChayBook}") String brevoSenderName) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.otpRepository = otpRepository;
-        this.resend = new Resend(resendApiKey);
+        this.brevoApiKey = brevoApiKey == null ? "" : brevoApiKey.strip();
+        this.brevoSenderEmail = brevoSenderEmail == null ? "" : brevoSenderEmail.strip();
+        this.brevoSenderName = (brevoSenderName == null || brevoSenderName.isBlank())
+                ? "ChayBook"
+                : brevoSenderName.strip();
+
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(10));
+        requestFactory.setReadTimeout(Duration.ofSeconds(15));
+        this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
+                .build();
     }
 
     public LoginResult login(LoginRequest request) {
@@ -245,34 +266,67 @@ public class AuthService {
     }
 
     private void sendOtp(String email, String code, String subject) {
+        if (brevoApiKey.isBlank() || brevoSenderEmail.isBlank()) {
+            System.err.println("========== BREVO CONFIG MISSING ==========");
+            System.err.println("BREVO_API_KEY blank: " + brevoApiKey.isBlank());
+            System.err.println("BREVO_SENDER_EMAIL blank: " + brevoSenderEmail.isBlank());
+            System.err.println("==========================================");
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Dịch vụ gửi email OTP chưa được cấu hình đầy đủ.");
+        }
+
+        Map<String, Object> payload = Map.of(
+                "sender", Map.of(
+                        "name", brevoSenderName,
+                        "email", brevoSenderEmail
+                ),
+                "to", List.of(Map.of("email", email.strip())),
+                "subject", subject,
+                "htmlContent",
+                "<div style='font-family: Arial, sans-serif; line-height: 1.6; color: #181c1b;'>"
+                        + "<h2 style='color: #006b2c;'>ChayBook</h2>"
+                        + "<p>Mã OTP của bạn là:</p>"
+                        + "<h1 style='letter-spacing: 4px; color: #006b2c;'>" + code + "</h1>"
+                        + "<p>Mã có hiệu lực trong <strong>10 phút</strong> và chỉ sử dụng một lần.</p>"
+                        + "</div>"
+        );
+
         try {
-            CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from("onboarding@resend.dev")
-                    .to(email)
-                    .subject(subject)
-                    .html(
-                            "<div style='font-family: Arial, sans-serif;'>" +
-                                    "<h2>ChayBook</h2>" +
-                                    "<p>Mã OTP của bạn là:</p>" +
-                                    "<h1>" + code + "</h1>" +
-                                    "<p>Mã có hiệu lực trong <strong>10 phút</strong> " +
-                                    "và chỉ sử dụng một lần.</p>" +
-                                    "</div>")
-                    .build();
+            restClient.post()
+                    .uri(BREVO_SEND_EMAIL_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .header("api-key", brevoApiKey)
+                    .body(payload)
+                    .retrieve()
+                    .toBodilessEntity();
 
-            resend.emails().send(params);
-
-            System.out.println("========== RESEND SUCCESS ==========");
-            System.out.println("OTP email sent successfully.");
+            System.out.println("========== BREVO SUCCESS ==========");
+            System.out.println("OTP email sent successfully to: " + email);
             System.out.println("===================================");
 
-        } catch (ResendException e) {
-            System.err.println("========== RESEND FAILED ==========");
+        } catch (RestClientResponseException e) {
+            System.err.println("========== BREVO FAILED ==========");
+            System.err.println("Status: " + e.getStatusCode());
+            System.err.println("Response Body: " + e.getResponseBodyAsString());
+            e.printStackTrace();
+            System.err.println("==================================");
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Không thể gửi email OTP. Vui lòng thử lại sau.",
+                    e);
+        } catch (Exception e) {
+            System.err.println("========== BREVO FAILED ==========");
             System.err.println("Message: " + e.getMessage());
             e.printStackTrace();
             System.err.println("==================================");
 
-            throw new RuntimeException("Không thể gửi email OTP.", e);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Không thể gửi email OTP. Vui lòng thử lại sau.",
+                    e);
         }
     }
 
