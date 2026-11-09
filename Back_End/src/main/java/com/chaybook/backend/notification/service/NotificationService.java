@@ -23,8 +23,9 @@ public class NotificationService {
         this.notificationRepository = notificationRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public NotificationListResponse getNotifications(Integer userId) {
+        notificationRepository.syncNotificationsForUser(userId);
         List<NotificationItemResponse> items =
                 notificationRepository.findByRecipientUserId(userId, DEFAULT_LIMIT);
         long unreadCount =
@@ -59,7 +60,7 @@ public class NotificationService {
             String targetUrl = "/admin/posts-videos";
 
             for (Integer adminId : adminIds) {
-                notificationRepository.insertNotification(
+                notificationRepository.insertNotificationIfAbsent(
                         adminId,
                         author.getUserId(),
                         postId,
@@ -93,7 +94,7 @@ public class NotificationService {
                     : ownerInfo.title().strip();
 
             if ("APPROVED".equalsIgnoreCase(decision)) {
-                notificationRepository.insertNotification(
+                notificationRepository.insertNotificationIfAbsent(
                         ownerInfo.userId(),
                         adminId,
                         postId,
@@ -106,7 +107,7 @@ public class NotificationService {
                 String rejectDetail = (reason != null && !reason.isBlank())
                         ? (" Lý do: " + reason.strip())
                         : "";
-                notificationRepository.insertNotification(
+                notificationRepository.insertNotificationIfAbsent(
                         ownerInfo.userId(),
                         adminId,
                         postId,
@@ -121,4 +122,3 @@ public class NotificationService {
         }
     }
 }
-

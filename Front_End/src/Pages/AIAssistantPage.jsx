@@ -261,8 +261,8 @@ function AIAssistantPage() {
   };
 
   return (
-    <div className="w-full bg-chaybook-bg px-3 py-4 sm:px-6 sm:py-6 lg:py-8">
-      <div className="mx-auto flex h-[calc(100vh-8.5rem)] min-h-[580px] max-w-[1040px] flex-col rounded-3xl border border-gray-200/80 bg-chaybook-container/40 p-3 shadow-xs backdrop-blur-xs sm:p-5">
+    <div className="w-full bg-chaybook-bg px-3 py-3 sm:px-6 sm:py-6 lg:py-8">
+      <div className="mx-auto flex h-[calc(100dvh-5.5rem)] min-h-[460px] max-w-[1040px] flex-col rounded-2xl border border-gray-200/80 bg-chaybook-container/40 p-3 shadow-xs backdrop-blur-xs sm:h-[calc(100vh-8.5rem)] sm:min-h-[580px] sm:rounded-3xl sm:p-5">
         {/* AI Header */}
         <AIHeader
           onReset={handleReset}

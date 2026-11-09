@@ -190,7 +190,7 @@ function CreatePostModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* ================= HEADER ================= */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-chaybook-primary/10">
               <Leaf size={21} className="text-chaybook-primary" />
@@ -233,7 +233,7 @@ function CreatePostModal({
           noValidate
           className="flex-1 overflow-y-auto"
         >
-          <fieldset disabled={isSubmitting} className="space-y-5 px-6 py-6">
+          <fieldset disabled={isSubmitting} className="space-y-5 px-4 py-4 sm:px-6 sm:py-6">
             {/* Title */}
             <div>
               <label
@@ -464,7 +464,7 @@ function CreatePostModal({
           </fieldset>
 
           {/* ================= FOOTER ================= */}
-          <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
+          <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/70 px-4 py-3.5 sm:px-6 sm:py-4">
             <button
               type="button"
               onClick={handleClose}

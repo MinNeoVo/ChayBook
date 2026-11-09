@@ -121,7 +121,9 @@ public class SecurityConfig {
 
                                                 .requestMatchers(
                                                                 "/api/posts",
-                                                                "/api/posts/**")
+                                                                "/api/posts/**",
+                                                                "/api/notifications",
+                                                                "/api/notifications/**")
                                                 .hasAnyRole("USER", "ADMIN")
 
                                                 .anyRequest().authenticated())

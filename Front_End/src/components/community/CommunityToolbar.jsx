@@ -37,15 +37,15 @@ function CommunityToolbar({
           type="button"
           size="md"
           onClick={onCreatePost}
-          className="whitespace-nowrap"
+          className="w-full whitespace-nowrap sm:w-auto"
         >
-          <span className="flex items-center gap-2">
+          <span className="flex items-center justify-center gap-2">
             <Plus size={20} />
             Tạo bài viết
           </span>
         </Button>
 
-        <div className="hidden h-8 w-px bg-gray-200 sm:block" />
+        <div className="hidden h-8 w-px bg-gray-200 lg:block" />
       </div>
 
       {/* Right */}
@@ -60,7 +60,7 @@ function CommunityToolbar({
                     lg:justify-end
                 "
       >
-        <div className="min-w-[200px] flex-1">
+        <div className="w-full min-w-[200px] sm:flex-1">
           <Input
             icon={Search}
             placeholder="Tìm bài viết, công thức, nguyên liệu..."
@@ -74,13 +74,14 @@ function CommunityToolbar({
           />
         </div>
 
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={categoryLoading}
             className="
     h-10
+    w-full
     appearance-none
     rounded-lg
     bg-[#f1f4f1]
@@ -91,6 +92,7 @@ function CommunityToolbar({
     font-semibold
     text-gray-700
     outline-none
+    sm:w-auto
   "
           >
             <option value="all">Tất cả bài viết</option>
@@ -117,12 +119,13 @@ function CommunityToolbar({
           <p className="text-xs text-red-500">{categoryError}</p>
         )}
 
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
             className="
                             h-10
+                            w-full
                             appearance-none
                             rounded-lg
                             bg-[#f1f4f1]
@@ -133,6 +136,7 @@ function CommunityToolbar({
                             font-semibold
                             text-gray-700
                             outline-none
+                            sm:w-auto
                         "
           >
             <option value="latest">Mới nhất</option>

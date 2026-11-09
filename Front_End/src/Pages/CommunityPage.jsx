@@ -441,7 +441,7 @@ function CommunityPage() {
   // 9. Giao diện
   return (
     <div className="min-h-screen bg-[#f7faf7] text-on-surface">
-      <main className="w-full pt-20">
+      <main className="w-full pt-6 sm:pt-10">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-16 sm:px-6 lg:px-12">
           <CommunityHeader />
 

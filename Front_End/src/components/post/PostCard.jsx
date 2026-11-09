@@ -60,7 +60,7 @@ function PostCard({
   const isPending = normalizedStatus === "PENDING";
 
   return (
-    <article className="flex flex-col gap-4 rounded-2xl bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+    <article className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       {/* ================= AUTHOR HEADER ================= */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">

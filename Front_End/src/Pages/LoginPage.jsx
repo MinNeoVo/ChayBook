@@ -33,8 +33,8 @@ function LoginPage() {
       )}
 
       {/* LOGIN CARD */}
-      <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-        <h1 className="mb-2 text-center text-3xl font-bold text-gray-800">
+      <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+        <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
           Chào mừng bạn trở lại!
         </h1>
 

@@ -31,8 +31,8 @@ export default function VerifyResetOtpForm() {
   };
 
   if (!email) return null;
-  return <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
-    <h1 className="mb-2 text-center text-3xl font-bold text-gray-800">Xác thực OTP</h1>
+  return <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+    <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 sm:text-3xl">Xác thực OTP</h1>
     <p className="mb-6 text-center text-sm text-gray-500">Nhập mã gồm 6 chữ số đã gửi đến {email}. Mã có hiệu lực trong 10 phút.</p>
     {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
     <form className="space-y-4" onSubmit={submit}>
