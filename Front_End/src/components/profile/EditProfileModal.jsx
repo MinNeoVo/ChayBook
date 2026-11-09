@@ -363,7 +363,7 @@ function EditProfileModal({ profile, onClose, onSaved }) {
                 <p className="text-sm font-semibold text-gray-700 mb-1">
                   Email
                 </p>
-                <p className="text-sm text-gray-500 bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-100">
+                <p className="break-all rounded-xl border border-gray-100 bg-gray-50 px-4 py-2.5 text-sm text-gray-500">
                   {profile.email}
                   <span className="ml-2 text-xs text-gray-400">
                     (không thể thay đổi)

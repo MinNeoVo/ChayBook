@@ -513,7 +513,7 @@ function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
-        <main className="w-full pt-20 bg-[#f7faf7]">
+        <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
           <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 rounded-2xl p-8">
             <Loader2 className="h-8 w-8 animate-spin text-chaybook-primary" />
             <p className="text-sm font-medium text-gray-500">
@@ -529,7 +529,7 @@ function ProfilePage() {
   if (error) {
     return (
       <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
-        <main className="w-full pt-20 bg-[#f7faf7]">
+        <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl p-8 text-center">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
@@ -562,7 +562,7 @@ function ProfilePage() {
       antialiased
     "
     >
-      <main className="w-full pt-20 bg-[#f7faf7]">
+      <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
         {/* ================= PROFILE HEADER ================= */}
         <ProfileHeader
           profile={profile}

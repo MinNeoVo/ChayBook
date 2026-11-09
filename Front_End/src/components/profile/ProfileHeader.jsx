@@ -118,11 +118,12 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
           <div
             className="
             relative z-10
-            mx-3 -mt-16
+            mx-2 -mt-14
             rounded-2xl
             bg-white
-            p-6
+            p-4
             shadow-sm
+            sm:mx-3 sm:-mt-16 sm:p-6
             md:-mt-20 md:mx-6 md:p-8
           "
           >
@@ -206,7 +207,7 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
                   </div>
 
                   {/* Username */}
-                  <p className="text-sm text-gray-600">
+                  <p className="break-all text-sm text-gray-600 sm:break-normal">
                     @{username} • {profile?.email || ""}
                   </p>
 
@@ -266,12 +267,12 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
               </div>
 
               {/* Actions */}
-              <div className="flex w-full items-center gap-2 md:w-auto">
+              <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap md:w-auto">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="flex-1 md:flex-none"
+                  className="w-full sm:flex-1 md:w-auto md:flex-none"
                   onClick={() => setShowChangePasswordModal(true)}
                   disabled={!profile?.userId || !profile?.email}
                 >
@@ -284,7 +285,7 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
                   type="button"
                   variant="secondary"
                   size="sm"
-                  className="flex-1 md:flex-none"
+                  className="w-full sm:flex-1 md:w-auto md:flex-none"
                   onClick={() => setShowEditModal(true)}
                 >
                   <span className="flex items-center justify-center gap-1.5">
@@ -296,7 +297,7 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
                 <Button
                   type="button"
                   size="sm"
-                  className="flex-1 md:flex-none"
+                  className="w-full sm:flex-1 md:w-auto md:flex-none"
                   onClick={onCreatePost}
                 >
                   <span className="flex items-center justify-center gap-1.5">

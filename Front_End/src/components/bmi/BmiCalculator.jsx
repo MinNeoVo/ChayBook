@@ -90,11 +90,11 @@ function BmiCalculator() {
         </p>
       )}
 
-      <div className="flex items-center justify-between rounded-xl bg-chaybook-container p-4">
+      <div className="flex flex-col gap-3 rounded-xl bg-chaybook-container p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">Kết quả BMI của bạn</span>
 
-          <div className="flex items-baseline gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-2xl font-bold text-chaybook-primary">
               {loading && !bmiRecord
                 ? "Đang tải..."
@@ -109,7 +109,7 @@ function BmiCalculator() {
 
         <Link
           to="/bmi"
-          className="flex items-center gap-1 text-xs font-semibold text-chaybook-primary hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-chaybook-primary hover:underline"
         >
           Xem phân tích chi tiết
           <ChevronRight className="h-3.5 w-3.5" />

@@ -14,7 +14,7 @@ function UserLayout() {
     >
       <Navbar />
 
-      <main className={`${isArticleDetail ? "" : "flex-1"} w-full`}>
+      <main className={`${isArticleDetail ? "" : "flex-1"} min-w-0 w-full overflow-x-hidden`}>
         <Outlet />
       </main>
 

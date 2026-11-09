@@ -91,7 +91,7 @@ export function AdminRecipeListPage() {
     </section>
     <AdminRequestState {...resource} onRetry={resource.retry} />
     {result && <section className={`${PANEL} overflow-x-auto`}>
-      <table className="w-full text-left text-sm">
+      <table className="w-full min-w-[640px] text-left text-sm">
         <thead><tr className="border-b text-slate-500"><th className="p-3">Công thức</th><th className="p-3">Danh mục</th><th className="p-3">Trạng thái</th><th className="p-3">Thao tác</th></tr></thead>
         <tbody>{result.items.length ? result.items.map((recipe) => <tr className="border-b border-slate-100" key={recipe.recipeId}>
           <td className="p-3"><div className="flex items-center gap-3"><RecipeImage {...recipe} /><span className="font-semibold">#{recipe.recipeId} · {recipe.name}</span></div></td>
@@ -307,7 +307,7 @@ function RecipeForm({ recipe }) {
         </label>
         <p id="recipe-image-help" className="text-sm text-slate-500">Chọn ảnh tối đa 50 MB. Ảnh sẽ được tải lên khi lưu công thức. Không chọn ảnh mới để giữ ảnh hiện tại.</p>
         <p id="recipe-image-error" role={imageError ? "alert" : undefined} className="text-sm text-red-600">{imageError}</p>
-        {previewUrl ? <img src={previewUrl} alt="Ảnh xem trước công thức" className="h-40 w-56 rounded-lg object-cover" /> : <RecipeImage imageUrl={values.imageUrl} name={values.name} />}
+        {previewUrl ? <img src={previewUrl} alt="Ảnh xem trước công thức" className="h-40 w-full max-w-56 rounded-lg object-cover" /> : <RecipeImage imageUrl={values.imageUrl} name={values.name} />}
         {(imageFile || imageError) && <button type="button" className="text-sm text-emerald-700 underline" onClick={clearImageSelection}>Bỏ ảnh đã chọn</button>}
         <div className="grid gap-4 sm:grid-cols-2">{[["prepTime", "Thời gian chuẩn bị (phút)"], ["cookTime", "Thời gian nấu (phút)"]].map(([field, label]) => <label key={field} className="text-sm font-medium">{label} *<input className={FIELD} type="number" min={0} max={2147483647} step={1} required value={values[field]} onChange={(event) => change(field, event.target.value)} /></label>)}</div>
         <>
@@ -357,11 +357,11 @@ function RecipeForm({ recipe }) {
           </select></label>
           <label className="text-sm">Số lượng<input className={FIELD} type="number" min="0.000001" step="any" required value={item.quantity} onChange={(event) => changeIngredient(index, "quantity", event.target.value)} /></label>
           <label className="text-sm">Đơn vị<input className={FIELD} required maxLength={50} value={item.unit} onChange={(event) => changeIngredient(index, "unit", event.target.value)} /></label>
-          <button type="button" className="self-end rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50" disabled={values.ingredients.length === 1} onClick={() => change("ingredients", values.ingredients.filter((_, position) => index !== position))}>Xóa</button>
+          <button type="button" className="w-full self-end rounded-lg border border-slate-300 px-3 py-2 text-sm disabled:opacity-50 sm:w-auto" disabled={values.ingredients.length === 1} onClick={() => change("ingredients", values.ingredients.filter((_, position) => index !== position))}>Xóa</button>
         </div>)}
         <button type="button" className={BUTTON} onClick={() => change("ingredients", [...values.ingredients, { ingredientId: "", quantity: "", unit: "" }])}>Thêm nguyên liệu</button>
       </fieldset>
-      <div className="flex gap-3"><button className={BUTTON} type="submit" disabled={saving || Boolean(imageError) || ingredients.loading || Boolean(ingredients.error)}>{uploading ? "Đang tải ảnh…" : saving ? "Đang lưu…" : "Lưu công thức"}</button><button type="button" className="rounded-lg border border-slate-300 px-4 py-2 text-sm" disabled={saving} onClick={cancel}>Hủy</button></div>
+      <div className="flex flex-wrap gap-3"><button className={BUTTON} type="submit" disabled={saving || Boolean(imageError) || ingredients.loading || Boolean(ingredients.error)}>{uploading ? "Đang tải ảnh…" : saving ? "Đang lưu…" : "Lưu công thức"}</button><button type="button" className="rounded-lg border border-slate-300 px-4 py-2 text-sm" disabled={saving} onClick={cancel}>Hủy</button></div>
     </form>
   </>;
 }

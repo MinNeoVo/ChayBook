@@ -16,10 +16,11 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../context/useAuth";
+import NotificationBell from "../components/common/NotificationBell";
 
 function AdminLayout() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
@@ -155,23 +156,41 @@ function AdminLayout() {
       </aside>
 
       <div className="min-h-screen md:pl-64">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-          <button
-            type="button"
-            aria-label={sidebarOpen ? "Đóng menu quản trị" : "Mở menu quản trị"}
-            aria-expanded={sidebarOpen}
-            onClick={() => setSidebarOpen((open) => !open)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            {sidebarOpen ? (
-              <X aria-hidden="true" size={19} />
-            ) : (
-              <Menu aria-hidden="true" size={19} />
-            )}
-          </button>
-          <div>
-            <p className="text-sm font-bold text-slate-900">ChayBook Admin</p>
-            <p className="text-xs text-slate-500">Quản trị</p>
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label={
+                sidebarOpen ? "Đóng menu quản trị" : "Mở menu quản trị"
+              }
+              aria-expanded={sidebarOpen}
+              onClick={() => setSidebarOpen((open) => !open)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition-colors hover:bg-slate-50 md:hidden"
+            >
+              {sidebarOpen ? (
+                <X aria-hidden="true" size={19} />
+              ) : (
+                <Menu aria-hidden="true" size={19} />
+              )}
+            </button>
+            <div>
+              <p className="text-sm font-bold text-slate-900">ChayBook Admin</p>
+              <p className="text-xs text-slate-500">
+                Bảng quản trị hệ thống
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <div className="hidden text-right sm:block">
+              <p className="text-xs font-bold text-slate-800">
+                {user?.fullName || user?.username || "Quản trị viên"}
+              </p>
+              <p className="text-[11px] font-medium text-emerald-700">
+                ADMIN
+              </p>
+            </div>
           </div>
         </header>
         <main className="min-w-0 px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

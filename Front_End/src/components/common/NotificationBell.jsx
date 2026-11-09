@@ -235,7 +235,7 @@ function NotificationBell() {
         <div
           role="dialog"
           aria-label="Danh sách thông báo"
-          className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl sm:w-96"
+          className="fixed inset-x-3 top-[4.25rem] z-50 max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-96"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3.5">

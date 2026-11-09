@@ -126,16 +126,16 @@ function HomePage() {
               {/* LEFT */}
               <div className="flex flex-col items-start gap-6 lg:col-span-7">
                 {/* Trust */}
-                <div className="inline-flex flex-wrap items-center gap-2 rounded-full bg-chaybook-container px-3.5 py-1.5 shadow-sm">
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-2xl bg-chaybook-container px-3.5 py-2 shadow-sm sm:rounded-full sm:py-1.5">
                   <span className="flex items-center gap-1.5 text-xs font-bold text-chaybook-primary">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-chaybook-primary" />
+                    <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-chaybook-primary" />
                     Hơn 25.000 công thức và cẩm nang đã kiểm duyệt
                   </span>
 
-                  <span className="h-1 w-1 rounded-full bg-gray-400" />
+                  <span className="hidden h-1 w-1 rounded-full bg-gray-400 sm:inline-block" />
 
                   <span className="flex items-center gap-1 text-xs text-gray-600">
-                    <Star className="h-3.5 w-3.5 fill-current text-amber-500" />
+                    <Star className="h-3.5 w-3.5 shrink-0 fill-current text-amber-500" />
                     <span className="font-bold text-gray-900">4.9/5</span>
                     từ hơn 12.000 người ăn thực vật
                   </span>
@@ -143,7 +143,7 @@ function HomePage() {
 
                 {/* Heading */}
                 <div className="flex flex-col gap-2">
-                  <h1 className="text-4xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-[48px]">
+                  <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl lg:text-[48px]">
                     Ăn ngon hơn.
                     <br />
                     <span className="text-chaybook-primary">
@@ -162,29 +162,29 @@ function HomePage() {
                   <Link to="/ai-assistant">
                     <Button
                       type="button"
-                      className="flex h-12 w-full items-center justify-center gap-2 px-6 sm:w-auto"
+                      className="flex min-h-12 w-full items-center justify-center gap-2 px-4 py-2.5 text-center sm:w-auto sm:px-6"
                     >
-                      <Bot className="h-5 w-5" />
-                      Trò chuyện với chuyên gia dinh dưỡng AI
+                      <Bot className="h-5 w-5 shrink-0" />
+                      <span>Trò chuyện với chuyên gia dinh dưỡng AI</span>
                     </Button>
                   </Link>
 
-                  <Link to="#featured-recipes">
+                  <Link to="/recipes">
                     <Button
                       type="button"
                       variant="secondary"
-                      className="flex h-12 w-full items-center justify-center gap-2 px-6 sm:w-auto"
+                      className="flex min-h-12 w-full items-center justify-center gap-2 px-4 py-2.5 text-center sm:w-auto sm:px-6"
                     >
-                      <Utensils className="h-5 w-5" />
-                      Khám phá công thức lành mạnh
+                      <Utensils className="h-5 w-5 shrink-0" />
+                      <span>Khám phá công thức lành mạnh</span>
                     </Button>
                   </Link>
                 </div>
 
                 {/* Metrics */}
-                <div className="grid w-full max-w-lg grid-cols-3 gap-4 pt-4">
+                <div className="grid w-full max-w-lg grid-cols-3 gap-2 pt-4 sm:gap-4">
                   <div className="flex flex-col">
-                    <span className="text-2xl font-bold tracking-tight">
+                    <span className="text-xl font-bold tracking-tight sm:text-2xl">
                       100%
                     </span>
 
@@ -194,7 +194,7 @@ function HomePage() {
                   </div>
 
                   <div className="flex flex-col">
-                    <span className="text-2xl font-bold tracking-tight">
+                    <span className="text-xl font-bold tracking-tight sm:text-2xl">
                       28g+
                     </span>
 
@@ -204,7 +204,7 @@ function HomePage() {
                   </div>
 
                   <div className="flex flex-col">
-                    <span className="text-2xl font-bold tracking-tight">
+                    <span className="text-xl font-bold tracking-tight sm:text-2xl">
                       0 min
                     </span>
 
@@ -218,7 +218,7 @@ function HomePage() {
               {/* RIGHT IMAGE */}
               <div className="relative mt-4 lg:col-span-5 lg:mt-0">
                 <div className="overflow-hidden rounded-2xl bg-white p-2 shadow-xl">
-                  <div className="relative h-[420px] overflow-hidden rounded-xl sm:h-[460px]">
+                  <div className="relative h-[320px] overflow-hidden rounded-xl sm:h-[420px] lg:h-[460px]">
                     <img
                       src={posts[0]?.image}
                       alt={posts[0]?.imageAlt || "Bữa ăn chay lành mạnh"}
@@ -228,10 +228,10 @@ function HomePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
                     {/* Dish label */}
-                    <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-md">
-                      <span className="h-2 w-2 rounded-full bg-chaybook-primary" />
+                    <div className="absolute bottom-4 left-4 right-4 flex w-fit max-w-[calc(100%-2rem)] items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-md">
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-chaybook-primary" />
 
-                      <span className="text-xs font-semibold text-gray-900">
+                      <span className="truncate text-xs font-semibold text-gray-900">
                         {posts[0]?.title || "Tô món chay lành mạnh"}
                       </span>
                     </div>
@@ -239,9 +239,9 @@ function HomePage() {
                 </div>
 
                 {/* AI Widget */}
-                <div className="absolute -left-4 -top-4 max-w-[240px] rounded-xl bg-white/95 p-3.5 shadow-lg backdrop-blur-md sm:-left-8">
+                <div className="absolute left-2 top-2 max-w-[220px] rounded-xl bg-white/95 p-3 shadow-lg backdrop-blur-md sm:-left-6 sm:-top-4 sm:max-w-[240px] sm:p-3.5">
                   <div className="flex items-center gap-2 pb-1.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-chaybook-secondary-container text-chaybook-primary">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-chaybook-secondary-container text-chaybook-primary">
                       <CheckCircle className="h-4 w-4" />
                     </div>
 
@@ -256,7 +256,7 @@ function HomePage() {
                 </div>
 
                 {/* BMI Widget */}
-                <div className="absolute -bottom-6 -right-2 min-w-[210px] rounded-xl bg-white/95 p-4 shadow-lg backdrop-blur-md sm:-right-6">
+                <div className="absolute -bottom-5 right-2 min-w-[190px] rounded-xl bg-white/95 p-3.5 shadow-lg backdrop-blur-md sm:-bottom-6 sm:-right-6 sm:min-w-[210px] sm:p-4">
                   <div className="flex items-center justify-between gap-3 pb-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
                       Phân tích BMI
@@ -435,9 +435,9 @@ function HomePage() {
             AI + BMI SECTION
         ================================================= */}
 
-        <section className="mx-auto w-full max-w-[1240px] px-4 pb-20 sm:px-6 lg:px-12 lg:pb-24">
-          <div className="rounded-3xl bg-chaybook-container p-6 shadow-sm md:p-10">
-            <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+        <section className="mx-auto w-full max-w-[1240px] px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-20 lg:px-12 lg:pb-24">
+          <div className="rounded-3xl bg-chaybook-container p-5 shadow-sm sm:p-8 md:p-10">
+            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-10">
               {/* AI */}
               <AiQuickAssistant />
 

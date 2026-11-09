@@ -437,8 +437,8 @@ function ContentPage() {
 
   return (
     <div className="min-h-screen bg-chaybook-bg font-sans text-[#181c1b] antialiased">
-      <main className="w-full bg-chaybook-container pt-20">
-        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-12">
+      <main className="w-full bg-chaybook-container pt-4 sm:pt-8">
+        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-6 sm:px-6 sm:pt-8 lg:px-12">
           {/* Hero */}
           <section className="relative z-10 mb-12 flex flex-col items-center text-center sm:mb-16">
             <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#92f5a4] px-3 py-1 text-xs font-semibold tracking-wide text-[#007233]">
@@ -458,7 +458,7 @@ function ContentPage() {
             {/* Search */}
             <form
               onSubmit={(event) => event.preventDefault()}
-              className="mb-6 flex w-full max-w-2xl items-center gap-2 rounded-xl bg-white p-1 shadow-sm focus-within:shadow-md"
+              className="mb-6 flex w-full max-w-2xl flex-col gap-2 rounded-xl bg-white p-2 shadow-sm focus-within:shadow-md sm:flex-row sm:items-center sm:p-1"
             >
               <Input
                 type="search"
@@ -472,7 +472,7 @@ function ContentPage() {
               <Button
                 type="submit"
                 size="md"
-                className="shrink-0 bg-chaybook-primary px-6 hover:bg-chaybook-hover"
+                className="w-full shrink-0 bg-chaybook-primary px-6 hover:bg-chaybook-hover sm:w-auto"
               >
                 Tìm kiếm
               </Button>
