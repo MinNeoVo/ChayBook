@@ -15,7 +15,9 @@ import { updateProfile, uploadAvatar } from "../../services/userServices";
 import { getCurrentUser } from "../../services/authServices";
 import { useAuth } from "../../context/useAuth";
 
-const API_ORIGIN = "http://localhost:8080";
+import API_BASE_URL from "../../services/app";
+
+const API_ORIGIN = new URL(API_BASE_URL).origin;
 
 /**
  * Chuẩn hóa avatar URL – nếu là relative path thì thêm origin.
