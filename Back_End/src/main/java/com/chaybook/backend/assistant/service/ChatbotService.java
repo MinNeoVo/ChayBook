@@ -13,7 +13,6 @@ import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import java.text.Normalizer;
@@ -155,23 +154,6 @@ public class ChatbotService {
                         conversation.getCreatedAt(),
                         conversation.getUpdatedAt()))
                 .toList();
-    }
-
-    @Transactional
-    public void deleteUserConversationHistory(Integer userId) {
-        messageRepository.deleteAllForUser(userId);
-        conversationRepository.deleteByUserUserId(userId);
-    }
-
-    @Transactional
-    public void deleteUserConversation(Integer userId, Integer conversationId) {
-        AiConversation conversation = conversationRepository
-                .findByConversationIdAndUserUserId(conversationId, userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy hội thoại."));
-        messageRepository.deleteByConversationConversationId(conversation.getConversationId());
-        conversationRepository.delete(conversation);
     }
 
     public List<ChatHistoryMessageResponse> getConversationMessages(

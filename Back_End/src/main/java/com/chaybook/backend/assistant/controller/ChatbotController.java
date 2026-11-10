@@ -35,22 +35,6 @@ public class ChatbotController {
                 chatbotService.getUserConversations(userId));
     }
 
-    @DeleteMapping("/conversations")
-    public ResponseEntity<Void> deleteConversationHistory(@AuthenticationPrincipal Jwt jwt) {
-        Integer userId = requireUserId(jwt);
-        chatbotService.deleteUserConversationHistory(userId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/conversations/{conversationId}")
-    public ResponseEntity<Void> deleteConversation(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable Integer conversationId) {
-        Integer userId = requireUserId(jwt);
-        chatbotService.deleteUserConversation(userId, conversationId);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/conversations/{conversationId}/messages")
     public ResponseEntity<List<ChatHistoryMessageResponse>> getConversationMessages(
             @AuthenticationPrincipal Jwt jwt,

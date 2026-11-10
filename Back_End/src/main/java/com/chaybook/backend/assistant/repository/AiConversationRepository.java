@@ -11,6 +11,4 @@ public interface AiConversationRepository extends JpaRepository<AiConversation, 
     List<AiConversation> findByUserUserIdOrderByUpdatedAtDesc(Integer userId);
 
     Optional<AiConversation> findByConversationIdAndUserUserId(Integer conversationId, Integer userId);
-
-    void deleteByUserUserId(Integer userId);
 }

@@ -58,16 +58,6 @@ export async function getAIConversations() {
   return apiFetch("/chatbot/conversations");
 }
 
-/** Deletes all saved conversations belonging to the signed-in user. */
-export async function deleteAIConversationHistory() {
-  return apiFetch("/chatbot/conversations", { method: "DELETE" });
-}
-
-/** Deletes one saved conversation belonging to the signed-in user. */
-export async function deleteAIConversation(conversationId) {
-  return apiFetch(`/chatbot/conversations/${conversationId}`, { method: "DELETE" });
-}
-
 /**
  * Loads and converts a conversation's messages to the format used by chat UI.
  * Expected message fields: messageId, sender, message, createdAt.
