@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+
 function Input({
   label,
   type = "text",
@@ -8,8 +11,13 @@ function Input({
   error,
   name,
   className = "",
+  allowTogglePassword = true,
   ...props
 }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPasswordType = type === "password";
+  const actualType = isPasswordType && showPassword ? "text" : type;
+
   return (
     <div className="space-y-1 w-full">
       {label && (
@@ -26,7 +34,7 @@ function Input({
         )}
 
         <input
-          type={type}
+          type={actualType}
           name={name}
           value={value}
           onChange={onChange}
@@ -34,7 +42,7 @@ function Input({
           className={`
                         w-full
                         ${Icon ? "pl-10" : "px-4"}
-                        pr-4
+                        ${isPasswordType && allowTogglePassword ? "pr-10" : "pr-4"}
                         py-2.5
                         rounded-xl
                         border
@@ -55,6 +63,22 @@ function Input({
                     `}
           {...props}
         />
+
+        {isPasswordType && allowTogglePassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3.5 text-gray-400 hover:text-gray-600 focus:outline-none flex items-center justify-center p-0.5 rounded transition-colors"
+            tabIndex={-1}
+            aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          >
+            {showPassword ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Error message */}
