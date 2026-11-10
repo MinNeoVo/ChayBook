@@ -14,6 +14,7 @@ import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.text.Normalizer;
 import java.util.List;
@@ -175,6 +176,18 @@ public class ChatbotService {
                         message.getMessage(),
                         message.getCreatedAt()))
                 .toList();
+    }
+
+    @Transactional
+    public void deleteConversation(Integer userId, Integer conversationId) {
+        AiConversation conversation = conversationRepository
+                .findByConversationIdAndUserUserId(conversationId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy hội thoại."));
+
+        messageRepository.deleteByConversationConversationId(conversation.getConversationId());
+        conversationRepository.delete(conversation);
     }
 
     private List<Recipe> findRelevantRecipes(String userMessage) {

@@ -82,3 +82,13 @@ export async function getAIConversationMessages(conversationId) {
     createdAt: message.createdAt,
   }));
 }
+
+export function deleteAIConversation(conversationId) {
+  if (!conversationId) {
+    throw new Error("conversationId là bắt buộc để xóa hội thoại.");
+  }
+
+  return apiFetch(`/chatbot/conversations/${conversationId}`, {
+    method: "DELETE",
+  });
+}

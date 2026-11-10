@@ -7,12 +7,13 @@ import SuggestionChips from "../components/ai/SuggestionChips";
 
 import { useAuth } from "../context/useAuth";
 
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import {
   sendAIMessage,
   getAIConversations,
   getAIConversationMessages,
+  deleteAIConversation,
 } from "../services/aiAssistantService";
 
 function AIAssistantPage() {
@@ -27,6 +28,7 @@ function AIAssistantPage() {
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [loadingConversationId, setLoadingConversationId] = useState(null);
+  const [deletingConversationId, setDeletingConversationId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState(null);
   const [lastUserPrompt, setLastUserPrompt] = useState("");
@@ -59,7 +61,7 @@ function AIAssistantPage() {
   };
 
   const handleSelectConversation = async (conversation) => {
-    if (isTyping) return;
+    if (isTyping || deletingConversationId !== null) return;
 
     const id = conversation.conversationId;
     setLoadingConversationId(id);
@@ -76,6 +78,39 @@ function AIAssistantPage() {
       setHistoryError(err.message || "Không tải được tin nhắn của hội thoại.");
     } finally {
       setLoadingConversationId(null);
+    }
+  };
+
+  const handleDeleteConversation = async (conversation) => {
+    if (isTyping || loadingConversationId !== null || deletingConversationId !== null) {
+      return;
+    }
+
+    const title = conversation.title || `Hội thoại #${conversation.conversationId}`;
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn xóa "${title}" và toàn bộ tin nhắn trong hội thoại này không?`,
+    );
+    if (!confirmed) return;
+
+    setDeletingConversationId(conversation.conversationId);
+    setHistoryError("");
+
+    try {
+      await deleteAIConversation(conversation.conversationId);
+      setConversations((current) =>
+        current.filter((item) => item.conversationId !== conversation.conversationId),
+      );
+
+      if (conversationId === conversation.conversationId) {
+        setConversationId(null);
+        setMessages([]);
+        setError(null);
+        setLastUserPrompt("");
+      }
+    } catch (err) {
+      setHistoryError(err.message || "Không thể xóa hội thoại.");
+    } finally {
+      setDeletingConversationId(null);
     }
   };
 
@@ -283,30 +318,48 @@ function AIAssistantPage() {
 
               {!isHistoryLoading &&
                 !historyError &&
-                conversations.map((conversation) => (
-                  <button
-                    key={conversation.conversationId}
-                    type="button"
-                    onClick={() => handleSelectConversation(conversation)}
-                    disabled={isTyping || loadingConversationId !== null}
-                    className="w-full rounded-xl border border-gray-100 bg-gray-50 p-3 text-left transition-colors hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
-                  >
-                    <p className="text-sm font-semibold text-gray-800">
-                      {conversation.title ||
-                        `Hội thoại #${conversation.conversationId}`}
-                    </p>
+                conversations.map((conversation) => {
+                  const isDeleting = deletingConversationId === conversation.conversationId;
+                  const isDisabled = isTyping || loadingConversationId !== null || deletingConversationId !== null;
 
-                    <span className="text-xs text-gray-500">
-                      {loadingConversationId === conversation.conversationId
-                        ? "Đang tải tin nhắn..."
-                        : conversation.updatedAt
-                          ? new Date(
-                            conversation.updatedAt,
-                          ).toLocaleString("vi-VN")
-                          : ""}
-                    </span>
-                  </button>
-                ))}
+                  return (
+                    <div
+                      key={conversation.conversationId}
+                      className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-2 transition-colors hover:border-emerald-200 hover:bg-emerald-50"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleSelectConversation(conversation)}
+                        disabled={isDisabled}
+                        className="min-w-0 flex-1 rounded-lg p-1 text-left disabled:cursor-wait disabled:opacity-60"
+                      >
+                        <p className="truncate text-sm font-semibold text-gray-800">
+                          {conversation.title ||
+                            `Hội thoại #${conversation.conversationId}`}
+                        </p>
+
+                        <span className="text-xs text-gray-500">
+                          {loadingConversationId === conversation.conversationId
+                            ? "Đang tải tin nhắn..."
+                            : conversation.updatedAt
+                              ? new Date(conversation.updatedAt).toLocaleString("vi-VN")
+                              : ""}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteConversation(conversation)}
+                        disabled={isDisabled}
+                        aria-label={`Xóa hội thoại ${conversation.title || conversation.conversationId}`}
+                        title={isDeleting ? "Đang xóa hội thoại..." : "Xóa hội thoại"}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
             </div>
 
             <div className="flex shrink-0 justify-end border-t border-gray-100 p-5 pt-3">

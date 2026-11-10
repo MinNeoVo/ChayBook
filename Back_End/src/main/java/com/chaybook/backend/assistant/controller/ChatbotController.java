@@ -44,6 +44,15 @@ public class ChatbotController {
                 chatbotService.getConversationMessages(userId, conversationId));
     }
 
+    @DeleteMapping("/conversations/{conversationId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteConversation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Integer conversationId) {
+        Integer userId = requireUserId(jwt);
+        chatbotService.deleteConversation(userId, conversationId);
+    }
+
     private Integer requireUserId(Jwt jwt) {
         if (jwt == null) {
             throw new ResponseStatusException(

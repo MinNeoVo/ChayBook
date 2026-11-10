@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AiMessageRepository extends JpaRepository<AiMessage, Integer> {
     List<AiMessage> findByConversationConversationIdOrderByCreatedAtAsc(Integer conversationId);
+
+    void deleteByConversationConversationId(Integer conversationId);
 }
