@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/posts/{postId}/interactions")
 @CrossOrigin(
-        origins = "http://localhost:5173",
+        origins = {"http://localhost:5173", "https://chay-book.vercel.app"},
         allowCredentials = "true"
 )
 public class PostInteractionController {
