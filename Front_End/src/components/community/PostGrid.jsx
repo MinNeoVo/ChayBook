@@ -19,7 +19,8 @@ function PostGrid({ posts, onLike, onBookmark, onComment }) {
             : post.time || "Vừa xong",
           author: {
             name: post.username ?? post.author?.name ?? "Thành viên ChayBook",
-            avatar: post.avatarUrl ?? post.author?.avatar,
+            fullName: post.username ?? post.author?.name ?? "Thành viên ChayBook",
+            avatarUrl: post.avatarUrl ?? post.author?.avatarUrl,
             initials: (post.username || post.author?.name || "CB")
               .slice(0, 2)
               .toUpperCase(),

@@ -27,11 +27,30 @@ public record RecipeWriteRequest(
         @PositiveOrZero
         Integer cookTime,
 
+        @NotNull
+        @Positive
+        Integer servings,
+
+        @NotBlank
+        @Size(max = 50)
+        String difficulty,
+
         @NotBlank
         String instructions,
+
+        @PositiveOrZero
+        Double calories,
+
+        @PositiveOrZero
+        Double protein,
+
+        @PositiveOrZero
+        Double carbs,
+
+        @PositiveOrZero
+        Double fat,
 
         @NotEmpty
         List<@NotNull @Valid RecipeIngredientRequest> ingredients
 ) {
-
 }

@@ -11,10 +11,10 @@ function TypingIndicator() {
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2 px-1 text-xs">
           <span className="font-semibold text-gray-900">
-            AI Nutrition Assistant
+            Trợ lý dinh dưỡng AI
           </span>
           <span className="text-gray-400">•</span>
-          <span className="text-gray-400">Thinking...</span>
+          <span className="text-gray-400">Đang suy nghĩ...</span>
         </div>
 
         {/* Typing Dots Bubble */}
@@ -22,7 +22,7 @@ function TypingIndicator() {
           <span className="h-2 w-2 rounded-full bg-chaybook-primary/70 animate-bounce [animation-delay:-0.3s]" />
           <span className="h-2 w-2 rounded-full bg-chaybook-primary/70 animate-bounce [animation-delay:-0.15s]" />
           <span className="h-2 w-2 rounded-full bg-chaybook-primary/70 animate-bounce" />
-          <span className="ml-1.5 text-xs text-gray-500 font-medium">ChayBot is composing guidance</span>
+          <span className="ml-1.5 text-xs text-gray-500 font-medium">ChayBot đang chuẩn bị câu trả lời</span>
         </div>
       </div>
     </div>

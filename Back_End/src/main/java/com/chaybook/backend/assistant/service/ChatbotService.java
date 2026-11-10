@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import com.chaybook.backend.assistant.dto.ChatConversationResponse;
 import com.chaybook.backend.assistant.dto.ChatHistoryMessageResponse;
@@ -44,22 +46,23 @@ public class ChatbotService {
 
     // Đổi chữ ký hàm ở đầu ChatbotService
     public ChatMessageResponse sendMessage(Integer userId, String guestId, ChatMessageRequest request) {
+        boolean guestRequest = userId == null;
+        if (guestRequest && !trialLimiter.tryAcquire(guestId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục.");
+        }
+
         try {
             Integer conversationId = request.getConversationId();
             String userMessage = request.getMessage();
-
-            // 1. Kiểm tra giới hạn dùng thử nếu là Guest
-            if (userId == null) {
-                if (!trialLimiter.isAllowed(guestId)) {
-                    throw new RuntimeException("Bạn đã hết lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục.");
-                }
-            }
 
             // 2. Lấy hoặc tạo Conversation VÀ CHẶN IDOR
             AiConversation conversation;
             if (conversationId != null) {
                 conversation = conversationRepository.findById(conversationId)
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "Không tìm thấy hội thoại (Conversation ID: " + conversationId + ")"));
 
                 // --- KIỂM TRA IDOR (BẢO MẬT) ---
@@ -69,12 +72,16 @@ public class ChatbotService {
                     // User đã đăng nhập không được truy cập hội thoại của người khác hoặc hội thoại
                     // của guest
                     if (ownerId == null || !ownerId.equals(userId)) {
-                        throw new RuntimeException("Lỗi bảo mật (IDOR): Bạn không có quyền truy cập hội thoại này.");
+                        throw new ResponseStatusException(
+                                HttpStatus.FORBIDDEN,
+                                "Bạn không có quyền truy cập hội thoại này.");
                     }
                 } else {
                     // Guest không được truy cập hội thoại của người dùng đã đăng nhập
                     if (ownerId != null) {
-                        throw new RuntimeException("Lỗi bảo mật: Khách không thể truy cập hội thoại của người dùng.");
+                        throw new ResponseStatusException(
+                                HttpStatus.FORBIDDEN,
+                                "Khách không thể truy cập hội thoại của người dùng.");
                     }
                 }
                 // ---------------------------------
@@ -83,7 +90,9 @@ public class ChatbotService {
                 conversation = new AiConversation();
                 if (userId != null) {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("Không tìm thấy User (User ID: " + userId + ")"));
+                            .orElseThrow(() -> new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "Không tìm thấy tài khoản người dùng."));
                     conversation.setUser(user);
                 }
                 conversation.setTitle(generateTitle(userMessage));
@@ -97,14 +106,22 @@ public class ChatbotService {
             userMsg.setMessage(userMessage);
             messageRepository.save(userMsg);
 
-            // 4. RAG - Tìm Recipe liên quan
-            String contextData = findRelevantContext(userMessage);
+            String aiReply;
+            if (isMealPlanRequest(userMessage)) {
+                aiReply = "Bạn có thể tạo thực đơn tại trang sau:\n\n"
+                        + "[Đi đến trang tạo thực đơn](/meal-plan)";
+            } else {
+                // 4. Tìm recipe được nhắc đến để bổ sung dữ liệu và link thật từ database.
+                List<Recipe> relatedRecipes = findRelevantRecipes(userMessage);
+                String contextData = buildRecipeContext(relatedRecipes);
 
-            // 5. Ghép Prompt với Guardrails
-            String fullPrompt = buildPrompt(contextData, userMessage);
+                // 5. Ghép Prompt với Guardrails
+                String fullPrompt = buildPrompt(contextData, userMessage);
 
-            // 6. Gọi Gemini API
-            String aiReply = geminiClient.generateContent(fullPrompt);
+                // 6. Gọi Gemini API
+                aiReply = geminiClient.generateContent(fullPrompt);
+                aiReply = appendRecipeLinks(aiReply, relatedRecipes);
+            }
 
             // 7. Lưu tin nhắn của AI
             AiMessage aiMsg = new AiMessage();
@@ -113,22 +130,18 @@ public class ChatbotService {
             aiMsg.setMessage(aiReply);
             aiMsg = messageRepository.save(aiMsg); // Gán lại để lấy được messageId vừa sinh ra
 
-            // 8. Tăng số đếm nếu là Guest
-            if (userId == null) {
-                trialLimiter.increment(guestId);
-            }
-
             // Trả về JSON DTO hoàn chỉnh cho Frontend
             return new ChatMessageResponse(
                     conversation.getConversationId(),
                     aiMsg.getMessageId(),
-                    aiReply);
+                    aiReply,
+                    guestRequest ? trialLimiter.getRemaining(guestId) : null);
 
-        } catch (Exception e) {
-            System.err.println("========== LỖI TẠI CHATBOT SERVICE ==========");
-            e.printStackTrace();
-            System.err.println("=============================================");
-            throw new RuntimeException(e);
+        } catch (RuntimeException e) {
+            if (guestRequest) {
+                trialLimiter.release(guestId);
+            }
+            throw e;
         }
     }
 
@@ -182,19 +195,61 @@ public class ChatbotService {
                 .toList();
     }
 
-    private String findRelevantContext(String userMessage) {
-        if (userMessage.length() < 2)
-            return "";
+    private List<Recipe> findRelevantRecipes(String userMessage) {
+        if (userMessage == null || userMessage.isBlank()) {
+            return List.of();
+        }
 
-        List<Recipe> recipes = recipeRepository.findAll();
+        String normalizedMessage = normalizeForSearch(userMessage);
+        return recipeRepository.findAll().stream()
+                .filter(recipe -> recipe.getStatusValue() == com.chaybook.backend.recipe.enums.RecipeStatus.ACTIVE)
+                .filter(recipe -> recipe.getName() != null && !recipe.getName().isBlank())
+                .filter(recipe -> normalizedMessage.contains(normalizeForSearch(recipe.getName())))
+                .toList();
+    }
 
-        String matched = recipes.stream()
-                .filter(r -> userMessage.toLowerCase().contains(r.getName().toLowerCase()))
-                .map(r -> String.format("- %s: %.1f calo, %.1fg protein, %.1fg carbs, %.1fg fat",
-                        r.getName(), r.getCalories(), r.getProtein(), r.getCarbs(), r.getFat()))
+    private String buildRecipeContext(List<Recipe> recipes) {
+        return recipes.stream()
+                .map(recipe -> String.format(Locale.ROOT,
+                        "- %s: %s calo, %s g protein, %s g carbs, %s g fat",
+                        recipe.getName(), formatNutrition(recipe.getCalories()),
+                        formatNutrition(recipe.getProtein()), formatNutrition(recipe.getCarbs()),
+                        formatNutrition(recipe.getFat())))
                 .collect(Collectors.joining("\n"));
+    }
 
-        return matched;
+    private String appendRecipeLinks(String aiReply, List<Recipe> recipes) {
+        if (recipes.isEmpty()) {
+            return aiReply;
+        }
+
+        String links = recipes.stream()
+                .map(recipe -> String.format("- [%s](/recipes/%d)", recipe.getName(), recipe.getRecipeId()))
+                .collect(Collectors.joining("\n"));
+        return aiReply + "\n\n**Xem công thức trong ChayBook:**\n" + links;
+    }
+
+    private boolean isMealPlanRequest(String userMessage) {
+        String normalizedMessage = normalizeForSearch(userMessage);
+        return normalizedMessage.contains("mealplan")
+                || normalizedMessage.contains("meal plan")
+                || normalizedMessage.contains("tao thuc don")
+                || normalizedMessage.contains("lap thuc don")
+                || normalizedMessage.contains("len thuc don")
+                || normalizedMessage.contains("goi y thuc don")
+                || normalizedMessage.contains("xay dung thuc don");
+    }
+
+    private String normalizeForSearch(String value) {
+        String withoutAccents = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace('đ', 'd')
+                .replace('Đ', 'D');
+        return withoutAccents.toLowerCase(Locale.ROOT);
+    }
+
+    private String formatNutrition(Double value) {
+        return value == null ? "chưa có dữ liệu" : String.format(Locale.ROOT, "%.1f", value);
     }
 
     private String buildPrompt(String contextData, String userMessage) {

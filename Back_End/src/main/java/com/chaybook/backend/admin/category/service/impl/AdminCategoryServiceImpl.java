@@ -4,6 +4,8 @@ import java.util.*;
 
 
 import com.chaybook.backend.admin.category.service.AdminCategoryService;
+import com.chaybook.backend.category.enums.CategoryStatus;
+import com.chaybook.backend.user.enums.UserStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +50,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                     "Tài khoản không còn tồn tại"
             ));
 
-    if (!"ACTIVE".equals(user.getStatus())
+    if (user.getStatusValue() != UserStatus.ACTIVE
             || !"ADMIN".equals(user.getRole())) {
         throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -117,7 +119,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
                 category.getName(),
                 category.getType(),
                 category.getDescription(),
-                category.getStatus()
+                category.getStatusValue().name()
         );
     }
 
@@ -191,7 +193,7 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         Category category = requireCategoryForWrite(categoryId);
 
-        if (!"ACTIVE".equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Cannot update a deleted category"
@@ -224,11 +226,11 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         Category category = requireCategoryForWrite(categoryId);
 
-        if ("DELETED".equals(category.getStatus())) {
+        if (category.getStatusValue() == CategoryStatus.DELETED) {
             return;
         }
 
-        category.setStatus("DELETED");
+        category.setStatus(CategoryStatus.DELETED);
         categoryRepository.saveAndFlush(category);
     }
 
@@ -240,14 +242,14 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
         String normalized = status.strip().toUpperCase(Locale.ROOT);
 
-        if (!Set.of("ACTIVE", "DELETED").contains(normalized)) {
+        try {
+            return CategoryStatus.valueOf(normalized).name();
+        } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Status must be ACTIVE or DELETED"
             );
         }
-
-        return normalized;
     }
 
     private Category requireCategoryForWrite(Integer categoryId) {

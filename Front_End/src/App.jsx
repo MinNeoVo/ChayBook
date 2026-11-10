@@ -1,7 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./Pages/LoginPage";
+import RegisterPage from "./Pages/RegisterPage";
+import ForgotPasswordPage from "./Pages/ForgotPasswordPage";
+import VerifyResetOtpPage from "./Pages/VerifyResetOtpPage";
+import ResetPasswordPage from "./Pages/ResetPasswordPage";
+import SocialAuthCallbackPage from "./Pages/SocialAuthCallbackPage";
 
 import ContentPage from "./Pages/ContentPage";
 import ContentPageDetail from "./Pages/ContentPageDetail";
@@ -15,6 +19,8 @@ import RecipeDetailPage from "./Pages/RecipeDetailPage";
 import BmiPage from "./Pages/BmiPage";
 import MealPlanPage from "./Pages/MealPlanPage";
 import AIAssistantPage from "./Pages/AIAssistantPage";
+import IngredientRecognitionPage from "./Pages/IngredientRecognitionPage";
+import PlacesPage from "./Pages/PlacesPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
@@ -25,56 +31,98 @@ import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./Pages/admin/AdminDashboardPage";
 import AdminUsers from "./Pages/admin/AdminUsers";
 import AdminPostVideoPage from "./Pages/admin/AdminPostVideoPage";
+import AdminRecipeManagement, {
+  AdminRecipeListPage,
+  AdminRecipeCreatePage,
+  AdminRecipeDetailPage,
+  AdminRecipeEditPage,
+} from "./Pages/admin/AdminRecipeManagement";
 import AdminArticleManagement, {
   AdminArticleCreatePage,
   AdminArticleDetailPage,
   AdminArticleListPage,
 } from "./Pages/admin/AdminArticleManagement";
+import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
+import AdminIngredientPage from "./Pages/admin/AdminIngredientPage";
+import ScrollToTop from "./components/common/ScrollToTop";
+import VideoAnalysisPage from "./Pages/VideoAnalysisPage";
+import MyRecipesPage from "./Pages/MyRecipesPage";
+import MyRecipeDetailPage from "./Pages/MyRecipeDetailPage";
 
 function App() {
   return (
-    <Routes>
-      {/* ==================== */}
-      {/* USER AREA */}
-      {/* ==================== */}
-      <Route element={<UserLayout />}>
-        <Route path="/" element={<HomePage />} />
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* ==================== */}
+        {/* USER AREA */}
+        {/* ==================== */}
+        <Route element={<UserLayout />}>
+          <Route path="/" element={<HomePage />} />
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/verify-reset-otp" element={<VerifyResetOtpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/callback" element={<SocialAuthCallbackPage />} />
 
-        <Route path="/content" element={<ContentPage />} />
-        <Route path="/content/:id" element={<ContentPageDetail />} />
+          <Route path="/content" element={<ContentPage />} />
+          <Route path="/content/:id" element={<ContentPageDetail />} />
 
-        <Route path="/recipes" element={<RecipesPage />} />
-        <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
-        <Route path="/bmi" element={<BmiPage />} />
-        <Route path="/ai-assistant" element={<AIAssistantPage />} />
+          <Route path="/recipes" element={<RecipesPage />} />
+          <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
+          <Route path="/bmi" element={<BmiPage />} />
+          <Route path="/ai-assistant" element={<AIAssistantPage />} />
 
-        {/* Protected User Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/community" element={<CommunityPage />} />
-          <Route path="/meal-plan" element={<MealPlanPage />} />
-        </Route>
-      </Route>
-
-      {/* ==================== */}
-      {/* ADMIN AREA */}
-      {/* ==================== */}
-      <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="posts-videos" element={<AdminPostVideoPage />} />
-          <Route path="articles" element={<AdminArticleManagement />}>
-            <Route index element={<AdminArticleListPage />} />
-            <Route path="new" element={<AdminArticleCreatePage />} />
-            <Route path=":articleId" element={<AdminArticleDetailPage />} />
+          {/* Protected User Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/meal-plan" element={<MealPlanPage />} />
+            <Route path="/places" element={<PlacesPage />} />
+            <Route
+              path="/ingredient-recognition"
+              element={<IngredientRecognitionPage />}
+            />
+            <Route path="/video-analysis" element={<VideoAnalysisPage />} />
+            <Route
+              path="/video-analysis/:submissionId"
+              element={<VideoAnalysisPage />}
+            />
+            <Route path="/my-recipes" element={<MyRecipesPage />} />
+            <Route
+              path="/my-recipes/:userRecipeId"
+              element={<MyRecipeDetailPage />}
+            />
           </Route>
         </Route>
-      </Route>
-    </Routes>
+
+        {/* ==================== */}
+        {/* ADMIN AREA */}
+        {/* ==================== */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="categories" element={<AdminCategoryPage />} />
+            <Route path="ingredients" element={<AdminIngredientPage />} />
+            <Route path="recipes" element={<AdminRecipeManagement />}>
+              <Route index element={<AdminRecipeListPage />} />
+              <Route path="new" element={<AdminRecipeCreatePage />} />
+              <Route path=":recipeId" element={<AdminRecipeDetailPage />} />
+              <Route path=":recipeId/edit" element={<AdminRecipeEditPage />} />
+            </Route>
+            <Route path="posts-videos" element={<AdminPostVideoPage />} />
+            <Route path="articles" element={<AdminArticleManagement />}>
+              <Route index element={<AdminArticleListPage />} />
+              <Route path="new" element={<AdminArticleCreatePage />} />
+              <Route path=":articleId" element={<AdminArticleDetailPage />} />
+            </Route>
+          </Route>
+        </Route>
+      </Routes>
+    </>
   );
 }
 

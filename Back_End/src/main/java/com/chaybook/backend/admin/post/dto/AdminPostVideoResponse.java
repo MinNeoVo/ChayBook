@@ -1,5 +1,8 @@
 package com.chaybook.backend.admin.post.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +15,13 @@ public record AdminPostVideoResponse(
         LocalDateTime submittedAt,
         String status,
         String thumbnailUrl,
-        String mediaUrl
+        String mediaUrl,
+        String mediaType,
+        String aiResult,
+        String aiReason,
+        Double aiConfidence,
+        String moderationStatus,
+        String adminReason
 ) {
     public record Statistics(
             long totalSubmission,
@@ -29,5 +38,10 @@ public record AdminPostVideoResponse(
             int totalPages
     ) {}
 
-    public record StatusRequest(String status) {}
+    public record StatusRequest(
+            @NotBlank
+            @Pattern(regexp = "APPROVED|REJECTED|REMOVED")
+            String status,
+            String reason
+    ) {}
 }

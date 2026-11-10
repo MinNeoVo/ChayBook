@@ -1,7 +1,7 @@
 package com.chaybook.backend.admin.recipe.controller;
 
 import com.chaybook.backend.admin.recipe.dto.AdminRecipeResponse;
-import com.chaybook.backend.admin.recipe.service.AdminRecipeService;
+import com.chaybook.backend.admin.recipe.service.impl.AdminRecipeServiceImpl;
 import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.exception.RecipeException;
@@ -22,9 +22,9 @@ public class AdminRecipeController {
     private static final Logger log =
             LoggerFactory.getLogger(AdminRecipeController.class);
 
-    private final AdminRecipeService adminRecipeService;
+    private final AdminRecipeServiceImpl adminRecipeService;
 
-    public AdminRecipeController(AdminRecipeService adminRecipeService) {
+    public AdminRecipeController(AdminRecipeServiceImpl adminRecipeService) {
         this.adminRecipeService = adminRecipeService;
     }
 

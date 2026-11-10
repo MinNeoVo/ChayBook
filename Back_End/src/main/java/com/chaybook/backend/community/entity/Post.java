@@ -1,8 +1,10 @@
 package com.chaybook.backend.community.entity;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.community.enums.PostStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -28,14 +30,15 @@ public class Post {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "content", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;
 
     @Column(name = "status", length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PostStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -44,20 +47,30 @@ public class Post {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    @Size(max = 10)
+    @Column(name = "media_type", length = 10)
+    private String mediaType;
+
+    @Size(max = 255)
+    @Column(name = "media_public_id")
+    private String mediaPublicId;
 
     public Post() {
     }
 
-    public Post(User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Post(User user, Category category, String title, String content, String imageUrl, String status, LocalDateTime createdAt, LocalDateTime updatedAt, String mediaType, String mediaPublicId) {
         this.user = user;
         this.category = category;
         this.title = title;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.status = status;
+        setStatus(status);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.mediaType = mediaType;
+        this.mediaPublicId = mediaPublicId;
     }
+
 
     public Integer getPostId() {
         return postId;
@@ -105,10 +118,18 @@ public class Post {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : PostStatus.valueOf(status);
+    }
+
+    public PostStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(PostStatus status) {
         this.status = status;
     }
 
@@ -126,5 +147,21 @@ public class Post {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaPublicId() {
+        return mediaPublicId;
+    }
+
+    public void setMediaPublicId(String mediaPublicId) {
+        this.mediaPublicId = mediaPublicId;
     }
 }

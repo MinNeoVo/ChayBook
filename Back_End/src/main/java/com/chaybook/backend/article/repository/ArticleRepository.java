@@ -1,6 +1,7 @@
 package com.chaybook.backend.article.repository;
 
 import com.chaybook.backend.article.entity.Article;
+import com.chaybook.backend.article.enums.ArticleStatus;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,13 +18,13 @@ public interface ArticleRepository
     );
 
     Page<Article> findByStatus(
-            String status,
+            ArticleStatus status,
             Pageable pageable
     );
 
     Page<Article> findByCategory_CategoryIdAndStatus(
             Integer categoryId,
-            String status,
+            ArticleStatus status,
             Pageable pageable
     );
 }

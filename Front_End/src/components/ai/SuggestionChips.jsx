@@ -1,11 +1,11 @@
 import { Sparkles } from "lucide-react";
 
 const DEFAULT_SUGGESTIONS = [
-  "Create a 3-day meal plan",
-  "High-protein vegetarian meals",
-  "What should I eat for dinner?",
-  "Vegetarian grocery list",
-  "Plant-based food substitutions",
+  "Tạo thực đơn 3 ngày",
+  "Món chay giàu protein",
+  "Tối nay tôi nên ăn gì?",
+  "Danh sách thực phẩm chay cần mua",
+  "Nguyên liệu thực vật thay thế",
 ];
 
 function SuggestionChips({ onSelectSuggestion, disabled = false, suggestions = DEFAULT_SUGGESTIONS }) {
@@ -13,7 +13,7 @@ function SuggestionChips({ onSelectSuggestion, disabled = false, suggestions = D
     <div className="flex flex-col gap-1.5 w-full">
       <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider px-1">
         <Sparkles className="h-3 w-3 text-chaybook-primary" />
-        <span>Suggestions</span>
+        <span>Gợi ý</span>
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-nowrap sm:flex-wrap">

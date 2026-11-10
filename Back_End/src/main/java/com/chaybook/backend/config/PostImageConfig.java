@@ -12,14 +12,30 @@ public class PostImageConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadLocation = Paths
+        String postUploadLocation = Paths
                 .get("uploads", "posts")
                 .toAbsolutePath()
                 .normalize()
                 .toUri()
                 .toString();
+        if (!postUploadLocation.endsWith("/")) {
+            postUploadLocation += "/";
+        }
 
         registry.addResourceHandler("/uploads/posts/**")
-                .addResourceLocations(uploadLocation);
+                .addResourceLocations(postUploadLocation);
+
+        String avatarUploadLocation = Paths
+                .get("uploads", "avatars")
+                .toAbsolutePath()
+                .normalize()
+                .toUri()
+                .toString();
+        if (!avatarUploadLocation.endsWith("/")) {
+            avatarUploadLocation += "/";
+        }
+
+        registry.addResourceHandler("/uploads/avatars/**")
+                .addResourceLocations(avatarUploadLocation);
     }
 }

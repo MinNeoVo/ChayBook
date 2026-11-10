@@ -13,6 +13,8 @@ public record PostCreateResponse(
             String title,
             String content,
             String imageUrl,
+            String mediaType,
+            String mediaPublicId,
             String status,
             LocalDateTime createdAt
     ){

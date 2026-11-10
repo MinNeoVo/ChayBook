@@ -6,10 +6,7 @@ import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.user.entity.User;
 import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.user.repository.projection.UserStatisticsProjection;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +15,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
+import com.chaybook.backend.user.enums.UserStatus;
 
 @Service
 public class AdminUserService {
@@ -28,6 +26,18 @@ public class AdminUserService {
 
     public AdminUserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public void requireActiveAdmin(Integer authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId <= 0) {
+            throw new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in");
+        }
+        User admin = userRepository.findById(authenticatedUserId)
+                .orElseThrow(() -> new AdminUserException(HttpStatus.UNAUTHORIZED, "Please log in again"));
+        if (!"ADMIN".equalsIgnoreCase(admin.getRole()) || admin.getStatusValue() != UserStatus.ACTIVE) {
+            throw new AdminUserException(HttpStatus.FORBIDDEN, "An active administrator account is required");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -78,10 +88,11 @@ public class AdminUserService {
             );
         }
 
-        String newStatus = request.status();
+        UserStatus newStatus;
 
-        if (!"ACTIVE".equals(newStatus)
-                && !"DISABLED".equals(newStatus)) {
+        try {
+            newStatus = UserStatus.valueOf(request.status());
+        } catch (IllegalArgumentException exception) {
             throw new AdminUserException(
                     HttpStatus.BAD_REQUEST,
                     "Status must be ACTIVE or DISABLED"
@@ -101,7 +112,7 @@ public class AdminUserService {
             );
         }
 
-        if (!newStatus.equals(user.getStatus())) {
+        if (newStatus != user.getStatusValue()) {
             user.setStatus(newStatus);
             userRepository.saveAndFlush(user);
         }
@@ -109,7 +120,7 @@ public class AdminUserService {
         return new UpdateUserStatusResponse(
                 "User status updated successfully",
                 user.getUserId(),
-                user.getStatus()
+                user.getStatusValue().name()
         );
     }
 
@@ -119,7 +130,7 @@ public class AdminUserService {
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getStatus(),
+                user.getStatusValue().name(),
                 user.getCreatedAt()
         );
     }

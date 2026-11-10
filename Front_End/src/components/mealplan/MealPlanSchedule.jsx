@@ -17,9 +17,9 @@ import RecipeImage from "../recipes/RecipeImage";
 
 const DAYS_PER_PAGE = 4;
 const mealRows = [
-  { type: "BREAKFAST", label: "Breakfast", Icon: Sunrise },
-  { type: "LUNCH", label: "Lunch", Icon: Sun },
-  { type: "DINNER", label: "Dinner", Icon: Moon },
+  { type: "BREAKFAST", label: "Bữa sáng", Icon: Sunrise },
+  { type: "LUNCH", label: "Bữa trưa", Icon: Sun },
+  { type: "DINNER", label: "Bữa tối", Icon: Moon },
 ];
 const rowColumns = "grid grid-cols-[6rem_repeat(4,minmax(0,1fr))]";
 
@@ -32,7 +32,7 @@ function MealRecipe({ recipe, navigationState }) {
     return (
       <div className="flex h-full min-h-72 flex-col items-center justify-center gap-3 px-3 text-center text-gray-500">
         <Utensils aria-hidden="true" className="h-6 w-6 text-gray-400" />
-        <p className="text-sm">No meal planned</p>
+        <p className="text-sm">Chưa có món ăn</p>
       </div>
     );
   }
@@ -46,11 +46,11 @@ function MealRecipe({ recipe, navigationState }) {
     <article className="flex h-full min-w-0 flex-col gap-3">
       <RecipeImage
         imageUrl={recipe.imageUrl}
-        alt={recipe.name || "Recipe"}
+        alt={recipe.name || "Công thức"}
         className="aspect-[4/3] w-full shrink-0 rounded-lg"
       />
       <h4 className="text-sm font-bold leading-5 text-gray-900 [overflow-wrap:anywhere]">
-        {recipe.name || "Untitled recipe"}
+        {recipe.name || "Công thức chưa đặt tên"}
       </h4>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
         <span className="inline-flex items-center gap-1">
@@ -65,8 +65,8 @@ function MealRecipe({ recipe, navigationState }) {
       <dl className="grid grid-cols-3 gap-1.5 rounded-lg bg-chaybook-container/70 p-2 [overflow-wrap:anywhere]">
         {[
           ["Protein", recipe.protein],
-          ["Carbs", recipe.carbs],
-          ["Fat", recipe.fat],
+          ["Tinh bột", recipe.carbs],
+          ["Chất béo", recipe.fat],
         ].map(([label, value]) => (
           <div key={label} className="min-w-0">
             <dt className="text-[11px] text-gray-600">{label}</dt>
@@ -80,10 +80,10 @@ function MealRecipe({ recipe, navigationState }) {
         <Link
           to={`/recipes/${recipe.recipeId}`}
           state={navigationState}
-          aria-label={`View recipe: ${recipe.name || "Recipe"}`}
+          aria-label={`Xem công thức: ${recipe.name || "Công thức"}`}
           className="mt-auto inline-flex min-h-9 items-center justify-between gap-2 rounded-md border-t border-gray-100 pt-2 text-xs font-semibold text-chaybook-primary hover:text-chaybook-hover hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary"
         >
-          View recipe
+          Xem công thức
           <ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" />
         </Link>
       )}
@@ -120,7 +120,7 @@ function MealPlanSchedule({ days, mealPlanId, initialPage = 0, tableRef }) {
   if (days.length === 0) {
     return (
       <p className="rounded-2xl bg-white p-6 text-sm text-gray-600 shadow-sm">
-        No meals available for this plan.
+        Chưa có bữa ăn nào trong thực đơn này.
       </p>
     );
   }
@@ -130,24 +130,24 @@ function MealPlanSchedule({ days, mealPlanId, initialPage = 0, tableRef }) {
       <div
         ref={scrollRegionRef}
         role="region"
-        aria-label="Meal plan calendar"
+        aria-label="Lịch thực đơn"
         tabIndex={0}
         className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-t-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chaybook-primary"
       >
-        <div role="table" aria-label="Meal schedule" className="w-full min-w-[52rem]">
+        <div role="table" aria-label="Lịch bữa ăn" className="w-full min-w-[52rem]">
           <div role="rowgroup">
             <div role="row" className={`${rowColumns} border-b border-gray-200 bg-chaybook-primary/5`}>
               <div role="columnheader" className="border-r border-gray-200 px-3 py-5 text-sm font-semibold text-gray-600">
-                Meal
+                Bữa ăn
               </div>
               {dayColumns.map((day, index) => (
                 <div
                   key={day?.[0] ?? `empty-${index}`}
                   role="columnheader"
-                  aria-label={day ? undefined : "No additional day"}
+                  aria-label={day ? undefined : "Không có ngày tiếp theo"}
                   className="min-w-0 border-r border-gray-200 px-4 py-5 text-center text-sm font-bold text-chaybook-primary last:border-r-0"
                 >
-                  {day ? `Day ${day[0]}` : "—"}
+                  {day ? `Ngày ${day[0]}` : "—"}
                 </div>
               ))}
             </div>
@@ -166,7 +166,7 @@ function MealPlanSchedule({ days, mealPlanId, initialPage = 0, tableRef }) {
                     <div
                       key={day?.[0] ?? `empty-${index}`}
                       role="cell"
-                      aria-label={day ? `Day ${day[0]}, ${label}` : "No additional day"}
+                      aria-label={day ? `Ngày ${day[0]}, ${label}` : "Không có ngày tiếp theo"}
                       className={`min-w-0 border-r border-gray-200 p-3 last:border-r-0 ${day ? "" : "bg-gray-50/70"}`}
                     >
                       {day ? (
@@ -190,20 +190,20 @@ function MealPlanSchedule({ days, mealPlanId, initialPage = 0, tableRef }) {
           </div>
         </div>
       </div>
-      <nav aria-label="Meal plan pagination" className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 px-4 py-4 sm:flex-row sm:px-5">
+      <nav aria-label="Phân trang thực đơn" className="flex flex-col items-center justify-between gap-3 border-t border-gray-200 px-4 py-4 sm:flex-row sm:px-5">
         <p role="status" aria-live="polite" className="text-xs text-gray-600 sm:text-sm">
-          Days {visibleDays[0][0]}–{visibleDays.at(-1)[0]} of {days.length}
+          Ngày {visibleDays[0][0]}–{visibleDays.at(-1)[0]} / {days.length}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage === 0} onClick={() => changePage(currentPage - 1)} className="gap-1 focus-visible:ring-2 focus-visible:ring-chaybook-primary">
             <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-            Previous
+            Trước
           </Button>
           {Array.from({ length: totalPages }, (_, pageNumber) => (
             <button
               key={pageNumber}
               type="button"
-              aria-label={`Go to meal plan page ${pageNumber + 1}`}
+              aria-label={`Đến trang thực đơn ${pageNumber + 1}`}
               aria-current={currentPage === pageNumber ? "page" : undefined}
               onClick={() => changePage(pageNumber)}
               className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary ${currentPage === pageNumber ? "border-chaybook-primary bg-chaybook-primary text-white" : "border-gray-200 text-gray-600 hover:bg-chaybook-container"}`}
@@ -212,7 +212,7 @@ function MealPlanSchedule({ days, mealPlanId, initialPage = 0, tableRef }) {
             </button>
           ))}
           <Button variant="outline" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => changePage(currentPage + 1)} className="gap-1 focus-visible:ring-2 focus-visible:ring-chaybook-primary">
-            Next
+            Sau
             <ChevronRight aria-hidden="true" className="h-4 w-4" />
           </Button>
         </div>

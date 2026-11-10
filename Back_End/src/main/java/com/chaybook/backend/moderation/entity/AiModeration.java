@@ -2,7 +2,6 @@ package com.chaybook.backend.moderation.entity;
 
 import com.chaybook.backend.community.entity.Post;
 import com.chaybook.backend.user.entity.User;
-import com.chaybook.backend.video.entity.Video;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -21,18 +20,17 @@ public class AiModeration {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "video_id")
-    private Video video;
-
     @Column(name = "result", length = 255)
     private String result;
 
-    @Column(name = "reason", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "reason", columnDefinition = "NVARCHAR(MAX)")
     private String reason;
 
     @Column(name = "confidence")
     private Double confidence;
+
+    @Column(name = "moderation_status", length = 20)
+    private String moderationStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by")
@@ -49,9 +47,8 @@ public class AiModeration {
     public AiModeration() {
     }
 
-    public AiModeration(Post post, Video video, String result, String reason, Double confidence, User reviewedBy, LocalDateTime reviewedAt, LocalDateTime createdAt) {
+    public AiModeration(Post post, String result, String reason, Double confidence, User reviewedBy, LocalDateTime reviewedAt, LocalDateTime createdAt) {
         this.post = post;
-        this.video = video;
         this.result = result;
         this.reason = reason;
         this.confidence = confidence;
@@ -60,6 +57,13 @@ public class AiModeration {
         this.createdAt = createdAt;
     }
 
+    public String getModerationStatus() {
+        return moderationStatus;
+    }
+
+    public void setModerationStatus(String moderationStatus) {
+        this.moderationStatus = moderationStatus;
+    }
 
     public Integer getModerationId() {
         return moderationId;
@@ -73,13 +77,6 @@ public class AiModeration {
         this.post = post;
     }
 
-    public Video getVideo() {
-        return video;
-    }
-
-    public void setVideo(Video video) {
-        this.video = video;
-    }
 
     public String getResult() {
         return result;

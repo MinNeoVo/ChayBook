@@ -1,5 +1,14 @@
 import { apiFetch } from "./api";
 
+export async function uploadMedia(file) {
+  const body = new FormData();
+  body.append("file", file);
+  return apiFetch("/media/upload", {
+    method: "POST",
+    body,
+  });
+}
+
 /**
  * Lấy danh sách bài viết đã duyệt với phân trang
  * @param {number|string|null} categoryId - ID danh mục (nếu có)
@@ -34,7 +43,7 @@ export async function getPosts(
 
 /**
  * Tạo bài viết mới
- * @param {object} postData - { categoryId, title, content, imageUrl }
+ * @param {object} postData - { categoryId, title, content, image }
  */
 
 export async function createPost(postData) {
@@ -48,12 +57,86 @@ export async function createPost(postData) {
   formData.append("content", postData.content.trim());
 
   if (postData.image instanceof File) {
-    formData.append("image", postData.image);
+    const uploadedMedia = await uploadMedia(postData.image);
+
+    if (
+        typeof uploadedMedia?.url !== "string" ||
+        !uploadedMedia.url.startsWith("https://")
+    ) {
+      throw new Error("Cloudinary did not return a secure media URL.");
+    }
+
+    if (!["image", "video"].includes(uploadedMedia.mediaType)) {
+      throw new Error("Cloudinary returned an unsupported media type.");
+    }
+
+    if (
+        typeof uploadedMedia.publicId !== "string" ||
+        !uploadedMedia.publicId.trim()
+    ) {
+      throw new Error("Cloudinary did not return a public ID.");
+    }
+
+    formData.append("imageUrl", uploadedMedia.url);
+    formData.append("mediaType", uploadedMedia.mediaType);
+    formData.append("mediaPublicId", uploadedMedia.publicId);
   }
 
   return apiFetch("/posts", {
     method: "POST",
     body: formData,
+  });
+}
+
+export async function updatePost(postId, postData) {
+  if (!postId || !Number.isInteger(Number(postData.categoryId))) {
+    throw new Error("Vui lòng chọn danh mục hợp lệ.");
+  }
+
+  let imageUrl = postData.imageUrl ?? "";
+  let mediaType = postData.mediaType ?? null;
+  let mediaPublicId = postData.mediaPublicId ?? null;
+  if (postData.image instanceof File) {
+    const uploadedMedia = await uploadMedia(postData.image);
+    if (typeof uploadedMedia?.url !== "string" || !uploadedMedia.url.startsWith("https://")) {
+      throw new Error("Cloudinary did not return a secure media URL.");
+    }
+    if (!["image", "video"].includes(uploadedMedia.mediaType)) {
+      throw new Error("Cloudinary returned an unsupported media type.");
+    }
+    if (typeof uploadedMedia.publicId !== "string" || !uploadedMedia.publicId.trim()) {
+      throw new Error("Cloudinary did not return a public ID.");
+    }
+    imageUrl = uploadedMedia.url;
+    mediaType = uploadedMedia.mediaType;
+    mediaPublicId = uploadedMedia.publicId;
+  }
+
+  const response = await apiFetch(`/posts/${encodeURIComponent(postId)}`, {
+    method: "PUT",
+    body: {
+      categoryId: Number(postData.categoryId),
+      title: postData.title.trim(),
+      content: postData.content.trim(),
+      imageUrl,
+      mediaType,
+      mediaPublicId,
+    },
+  });
+  return { ...response, imageUrl, mediaType, mediaPublicId };
+}
+
+export async function withdrawPost(postId) {
+  return deletePost(postId);
+}
+
+export async function deletePost(postId) {
+  if (!postId) {
+    throw new Error("Không tìm thấy bài viết cần xóa.");
+  }
+
+  return apiFetch(`/posts/${encodeURIComponent(postId)}`, {
+    method: "DELETE",
   });
 }
 

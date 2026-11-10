@@ -77,4 +77,26 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findPostsByUserId(
             @Param("userId") Integer userId
     );
+
+    @Query(value = """
+            SELECT latest.post_id AS postId, latest.reason AS reason
+            FROM (
+                SELECT
+                    decision.post_id,
+                    decision.reason,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY decision.post_id
+                        ORDER BY decision.decided_at DESC, decision.decision_id DESC
+                    ) AS row_num
+                FROM ADMIN_CONTENT_DECISION decision
+                INNER JOIN POST post ON post.post_id = decision.post_id
+                WHERE post.user_id = :userId
+                  AND UPPER(post.status) = 'REJECTED'
+                  AND UPPER(decision.decision) = 'REJECTED'
+            ) latest
+            WHERE latest.row_num = 1
+            """, nativeQuery = true)
+    List<Object[]> findLatestRejectionReasonsByUserId(
+            @Param("userId") Integer userId
+    );
 }

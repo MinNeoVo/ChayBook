@@ -126,21 +126,21 @@ const AllergySelector = forwardRef(function AllergySelector(
   return (
     <section className="rounded-xl border border-gray-200 p-4">
       <div className="mb-4">
-        <h2 className="text-lg font-bold">Food allergies</h2>
+        <h2 className="text-lg font-bold">Dị ứng thực phẩm</h2>
         <p className="mt-1 text-sm text-gray-600">
           Select the ingredients you need to avoid. Meal plans use your saved selections.
         </p>
       </div>
 
-      {loading && <p className="text-sm text-gray-600">Loading allergy options...</p>}
+      {loading && <p className="text-sm text-gray-600">Đang tải danh sách dị ứng...</p>}
 
       {!loading && ready && allergies.length === 0 && (
-        <p className="text-sm text-gray-600">There are no allergy options available.</p>
+        <p className="text-sm text-gray-600">Hiện không có lựa chọn dị ứng nào.</p>
       )}
 
       {!loading && ready && allergies.length > 0 && (
         <fieldset disabled={controlsDisabled} className="grid gap-3 sm:grid-cols-2">
-          <legend className="sr-only">Choose food allergies</legend>
+          <legend className="sr-only">Chọn các loại dị ứng thực phẩm</legend>
           {allergies.map((allergy) => (
             <label
               key={allergy.allergyId}
@@ -169,7 +169,7 @@ const AllergySelector = forwardRef(function AllergySelector(
         </p>
       )}
       {isDirty && ready && (
-        <p className="mt-4 text-sm text-amber-800">You have unsaved allergy changes.</p>
+        <p className="mt-4 text-sm text-amber-800">Bạn có thay đổi dị ứng chưa được lưu.</p>
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-3">

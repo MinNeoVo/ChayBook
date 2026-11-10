@@ -1,7 +1,6 @@
 package com.chaybook.backend.user.dto;
 
 import jakarta.validation.constraints.*;
-import org.hibernate.validator.constraints.URL;
 
 import java.util.Locale;
 
@@ -18,12 +17,9 @@ public record UpdateProfileRequest(
         @Size(max = 255, message = "Họ tên tối đa 255 ký tự")
         String fullName,
 
+        // avatarUrl do server tự sinh (relative path hoặc URL ngoài),
+        // chỉ kiểm tra độ dài, không ép buộc format http.
         @Size(max = 255, message = "Avatar URL tối đa 255 ký tự")
-        @URL(message = "Avatar URL không hợp lệ")
-        @Pattern(
-                regexp = "^https?://\\S+$",
-                message = "Avatar URL phải bắt đầu bằng http:// hoặc https://"
-        )
         String avatarUrl
 ) {
 

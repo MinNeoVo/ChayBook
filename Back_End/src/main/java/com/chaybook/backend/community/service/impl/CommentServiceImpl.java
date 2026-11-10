@@ -3,11 +3,14 @@ package com.chaybook.backend.community.service.impl;
 import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.Comment;
 import com.chaybook.backend.community.entity.Post;
+import com.chaybook.backend.community.enums.CommentStatus;
+import com.chaybook.backend.community.enums.PostStatus;
 import com.chaybook.backend.community.exception.CommentException;
 import com.chaybook.backend.community.repository.CommentRepository;
 import com.chaybook.backend.community.repository.PostRepository;
 import com.chaybook.backend.community.service.CommentService;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -132,7 +135,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(request.content().strip());
         comment.setParentComment(root);
         comment.setReplyToComment(target);
-        comment.setStatus(Comment.ACTIVE);
+        comment.setStatus(CommentStatus.ACTIVE);
 
         Comment saved = commentRepository.saveAndFlush(comment);
 
@@ -199,7 +202,7 @@ public class CommentServiceImpl implements CommentService {
 
         // Gửi lại cùng yêu cầu DELETE vẫn cho kết quả ổn định.
         if (!comment.isDeleted()) {
-            comment.setStatus(Comment.DELETED);
+            comment.setStatus(CommentStatus.DELETED);
             comment.setContent("");
             commentRepository.saveAndFlush(comment);
         }
@@ -223,7 +226,7 @@ public class CommentServiceImpl implements CommentService {
                         "Tài khoản không còn tồn tại"
                 ));
 
-        if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw error(
                     HttpStatus.FORBIDDEN,
                     "ACCOUNT_INACTIVE",
@@ -258,7 +261,7 @@ public class CommentServiceImpl implements CommentService {
                         "Không tìm thấy bài viết"
                 ));
 
-        if (!"APPROVED".equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw error(
                     HttpStatus.NOT_FOUND,
                     "POST_NOT_FOUND",
@@ -356,6 +359,7 @@ public class CommentServiceImpl implements CommentService {
 
         return new CommentResponse.Author(
                 user.getUserId(),
+                user.getUsername(),
                 displayName,
                 user.getAvatarUrl()
         );
@@ -389,7 +393,7 @@ public class CommentServiceImpl implements CommentService {
                         : root.getCommentId(),
                 deleted ? null : toAuthor(comment.getUser()),
                 deleted ? null : comment.getContent(),
-                comment.getStatus(),
+                comment.getStatusValue().name(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt(),
                 comment.getEditedAt(),
@@ -432,10 +436,7 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
 
         long totalCommentCount =
-                commentRepository.countByPost_PostIdAndStatus(
-                        post.getPostId(),
-                        Comment.ACTIVE
-                );
+                commentRepository.countActiveByPostId(post.getPostId());
 
         return new CommentPageResponse(
                 items,
@@ -456,16 +457,10 @@ public class CommentServiceImpl implements CommentService {
         Comment root = rootOf(comment);
 
         long rootReplyCount =
-                commentRepository.countByParentComment_CommentIdAndStatus(
-                        root.getCommentId(),
-                        Comment.ACTIVE
-                );
+                commentRepository.countActiveRepliesByRootId(root.getCommentId());
 
         long totalCommentCount =
-                commentRepository.countByPost_PostIdAndStatus(
-                        post.getPostId(),
-                        Comment.ACTIVE
-                );
+                commentRepository.countActiveByPostId(post.getPostId());
 
         boolean rootVisible = !root.isDeleted() || rootReplyCount > 0;
 

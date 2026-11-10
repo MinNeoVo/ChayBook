@@ -16,22 +16,66 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
 
     // chỉ lấy Recipe ACTIVE.
     // Không lọc status của Category.
-    @Query("""
-            SELECT r
-            FROM Recipe r
-            LEFT JOIN FETCH r.category c
-            WHERE r.status = 'ACTIVE'
-              AND (:categoryId IS NULL OR c.categoryId = :categoryId)
-              AND (
-                  :keyword IS NULL
-                  OR LOCATE(LOWER(:keyword), LOWER(r.name)) > 0
-              )
-            """)
+    @Query(
+            value = """
+                    SELECT r
+                    FROM Recipe r
+                    LEFT JOIN FETCH r.category c
+                    WHERE r.status = 'ACTIVE'
+                      AND (:categoryId IS NULL OR c.categoryId = :categoryId)
+                      AND (
+                          :keyword IS NULL
+                          OR LOCATE(LOWER(:keyword), LOWER(r.name)) > 0
+                      )
+                      AND (
+                          :ingredient IS NULL
+                          OR EXISTS (
+                              SELECT 1
+                              FROM RecipeIngredient ri
+                              JOIN ri.ingredient i
+                              WHERE ri.recipe = r
+                                AND i.status = 'ACTIVE'
+                                AND LOCATE(LOWER(:ingredient), LOWER(i.name)) > 0
+                          )
+                      )
+                    """,
+            countQuery = """
+                    SELECT COUNT(r)
+                    FROM Recipe r
+                    LEFT JOIN r.category c
+                    WHERE r.status = 'ACTIVE'
+                      AND (:categoryId IS NULL OR c.categoryId = :categoryId)
+                      AND (
+                          :keyword IS NULL
+                          OR LOCATE(LOWER(:keyword), LOWER(r.name)) > 0
+                      )
+                      AND (
+                          :ingredient IS NULL
+                          OR EXISTS (
+                              SELECT 1
+                              FROM RecipeIngredient ri
+                              JOIN ri.ingredient i
+                              WHERE ri.recipe = r
+                                AND i.status = 'ACTIVE'
+                                AND LOCATE(LOWER(:ingredient), LOWER(i.name)) > 0
+                          )
+                      )
+                    """
+    )
     Page<Recipe> searchRecipes(
             @Param("categoryId") Integer categoryId,
             @Param("keyword") String keyword,
+            @Param("ingredient") String ingredient,
             Pageable pageable
     );
+
+    default Page<Recipe> searchRecipes(
+            Integer categoryId,
+            String keyword,
+            Pageable pageable
+    ) {
+        return searchRecipes(categoryId, keyword, null, pageable);
+    }
 
     // Customer: Recipe DELETED sẽ không được tìm thấy.
     @Query("""

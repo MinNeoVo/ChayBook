@@ -61,6 +61,7 @@ export default function PostCommentModal({
   onLike,
   onBookmark,
   onCommentCountChange,
+  currentUser,
 }) {
   const { user } = useAuth();
   const [comments, setComments] = useState([]);
@@ -304,8 +305,8 @@ export default function PostCommentModal({
     setReplyTarget({
       commentId: targetComment.commentId,
       authorName:
-        targetComment.author?.displayName ||
         targetComment.author?.username ||
+        targetComment.author?.displayName ||
         "thành viên",
     });
     if (inputRef.current) {
@@ -676,8 +677,8 @@ export default function PostCommentModal({
               className="flex items-end gap-2.5"
             >
               <Avatar
-                src={user?.avatarUrl}
-                alt={user?.fullName || "You"}
+                src={currentUser?.avatarUrl ?? user?.avatarUrl}
+                alt={user?.username || "You"}
                 size="sm"
                 className="mb-1"
               />
@@ -744,7 +745,8 @@ function CommentItem({
 }) {
   const isDeleted = comment.status === "DELETED";
   const isEditing = editingComment?.commentId === comment.commentId;
-  const authorName = comment.author?.displayName || "Thành viên";
+  const authorName =
+    comment.author?.username || comment.author?.displayName || "Thành viên";
   const authorAvatar = comment.author?.avatarUrl;
   const permissions = comment.permissions || {};
 
@@ -767,11 +769,14 @@ function CommentItem({
                 {authorName}
               </span>
 
-              {comment.replyTo?.author?.displayName && (
+              {(comment.replyTo?.author?.username ||
+                comment.replyTo?.author?.displayName) && (
                 <span className="text-[11px] text-gray-500 font-medium">
                   trả lời{" "}
                   <strong className="text-emerald-700">
-                    @{comment.replyTo.author.displayName}
+                    @
+                    {comment.replyTo.author.username ||
+                      comment.replyTo.author.displayName}
                   </strong>
                 </span>
               )}

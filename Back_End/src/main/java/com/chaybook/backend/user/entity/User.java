@@ -1,6 +1,7 @@
 package com.chaybook.backend.user.entity;
 
 import com.chaybook.backend.allergy.entity.Allergy;
+import com.chaybook.backend.user.enums.UserStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -30,7 +31,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", length = 255)
     private String passwordHash;
 
     @Column(name = "full_name", length = 255)
@@ -43,7 +44,8 @@ public class User {
     private String role ="USER";
 
     @Column(name = "status", length = 20, nullable = false)
-    private String status = "ACTIVE";
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.ACTIVE;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -118,10 +120,18 @@ public class User {
     }
 
     public String getStatus() {
+        return status == null ? null : status.name();
+    }
+
+    public UserStatus getStatusValue() {
         return status;
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : UserStatus.valueOf(status);
+    }
+
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 

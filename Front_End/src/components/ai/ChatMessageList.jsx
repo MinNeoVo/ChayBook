@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import UserMessage from "./UserMessage";
 import AIMessage from "./AIMessage";
 import TypingIndicator from "./TypingIndicator";
@@ -9,9 +10,10 @@ function ChatMessageList({
   messages,
   isTyping,
   error,
+  guestTrialExhausted = false,
   onRetry,
   onSelectSuggestion,
-  userName = "You",
+  userName = "Bạn",
 }) {
   const chatContainerRef = useRef(null);
 
@@ -24,7 +26,7 @@ function ChatMessageList({
     }
   }, [messages, isTyping, error]);
 
-  if (messages.length === 0 && !isTyping) {
+  if (messages.length === 0 && !isTyping && !error && !guestTrialExhausted) {
     return (
       <div
         ref={chatContainerRef}
@@ -62,9 +64,19 @@ function ChatMessageList({
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
 
-            <span>
-              {error.message || "Sorry, I couldn't process your request."}
-            </span>
+            <div>
+              <span>
+                {error.message || "Xin lỗi, hiện chưa thể xử lý yêu cầu của bạn."}
+              </span>
+              {error.status === 429 && (
+                <Link
+                  to="/login"
+                  className="ml-2 inline-flex font-semibold underline hover:text-red-900"
+                >
+                  Đăng nhập ngay
+                </Link>
+              )}
+            </div>
           </div>
 
           {onRetry && error.status !== 429 && (
@@ -74,9 +86,21 @@ function ChatMessageList({
               className="inline-flex items-center gap-1 font-semibold text-red-700 hover:text-red-900 underline cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>Try again</span>
+              <span>Thử lại</span>
             </button>
           )}
+        </div>
+      )}
+
+      {guestTrialExhausted && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <span>Bạn đã dùng hết 3 lượt hỏi dành cho khách.</span>
+          <Link
+            to="/login"
+            className="ml-2 inline-flex font-semibold underline hover:text-amber-950"
+          >
+            Đăng nhập để tiếp tục
+          </Link>
         </div>
       )}
     </div>

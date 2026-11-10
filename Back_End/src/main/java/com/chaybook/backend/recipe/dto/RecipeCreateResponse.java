@@ -11,7 +11,13 @@ public record RecipeCreateResponse(
         String imageUrl,
         Integer prepTime,
         Integer cookTime,
+        Integer servings,
+        String difficulty,
         String instructions,
+        Double calories,
+        Double protein,
+        Double carbs,
+        Double fat,
         List<RecipeIngredientResponse> ingredients
 ) {
 }

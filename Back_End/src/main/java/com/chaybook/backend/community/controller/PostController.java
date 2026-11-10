@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(
-        origins = "http://localhost:5173",
+        origins = {"http://localhost:5173", "https://chay-book.vercel.app"},
         allowCredentials = "true"
 )
 public class PostController {
@@ -103,6 +103,12 @@ public ResponseEntity<PostCreateResponse> createPost(
         @RequestParam("content") String content,
         @RequestParam(value = "image", required = false)
         MultipartFile image,
+        @RequestParam(value = "imageUrl", required = false)
+        String imageUrl,
+        @RequestParam(value = "mediaType", required = false)
+        String mediaType,
+        @RequestParam(value = "mediaPublicId", required = false)
+        String mediaPublicId,
         @AuthenticationPrincipal Jwt jwt
 ) {
     Integer currentUserId = getCurrentUserId(jwt);
@@ -112,7 +118,10 @@ public ResponseEntity<PostCreateResponse> createPost(
             categoryId,
             title,
             content,
-            image
+            image,
+            imageUrl,
+            mediaType,
+            mediaPublicId
     );
 
     return ResponseEntity

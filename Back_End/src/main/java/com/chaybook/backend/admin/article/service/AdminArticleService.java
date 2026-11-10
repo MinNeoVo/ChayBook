@@ -12,7 +12,8 @@ public interface AdminArticleService {
             Integer categoryId,
             String status,
             int page,
-            int size
+            int size,
+            String sort
     );
 
     AdminArticleResponse getArticleDetail(
@@ -24,6 +25,7 @@ public interface AdminArticleService {
             Integer authenticatedUserId,
             AdminArticleRequest request
     );
+
 
     AdminArticleResponse updateArticle(
             Integer authenticatedUserId,

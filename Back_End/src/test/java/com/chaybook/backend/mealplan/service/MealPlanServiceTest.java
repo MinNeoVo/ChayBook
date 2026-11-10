@@ -84,7 +84,7 @@ class MealPlanServiceTest {
         });
         when(recipeIngredientRepository.findRecipeIdsContainingAllergies(List.of(ALLERGY_ID)))
                 .thenReturn(List.of(1));
-        when(recipeRepository.findAll()).thenReturn(List.of(blocked, safe));
+        when(recipeRepository.findByStatus("ACTIVE")).thenReturn(List.of(blocked, safe));
 
         MealPlanResponse response = service.generate(USER_ID, request(3));
 
@@ -124,7 +124,7 @@ class MealPlanServiceTest {
                 .thenReturn(Optional.of(bmiRecord));
         when(recipeIngredientRepository.findRecipeIdsContainingAllergies(List.of(ALLERGY_ID)))
                 .thenReturn(List.of(1));
-        when(recipeRepository.findAll()).thenReturn(List.of(recipe));
+        when(recipeRepository.findByStatus("ACTIVE")).thenReturn(List.of(recipe));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,

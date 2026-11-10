@@ -1,5 +1,6 @@
 package com.chaybook.backend.category.entity;
 
+import com.chaybook.backend.category.enums.CategoryStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Nationalized;
 
@@ -18,12 +19,13 @@ public class Category {
     @Column(name = "type", length = 50)
     private String type;
 
-    @Column(name = "description", columnDefinition = "VARCHAR(MAX)")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Nationalized
     @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
+    @Enumerated(EnumType.STRING)
+    private CategoryStatus status = CategoryStatus.ACTIVE;
 
     public Category() {
     }
@@ -35,10 +37,18 @@ public class Category {
     }
 
     public String getStatus() {
-        return status;
+        return status == null ? null : status.name();
     }
 
     public void setStatus(String status) {
+        this.status = status == null ? null : CategoryStatus.valueOf(status);
+    }
+
+    public CategoryStatus getStatusValue() {
+        return status;
+    }
+
+    public void setStatus(CategoryStatus status) {
         this.status = status;
     }
 

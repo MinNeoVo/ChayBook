@@ -20,23 +20,24 @@ function CommunityHeader() {
       >
         <Leaf size={16} />
 
-        <span>Living Consciously</span>
+        <span>Sống có ý thức</span>
       </div>
 
       <h1
         className="
-                    text-4xl
+                    text-3xl
                     font-bold
                     tracking-tight
                     text-chaybook-primary
+                    sm:text-4xl
                 "
       >
-        Community
+        Cộng đồng
       </h1>
 
-      <p className="text-lg leading-7 text-gray-600">
-        Share your vegetarian journey, mindful recipes, and botanical kitchen
-        rituals.
+      <p className="text-base leading-7 text-gray-600 sm:text-lg">
+        Chia sẻ hành trình ăn chay, công thức lành mạnh và bí quyết nấu ăn từ
+        thực vật.
       </p>
     </section>
   );

@@ -12,12 +12,15 @@ public record PostResponse(
         String title,
         String content,
         String imageUrl,
+        String mediaType,
+        String mediaPublicId,
         String status,
         LocalDateTime createdAt,
         long likeCount,
         long bookmarkCount,
         long commentCount,
         boolean likedByCurrentUser,
-        boolean bookmarkedByCurrentUser
+        boolean bookmarkedByCurrentUser,
+        String adminReason
 ) {
 }

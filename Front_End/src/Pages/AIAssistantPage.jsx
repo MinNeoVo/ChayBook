@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import AIHeader from "../components/ai/AIHeader";
 import ChatMessageList from "../components/ai/ChatMessageList";
@@ -7,7 +8,7 @@ import SuggestionChips from "../components/ai/SuggestionChips";
 
 import { useAuth } from "../context/useAuth";
 
-import { Check, Trash2, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import {
   sendAIMessage,
@@ -18,26 +19,102 @@ import {
 } from "../services/aiAssistantService";
 
 function AIAssistantPage() {
-  const { user } = useAuth();
+  const { user, loading: isAuthLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [initialPrompt] = useState(() => {
+    const promptFromState = location.state?.initialPrompt;
+    return typeof promptFromState === "string" ? promptFromState.trim() : "";
+  });
+  const hasSentInitialPromptRef = useRef(false);
 
   // Lưu ID của cuộc hội thoại hiện đang mở
   const [conversationId, setConversationId] = useState(null);
 
-  // Không còn tin nhắn mẫu
-  const [messages, setMessages] = useState([]);
+  // Khởi tạo tin nhắn đầu tiên ngay nếu người dùng chuyển từ AiQuickAssistant ở HomePage sang
+  const [messages, setMessages] = useState(() => {
+    if (!initialPrompt) return [];
+    const formattedTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return [
+      {
+        id: `user-init-${Date.now()}`,
+        role: "user",
+        content: initialPrompt,
+        createdAt: formattedTime,
+      },
+    ];
+  });
   const [conversations, setConversations] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [loadingConversationId, setLoadingConversationId] = useState(null);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isTyping, setIsTyping] = useState(() => Boolean(initialPrompt));
   const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const [deletingConversationId, setDeletingConversationId] = useState(null);
   const [error, setError] = useState(null);
-  const [lastUserPrompt, setLastUserPrompt] = useState("");
+  const [lastUserPrompt, setLastUserPrompt] = useState(() => initialPrompt);
+  const [guestTrialExhausted, setGuestTrialExhausted] = useState(false);
 
   const [activeModal, setActiveModal] = useState(null);
 
+  useEffect(() => {
+    if (!initialPrompt || isAuthLoading || hasSentInitialPromptRef.current) {
+      return;
+    }
+
+    hasSentInitialPromptRef.current = true;
+    navigate(location.pathname, { replace: true, state: null });
+
+    sendAIMessage(initialPrompt, null)
+      .then((aiMessage) => {
+        if (aiMessage.conversationId != null) {
+          setConversationId(aiMessage.conversationId);
+        }
+
+        setMessages((prev) => [...prev, aiMessage]);
+        if (!user && aiMessage.guestQuestionsRemaining === 0) {
+          setGuestTrialExhausted(true);
+        }
+      })
+      .catch((err) => {
+        console.error("AI Assistant error:", err);
+
+        let errorMessage = "Không thể tạo câu trả lời. Vui lòng thử lại.";
+
+        if (err.status === 429) {
+          errorMessage =
+            "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          setMessages((prev) =>
+            prev.filter((message) => !String(message.id).startsWith("user-init-")),
+          );
+          setGuestTrialExhausted(true);
+        } else if (err.status === 503) {
+          errorMessage =
+            "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
+        } else if (err.status === 401) {
+          errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+
+        setError({
+          message: errorMessage,
+          status: err.status,
+          originalPrompt: initialPrompt,
+        });
+      })
+      .finally(() => {
+        setIsTyping(false);
+      });
+  }, [initialPrompt, isAuthLoading, location.pathname, navigate, user]);
+
   const handleOpenHistory = async () => {
+    if (isTyping) return;
+
     setActiveModal("sessions");
     setHistoryError("");
     setConversations([]);
@@ -60,6 +137,8 @@ function AIAssistantPage() {
   };
 
   const handleSelectConversation = async (conversation) => {
+    if (isTyping) return;
+
     const id = conversation.conversationId;
     setLoadingConversationId(id);
     setHistoryError("");
@@ -122,7 +201,12 @@ function AIAssistantPage() {
   };
 
   const handleSendMessage = async (text) => {
-    if (!text || !text.trim()) {
+    if (
+      !text ||
+      !text.trim() ||
+      isAuthLoading ||
+      (!user && guestTrialExhausted)
+    ) {
       return;
     }
 
@@ -156,6 +240,9 @@ function AIAssistantPage() {
       }
 
       setMessages((prev) => [...prev, aiMessage]);
+      if (!user && aiMessage.guestQuestionsRemaining === 0) {
+        setGuestTrialExhausted(true);
+      }
     } catch (err) {
       console.error("AI Assistant error:", err);
 
@@ -163,7 +250,11 @@ function AIAssistantPage() {
 
       if (err.status === 429) {
         errorMessage =
-          "Bạn đã hết 3 lượt dùng thử hôm nay. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+        setMessages((prev) =>
+          prev.filter((message) => message.id !== userMessage.id),
+        );
+        setGuestTrialExhausted(true);
       } else if (err.status === 503) {
         errorMessage =
           "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
@@ -195,6 +286,8 @@ function AIAssistantPage() {
   };
 
   const handleReset = () => {
+    if (isTyping) return;
+
     // Bắt đầu hội thoại mới
     setMessages([]);
     setConversationId(null);
@@ -204,6 +297,8 @@ function AIAssistantPage() {
   };
 
   const handleClearAll = () => {
+    if (isTyping) return;
+
     // Xóa nội dung trên giao diện và bắt đầu hội thoại mới khi gửi tiếp
     setMessages([]);
     setConversationId(null);
@@ -213,13 +308,13 @@ function AIAssistantPage() {
   };
 
   return (
-    <div className="w-full bg-chaybook-bg px-3 py-4 sm:px-6 sm:py-6 lg:py-8">
-      <div className="mx-auto flex h-[calc(100vh-8.5rem)] min-h-[580px] max-w-[1040px] flex-col rounded-3xl border border-gray-200/80 bg-chaybook-container/40 p-3 shadow-xs backdrop-blur-xs sm:p-5">
+    <div className="w-full bg-chaybook-bg px-3 py-3 sm:px-6 sm:py-6 lg:py-8">
+      <div className="mx-auto flex h-[calc(100dvh-5.5rem)] min-h-[460px] max-w-[1040px] flex-col rounded-2xl border border-gray-200/80 bg-chaybook-container/40 p-3 shadow-xs backdrop-blur-xs sm:h-[calc(100vh-8.5rem)] sm:min-h-[580px] sm:rounded-3xl sm:p-5">
         {/* AI Header */}
         <AIHeader
           onReset={handleReset}
           onOpenHistory={handleOpenHistory}
-          onOpenPreferences={() => setActiveModal("preferences")}
+          disabled={isTyping}
         />
 
         {/* Message count */}
@@ -233,7 +328,8 @@ function AIAssistantPage() {
             <button
               type="button"
               onClick={handleClearAll}
-              className="cursor-pointer text-gray-400 transition-colors hover:text-red-500"
+              disabled={isTyping}
+              className="cursor-pointer text-gray-400 transition-colors hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Clear conversation
             </button>
@@ -245,6 +341,7 @@ function AIAssistantPage() {
           messages={messages}
           isTyping={isTyping}
           error={error}
+          guestTrialExhausted={!user && guestTrialExhausted}
           onRetry={handleRetry}
           onSelectSuggestion={handleSendMessage}
           userName={user?.fullName || user?.name || "You"}
@@ -252,12 +349,15 @@ function AIAssistantPage() {
 
         {/* Input */}
         <div className="mt-auto flex flex-col gap-2.5 border-t border-gray-200/60 pt-3">
-          <ChatInput onSendMessage={handleSendMessage} disabled={isTyping} />
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+            />
 
-          <SuggestionChips
-            onSelectSuggestion={handleSendMessage}
-            disabled={isTyping}
-          />
+            <SuggestionChips
+              onSelectSuggestion={handleSendMessage}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+            />
         </div>
       </div>
 
@@ -269,7 +369,7 @@ function AIAssistantPage() {
           <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
             <div className="flex shrink-0 items-center justify-between border-b border-gray-100 p-5 pb-3">
               <h3 className="text-base font-bold text-gray-900">
-                Recent Sessions (UI Preview)
+                Lịch sử cuộc hội thoại
               </h3>
 
               <button
@@ -358,79 +458,13 @@ function AIAssistantPage() {
                 disabled={isDeletingHistory}
                 className="cursor-pointer rounded-xl bg-chaybook-primary px-4 py-2 text-xs font-semibold text-white"
               >
-                Close
+                Đóng
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* =========================
-          PREFERENCES MODAL
-          ========================= */}
-      {activeModal === "preferences" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-base font-bold text-gray-900">
-                Diet Preferences (UI Preview)
-              </h3>
-
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="cursor-pointer text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3 py-4">
-              <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    Vegetarian Diet Type
-                  </p>
-
-                  <span className="text-xs text-gray-500">
-                    Lacto-Ovo Vegetarian
-                  </span>
-                </div>
-
-                <Check className="h-4 w-4 text-chaybook-primary" />
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    Nut &amp; Peanut Free
-                  </p>
-
-                  <span className="text-xs text-gray-500">
-                    Synched from profile
-                  </span>
-                </div>
-
-                <Check className="h-4 w-4 text-chaybook-primary" />
-              </div>
-            </div>
-
-            <p className="text-center text-xs text-gray-400">
-              Diet preference profile sync will be connected in a later phase.
-            </p>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setActiveModal(null)}
-                className="cursor-pointer rounded-xl bg-chaybook-primary px-4 py-2 text-xs font-semibold text-white"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

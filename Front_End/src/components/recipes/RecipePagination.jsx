@@ -30,11 +30,11 @@ function RecipePagination({ page, size, totalPages, totalElements, onPageChange 
 
   return (
     <nav
-      aria-label="Recipe pagination"
+      aria-label="Phân trang công thức"
       className="mt-8 flex flex-col items-center gap-4 border-t border-gray-200/80 pt-6"
     >
       <p role="status" className="text-center text-sm text-[#3e4a3d]">
-        Showing {firstRecipe}–{lastRecipe} of {totalElements} recipes
+        Hiển thị {firstRecipe}–{lastRecipe} / {totalElements} công thức
       </p>
       <div className="flex w-full flex-wrap items-center justify-center gap-2">
         <Button
@@ -45,7 +45,7 @@ function RecipePagination({ page, size, totalPages, totalElements, onPageChange 
           className="gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
         >
           <ChevronLeft aria-hidden="true" size={16} />
-          Previous
+          Trước
         </Button>
         <div className="flex items-center gap-1 sm:gap-2">
           {getPageItems(page, totalPages).map((item) =>
@@ -53,7 +53,7 @@ function RecipePagination({ page, size, totalPages, totalElements, onPageChange 
               <button
                 key={item}
                 type="button"
-                aria-label={`Go to page ${item + 1}`}
+                aria-label={`Đến trang ${item + 1}`}
                 aria-current={item === page ? "page" : undefined}
                 disabled={item === page}
                 onClick={() => onPageChange(item)}
@@ -79,7 +79,7 @@ function RecipePagination({ page, size, totalPages, totalElements, onPageChange 
           onClick={() => onPageChange(page + 1)}
           className="gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chaybook-primary focus-visible:ring-offset-2"
         >
-          Next
+          Sau
           <ChevronRight aria-hidden="true" size={16} />
         </Button>
       </div>

@@ -14,12 +14,18 @@ import Button from "../components/common/Button";
 import { getRecipeById } from "../services/recipeServices";
 import { parseRecipeInstructions } from "../utils/parseRecipeInstructions";
 
+const DIFFICULTY_LABELS = {
+  Easy: "Dễ",
+  Medium: "Trung bình",
+  Hard: "Khó",
+};
+
 function formatMinutes(minutes) {
   if (typeof minutes !== "number" || !Number.isFinite(minutes)) {
     return null;
   }
 
-  return `${minutes} min`;
+  return `${minutes} phút`;
 }
 
 function formatQuantity(quantity) {
@@ -32,7 +38,7 @@ function formatQuantity(quantity) {
 
 function RecipeDetailLoading() {
   return (
-    <div aria-label="Loading recipe" aria-live="polite" className="space-y-8">
+    <div aria-label="Đang tải công thức" aria-live="polite" className="space-y-8">
       <div className="h-6 w-36 animate-pulse rounded bg-gray-200" />
       <div className="grid grid-cols-1 gap-8 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm md:grid-cols-2 md:p-8">
         <div className="aspect-4/3 animate-pulse rounded-xl bg-gray-200" />
@@ -60,10 +66,10 @@ function RecipeDetailStatus({ isNotFound, onRetry, backTo, backState, backLabel 
         className={`mb-4 ${isNotFound ? "text-[#6e7b6c]" : "text-red-600"}`}
       />
       <h1 className="mb-2 text-2xl font-semibold text-[#181c1b]">
-        {isNotFound ? "Recipe not found." : "Unable to load this recipe."}
+        {isNotFound ? "Không tìm thấy công thức." : "Không thể tải công thức này."}
       </h1>
       {!isNotFound && (
-        <p className="mb-5 text-sm text-[#3e4a3d]">Please try again.</p>
+        <p className="mb-5 text-sm text-[#3e4a3d]">Vui lòng thử lại.</p>
       )}
       <div className="flex flex-wrap items-center justify-center gap-3">
         {isNotFound ? (
@@ -79,7 +85,7 @@ function RecipeDetailStatus({ isNotFound, onRetry, backTo, backState, backLabel 
           <Button type="button" onClick={onRetry}>
             <span className="inline-flex items-center gap-2">
               <RefreshCcw aria-hidden="true" size={16} />
-              Try Again
+              Thử lại
             </span>
           </Button>
         )}
@@ -103,7 +109,7 @@ function RecipeDetailPage() {
   const location = useLocation();
   const fromMealPlan = location.state?.from === "/meal-plan";
   const backTo = fromMealPlan ? "/meal-plan" : "/recipes";
-  const backLabel = fromMealPlan ? "Back to Meal Plan" : "Back to Recipes";
+  const backLabel = fromMealPlan ? "Quay lại thực đơn" : "Quay lại công thức";
   const backState = fromMealPlan
     ? {
         mealPlanId: location.state.mealPlanId,
@@ -202,17 +208,17 @@ function RecipeDetailPage() {
         <section className="grid grid-cols-1 gap-7 overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-9 md:p-8">
           <RecipeImage
             imageUrl={recipe.imageUrl}
-            alt={recipe.name ? `${recipe.name} recipe` : "Recipe"}
+            alt={recipe.name ? `Công thức ${recipe.name}` : "Công thức"}
             className="aspect-4/3 w-full rounded-xl md:aspect-auto md:min-h-80"
           />
 
           <div className="flex min-w-0 flex-col justify-center py-2 md:py-4">
             <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#e7f5e9] px-3 py-1 text-xs font-semibold text-chaybook-primary">
               <ChefHat aria-hidden="true" size={15} />
-              Recipe
+              Công thức
             </span>
             <h1 className="mb-4 text-2xl font-bold leading-tight tracking-tight text-[#181c1b] sm:text-3xl lg:text-4xl">
-              {recipe.name || "Recipe"}
+              {recipe.name || "Công thức"}
             </h1>
             {recipe.description && (
               <p className="mb-6 text-sm leading-7 text-[#3e4a3d] sm:text-base">
@@ -222,7 +228,7 @@ function RecipeDetailPage() {
 
             {(recipe.categoryName || recipe.servings || recipe.difficulty) && (
               <p className="mb-5 text-sm text-[#6e7b6c]">
-                {[recipe.categoryName, recipe.servings && `${recipe.servings} servings`, recipe.difficulty]
+                {[recipe.categoryName, recipe.servings && `${recipe.servings} khẩu phần`, DIFFICULTY_LABELS[recipe.difficulty] || recipe.difficulty]
                   .filter(Boolean)
                   .join(" · ")}
               </p>
@@ -234,7 +240,7 @@ function RecipeDetailPage() {
                   <div className="rounded-xl border border-gray-200 bg-[#f7faf7] p-4">
                     <span className="mb-2 flex items-center gap-2 text-xs font-medium text-[#6e7b6c]">
                       <Clock3 aria-hidden="true" size={16} />
-                      Prep Time
+                      Thời gian chuẩn bị
                     </span>
                     <span className="text-base font-semibold text-[#181c1b]">
                       {prepTime}
@@ -245,7 +251,7 @@ function RecipeDetailPage() {
                   <div className="rounded-xl border border-gray-200 bg-[#f7faf7] p-4">
                     <span className="mb-2 flex items-center gap-2 text-xs font-medium text-[#6e7b6c]">
                       <ChefHat aria-hidden="true" size={16} />
-                      Cook Time
+                      Thời gian nấu
                     </span>
                     <span className="text-base font-semibold text-[#181c1b]">
                       {cookTime}
@@ -256,7 +262,7 @@ function RecipeDetailPage() {
                   <div className="col-span-2 rounded-xl border border-[#cfe4d3] bg-[#e7f5e9] p-4 sm:col-span-1">
                     <span className="mb-2 flex items-center gap-2 text-xs font-medium text-chaybook-primary">
                       <Clock3 aria-hidden="true" size={16} />
-                      Total Time
+                      Tổng thời gian
                     </span>
                     <span className="text-base font-semibold text-[#181c1b]">
                       {totalTime}
@@ -275,14 +281,14 @@ function RecipeDetailPage() {
               className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-7 lg:col-span-12"
             >
               <h2 id="nutrition-heading" className="mb-4 text-xl font-bold text-[#181c1b]">
-                Nutrition
+                Dinh dưỡng
               </h2>
               <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {[
-                  ["Calories", recipe.calories, "kcal"],
+                  ["Calo", recipe.calories, "kcal"],
                   ["Protein", recipe.protein, "g"],
-                  ["Carbohydrates", recipe.carbs, "g"],
-                  ["Fat", recipe.fat, "g"],
+                  ["Tinh bột", recipe.carbs, "g"],
+                  ["Chất béo", recipe.fat, "g"],
                 ].filter(([, value]) => value != null).map(([label, value, unit]) => (
                   <div key={label} className="rounded-xl bg-[#f7faf7] p-4">
                     <dt className="text-xs font-medium text-[#6e7b6c]">{label}</dt>
@@ -306,10 +312,10 @@ function RecipeDetailPage() {
                   id="ingredients-heading"
                   className="text-xl font-bold text-[#181c1b]"
                 >
-                  Ingredients
+                  Nguyên liệu
                 </h2>
                 <p className="mt-0.5 text-xs text-[#6e7b6c]">
-                  {ingredients.length} ingredients
+                  {ingredients.length} nguyên liệu
                 </p>
               </div>
             </div>
@@ -340,7 +346,7 @@ function RecipeDetailPage() {
               </ul>
             ) : (
               <p className="rounded-xl bg-[#f7faf7] px-4 py-5 text-sm text-[#6e7b6c]">
-                No ingredients are available for this recipe.
+                Công thức này chưa có thông tin nguyên liệu.
               </p>
             )}
           </section>
@@ -357,7 +363,7 @@ function RecipeDetailPage() {
                 id="instructions-heading"
                 className="text-xl font-bold text-[#181c1b]"
               >
-                Instructions
+                Cách thực hiện
               </h2>
             </div>
             {instructionSteps.length > 0 ? (
@@ -378,7 +384,7 @@ function RecipeDetailPage() {
               </div>
             ) : (
               <p className="rounded-xl bg-[#f7faf7] px-4 py-5 text-sm text-[#6e7b6c]">
-                No instructions are available for this recipe.
+                Công thức này chưa có hướng dẫn thực hiện.
               </p>
             )}
           </section>

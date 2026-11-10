@@ -12,6 +12,7 @@ import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -197,8 +198,30 @@ public class UserController {
                 "Invalid authentication information"
         );
     }
+    /**
+     * Upload ảnh avatar cho user đang đăng nhập.
+     * POST /api/users/me/avatar
+     * multipart/form-data, field: "file"
+     */
+    @PostMapping(
+            value = "/me/avatar",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<UploadAvatarResponse> uploadAvatar(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        Integer currentUserId = requireCurrentUserId(jwt);
+
+        UploadAvatarResponse response = userService.uploadAvatar(currentUserId, file);
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(response);
+    }
 
 
 
 
 }
+

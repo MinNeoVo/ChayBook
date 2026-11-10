@@ -1,22 +1,31 @@
 package com.chaybook.backend.community.service;
 
 import com.chaybook.backend.category.entity.Category;
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.common.pagination.PageResponse;
 import com.chaybook.backend.community.dto.*;
 import com.chaybook.backend.community.entity.*;
+import com.chaybook.backend.community.enums.PostStatus;
 import com.chaybook.backend.community.exception.PostException;
 import com.chaybook.backend.community.repository.*;
+import com.chaybook.backend.media.service.MediaService;
+import com.chaybook.backend.moderation.entity.AiModeration;
+import com.chaybook.backend.media.dto.MediaUploadResponse;
+import com.chaybook.backend.moderation.event.PostModerationRequestedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.enums.UserStatus;
 import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
+import com.chaybook.backend.moderation.service.AiModerationService;
+import com.chaybook.backend.notification.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class PostService {
@@ -25,19 +34,55 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final AiModerationService aiModerationService;
+    private final MediaService mediaService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
 
     public PostService(
             PostRepository postRepository,
             PostInteractionRepository postInteractionRepository,
             CommentRepository commentRepository,
             UserRepository userRepository,
-            CategoryRepository categoryRepository
+            CategoryRepository categoryRepository,
+            AiModerationService aiModerationService,
+            MediaService mediaService,
+            ApplicationEventPublisher eventPublisher
+    ) {
+        this(
+                postRepository,
+                postInteractionRepository,
+                commentRepository,
+                userRepository,
+                categoryRepository,
+                aiModerationService,
+                mediaService,
+                eventPublisher,
+                null
+        );
+    }
+
+    @Autowired
+    public PostService(
+            PostRepository postRepository,
+            PostInteractionRepository postInteractionRepository,
+            CommentRepository commentRepository,
+            UserRepository userRepository,
+            CategoryRepository categoryRepository,
+            AiModerationService aiModerationService,
+            MediaService mediaService,
+            ApplicationEventPublisher eventPublisher,
+            NotificationService notificationService
     ) {
         this.postRepository = postRepository;
         this.postInteractionRepository = postInteractionRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.aiModerationService = aiModerationService;
+        this.mediaService = mediaService;
+        this.eventPublisher = eventPublisher;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -172,13 +217,16 @@ public class PostService {
                     post.getTitle(),
                     post.getContent(),
                     post.getImageUrl(),
-                    post.getStatus(),
+                    post.getMediaType(),
+                    post.getMediaPublicId(),
+                    post.getStatusValue().name(),
                     post.getCreatedAt(),
                     likeCounts.getOrDefault(postId, 0L),
                     bookmarkCounts.getOrDefault(postId, 0L),
                     commentCounts.getOrDefault(postId, 0L),
                     likedPostIds.contains(postId),
-                    bookmarkedPostIds.contains(postId)
+                    bookmarkedPostIds.contains(postId),
+                    null
             );
         });
 
@@ -192,7 +240,10 @@ public PostCreateResponse createPost(
         Integer categoryId,
         String title,
         String content,
-        MultipartFile image
+        MultipartFile image,
+        String mediaUrl,
+        String mediaType,
+        String mediaPublicId
 ) {
     User currentUser = requireActiveUser(currentUserId);
 
@@ -200,6 +251,12 @@ public PostCreateResponse createPost(
         throw new PostException(
                 HttpStatus.BAD_REQUEST,
                 "Title is required and must not exceed 255 characters"
+        );
+    }
+    if (title.codePoints().anyMatch(Character::isDigit)) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Title must not contain digits"
         );
     }
 
@@ -212,17 +269,53 @@ public PostCreateResponse createPost(
 
     Category category = findOptionalCategory(categoryId);
 
-    String imageUrl = savePostImage(image);
+    if (mediaUrl != null && !mediaUrl.isBlank() && image != null && !image.isEmpty()) {
+        throw new PostException(
+                HttpStatus.BAD_REQUEST,
+                "Provide either a media URL or a file, not both"
+        );
+    }
+    MediaUploadResponse uploadedMedia = null;
+    String storedMediaUrl;
+
+    if (mediaUrl != null && !mediaUrl.isBlank()) {
+        storedMediaUrl = normalizeImageUrl(mediaUrl);
+    } else {
+        uploadedMedia = uploadPostMedia(image);
+        storedMediaUrl = uploadedMedia == null ? null : uploadedMedia.getUrl();
+    }
 
     Post post = new Post();
     post.setUser(currentUser);
     post.setCategory(category);
     post.setTitle(title.strip());
     post.setContent(content.strip());
-    post.setImageUrl(imageUrl);
-    post.setStatus("PENDING");
 
+// URL video hoặc ảnh đều được lưu tại image_url để có URL phát/hiển thị.
+    post.setImageUrl(storedMediaUrl);
+
+    if (uploadedMedia != null) {
+        post.setMediaType(uploadedMedia.getMediaType());
+        post.setMediaPublicId(uploadedMedia.getPublicId());
+    } else if (storedMediaUrl != null) {
+        post.setMediaType(mediaType);
+        post.setMediaPublicId(mediaPublicId);
+    }
+
+    post.setStatus(PostStatus.PENDING);
     Post savedPost = postRepository.saveAndFlush(post);
+
+    eventPublisher.publishEvent(
+            new PostModerationRequestedEvent(savedPost.getPostId())
+    );
+
+    if (notificationService != null) {
+        notificationService.notifyAdminsNewPost(
+                currentUser,
+                savedPost.getPostId(),
+                savedPost.getTitle()
+        );
+    }
 
     PostCreateResponse.PostData postData =
             new PostCreateResponse.PostData(
@@ -232,7 +325,9 @@ public PostCreateResponse createPost(
                     savedPost.getTitle(),
                     savedPost.getContent(),
                     savedPost.getImageUrl(),
-                    savedPost.getStatus(),
+                    savedPost.getMediaType(),
+                    savedPost.getMediaPublicId(),
+                    savedPost.getStatusValue().name(),
                     savedPost.getCreatedAt()
             );
 
@@ -242,53 +337,20 @@ public PostCreateResponse createPost(
     );
 }
 
-private String savePostImage(MultipartFile image) {
-    if (image == null || image.isEmpty()) {
-        return null;
+    private MediaUploadResponse uploadPostMedia(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return mediaService.upload(image);
+        } catch (IllegalArgumentException exception) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    exception.getMessage()
+            );
+        }
     }
-
-    if (image.getSize() > 5 * 1024 * 1024) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                "Image must not exceed 5 MB"
-        );
-    }
-
-    String contentType = image.getContentType();
-
-    if (contentType == null ||
-            !(contentType.equalsIgnoreCase("image/jpeg")
-                    || contentType.equalsIgnoreCase("image/png"))) {
-        throw new PostException(
-                HttpStatus.BAD_REQUEST,
-                "Only JPEG and PNG images are allowed"
-        );
-    }
-
-    String extension = contentType.equalsIgnoreCase("image/png")
-            ? ".png"
-            : ".jpg";
-
-    String fileName = UUID.randomUUID() + extension;
-    Path uploadDir = Paths.get("uploads", "posts").toAbsolutePath();
-    Path destination = uploadDir.resolve(fileName).normalize();
-
-    try {
-        Files.createDirectories(uploadDir);
-        Files.copy(
-                image.getInputStream(),
-                destination,
-                StandardCopyOption.REPLACE_EXISTING
-        );
-
-        return "/uploads/posts/" + fileName;
-    } catch (IOException exception) {
-        throw new PostException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Unable to save image"
-        );
-    }
-}
 
     @Transactional
     public PostMessageResponse updatePost(
@@ -311,6 +373,12 @@ private String savePostImage(MultipartFile image) {
         String newTitle = request.title() == null
                 ? post.getTitle()
                 : normalizePostText(request.title(), "Title");
+        if (newTitle.codePoints().anyMatch(Character::isDigit)) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Title must not contain digits"
+            );
+        }
 
         String newContent = request.content() == null
                 ? post.getContent()
@@ -319,6 +387,19 @@ private String savePostImage(MultipartFile image) {
         String newImageUrl = request.imageUrl() == null
                 ? post.getImageUrl()
                 : normalizeImageUrl(request.imageUrl());
+
+        boolean mediaUrlChanged =
+                !Objects.equals(post.getImageUrl(), newImageUrl);
+        String newMediaType = mediaUrlChanged
+                ? request.mediaType()
+                : request.mediaType() == null
+                        ? post.getMediaType()
+                        : request.mediaType();
+        String newMediaPublicId = mediaUrlChanged
+                ? request.mediaPublicId()
+                : request.mediaPublicId() == null
+                        ? post.getMediaPublicId()
+                        : request.mediaPublicId();
 
         Category newCategory = post.getCategory();
 
@@ -339,6 +420,8 @@ private String savePostImage(MultipartFile image) {
                 !Objects.equals(post.getTitle(), newTitle)
                         || !Objects.equals(post.getContent(), newContent)
                         || !Objects.equals(post.getImageUrl(), newImageUrl)
+                        || !Objects.equals(post.getMediaType(), newMediaType)
+                        || !Objects.equals(post.getMediaPublicId(), newMediaPublicId)
                         || !Objects.equals(oldCategoryId, newCategoryId);
 
         // Không gọi setter hoặc save khi dữ liệu không đổi.
@@ -349,10 +432,12 @@ private String savePostImage(MultipartFile image) {
         post.setTitle(newTitle);
         post.setContent(newContent);
         post.setImageUrl(newImageUrl);
+        post.setMediaType(newMediaType);
+        post.setMediaPublicId(newMediaPublicId);
         post.setCategory(newCategory);
 
         // Nội dung đã thay đổi nên phải duyệt lại.
-        post.setStatus("PENDING");
+        post.setStatus(PostStatus.PENDING);
 
         // Không đổi tác giả, createdAt hoặc các tương tác.
         postRepository.saveAndFlush(post);
@@ -380,7 +465,7 @@ private String savePostImage(MultipartFile image) {
         }
 
         // Xóa mềm: không xóa bản ghi hoặc dữ liệu liên quan.
-        post.setStatus("DELETED");
+        post.setStatus(PostStatus.REMOVED);
 
         postRepository.saveAndFlush(post);
 
@@ -402,7 +487,7 @@ private String savePostImage(MultipartFile image) {
                 ));
 
         // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if ("DELETED".equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() == PostStatus.REMOVED) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"
@@ -461,7 +546,7 @@ private String savePostImage(MultipartFile image) {
 
         Post post = requirePostForWrite(postId);
 
-        if (!"APPROVED".equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts can receive interactions"
@@ -529,7 +614,7 @@ private String savePostImage(MultipartFile image) {
         // Kiểm tra ID, khóa bài trong transaction và chặn bài DELETED.
         Post post = requirePostForWrite(postId);
 
-        if (!"APPROVED".equalsIgnoreCase(post.getStatus())) {
+        if (post.getStatusValue() != PostStatus.APPROVED) {
             throw new PostException(
                     HttpStatus.CONFLICT,
                     "Only approved posts allow interaction changes"
@@ -569,8 +654,7 @@ private String savePostImage(MultipartFile image) {
                         "User not found"
                 ));
 
-        if (user.getStatus() == null
-                || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+        if (user.getStatusValue() != UserStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.FORBIDDEN,
                     "User account is not active"
@@ -598,7 +682,7 @@ private String savePostImage(MultipartFile image) {
                         "Category not found"
                 ));
 
-        if (!"ACTIVE".equals(category.getStatus())) {
+        if (category.getStatusValue() != CategoryStatus.ACTIVE) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
                     "Cannot select a deleted category"
@@ -628,7 +712,7 @@ private String savePostImage(MultipartFile image) {
         if (normalizedUrl.length() > 255) {
             throw new PostException(
                     HttpStatus.BAD_REQUEST,
-                    "Image URL must not exceed 255 characters"
+                    "Media URL must not exceed 255 characters"
             );
         }
 

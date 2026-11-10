@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/posts/{postId}/comments")
 @CrossOrigin(
-        origins = "http://localhost:5173",
+        origins = {"http://localhost:5173", "https://chay-book.vercel.app"},
         allowCredentials = "true"
 )
 public class CommentController {

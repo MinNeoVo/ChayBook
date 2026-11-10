@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   ChefHat,
   CircleAlert,
   Clock3,
+  Leaf,
   RefreshCcw,
   Search,
+  X,
 } from "lucide-react";
 
 import RecipeImage from "../components/recipes/RecipeImage";
 import RecipePagination from "../components/recipes/RecipePagination";
 import Button from "../components/common/Button";
-import { getCategories } from "../services/categoryServices";
+import CategorySelect from "../components/categories/CategorySelect";
+import { useCategoryOptions } from "../hooks/useCategoryOptions";
 import { getRecipes } from "../services/recipeServices";
 
 const PAGE_SIZE = 10;
@@ -22,7 +25,7 @@ function formatMinutes(minutes) {
     return null;
   }
 
-  return `${minutes} min`;
+  return `${minutes} phút`;
 }
 
 function RecipeCard({ recipe }) {
@@ -37,30 +40,30 @@ function RecipeCard({ recipe }) {
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
       <Link
         to={`/recipes/${recipe.recipeId}`}
-        aria-label={`View recipe: ${recipe.name || "Recipe"}`}
+        aria-label={`Xem công thức: ${recipe.name || "Công thức"}`}
         className="flex h-full flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chaybook-primary"
       >
         <div className="relative aspect-16/10 overflow-hidden bg-chaybook-container">
           <RecipeImage
             imageUrl={recipe.imageUrl}
-            alt={recipe.name ? `${recipe.name} recipe` : "Recipe"}
+            alt={recipe.name ? `Công thức ${recipe.name}` : "Công thức"}
             className="h-full w-full transition-transform duration-500 group-hover:scale-105"
           />
           <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-chaybook-primary shadow-sm backdrop-blur-sm">
             <span className="h-2 w-2 rounded-full bg-chaybook-primary" />
-            Recipe
+            Công thức
           </span>
           {totalTime && (
             <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-[#2d3130]/85 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
               <Clock3 aria-hidden="true" size={14} />
-              {totalTime} total
+              {totalTime} tổng cộng
             </span>
           )}
         </div>
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
           <h2 className="mb-2 line-clamp-2 text-lg font-semibold leading-6 text-[#181c1b] transition-colors group-hover:text-chaybook-primary">
-            {recipe.name || "Untitled recipe"}
+            {recipe.name || "Công thức chưa đặt tên"}
           </h2>
           <p className="mb-5 line-clamp-3 text-sm leading-6 text-[#3e4a3d]">
             {recipe.description || ""}
@@ -70,19 +73,19 @@ function RecipeCard({ recipe }) {
             {prepTime && (
               <span className="inline-flex items-center gap-1.5">
                 <Clock3 aria-hidden="true" size={15} />
-                Prep {prepTime}
+                Chuẩn bị {prepTime}
               </span>
             )}
             {cookTime && (
               <span className="inline-flex items-center gap-1.5">
                 <ChefHat aria-hidden="true" size={15} />
-                Cook {cookTime}
+                Nấu {cookTime}
               </span>
             )}
           </div>
 
           <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 text-sm font-semibold text-chaybook-primary">
-            <span>View Recipe</span>
+            <span>Xem công thức</span>
             <ArrowRight
               aria-hidden="true"
               size={18}
@@ -98,7 +101,7 @@ function RecipeCard({ recipe }) {
 function RecipeLoadingState() {
   return (
     <section
-      aria-label="Loading recipes"
+      aria-label="Đang tải công thức"
       aria-live="polite"
       className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
     >
@@ -128,13 +131,13 @@ function RecipeStatus({ onRetry }) {
     >
       <CircleAlert aria-hidden="true" size={40} className="mb-4 text-red-600" />
       <h2 className="mb-2 text-xl font-semibold text-[#181c1b]">
-        Unable to load recipes.
+        Không thể tải công thức.
       </h2>
-      <p className="mb-5 text-sm text-[#3e4a3d]">Please try again.</p>
+      <p className="mb-5 text-sm text-[#3e4a3d]">Vui lòng thử lại.</p>
       <Button type="button" onClick={onRetry}>
         <span className="inline-flex items-center gap-2">
           <RefreshCcw aria-hidden="true" size={16} />
-          Try Again
+          Thử lại
         </span>
       </Button>
     </section>
@@ -142,38 +145,44 @@ function RecipeStatus({ onRetry }) {
 }
 
 function RecipesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ingredient = (searchParams.get("ingredient") || "").trim();
+
+  const [prevUrlIngredient, setPrevUrlIngredient] = useState(ingredient);
+  const [ingredientInput, setIngredientInput] = useState(ingredient);
+
   const [searchInput, setSearchInput] = useState("");
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [page, setPage] = useState(0);
-  const [categories, setCategories] = useState([]);
-  const [categoryStatus, setCategoryStatus] = useState("loading");
   const [retryCount, setRetryCount] = useState(0);
-  const requestKey = JSON.stringify([categoryId, keyword, page, retryCount]);
+
+  // Đồng bộ ingredientInput và page khi query param trên URL thay đổi
+  if (prevUrlIngredient !== ingredient) {
+    setPrevUrlIngredient(ingredient);
+    setIngredientInput(ingredient);
+    setPage(0);
+  }
+
+  const requestKey = JSON.stringify([
+    categoryId,
+    keyword,
+    ingredient,
+    page,
+    retryCount,
+  ]);
   const [result, setResult] = useState({
     requestKey: null,
     status: "loading",
     data: null,
   });
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    getCategories("RECIPE", { signal: controller.signal })
-      .then((data) => {
-        if (controller.signal.aborted) return;
-        setCategories(data);
-        setCategoryStatus("success");
-      })
-      .catch((error) => {
-        if (!controller.signal.aborted) {
-          console.error("Failed to load recipe categories:", error);
-          setCategoryStatus("error");
-        }
-      });
-
-    return () => controller.abort();
-  }, []);
+  const {
+    categories,
+    isLoading: loadingCategories,
+    error: categoryError,
+    reload: reloadCategories,
+  } = useCategoryOptions("RECIPE");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -182,6 +191,7 @@ function RecipesPage() {
       signal: controller.signal,
       page,
       size: PAGE_SIZE,
+      ingredient,
     })
       .then((data) => {
         if (controller.signal.aborted) return;
@@ -195,7 +205,7 @@ function RecipesPage() {
       });
 
     return () => controller.abort();
-  }, [categoryId, keyword, page, requestKey]);
+  }, [categoryId, keyword, ingredient, page, requestKey]);
 
   const isCurrentResult = result.requestKey === requestKey;
   const isLoading = !isCurrentResult;
@@ -203,14 +213,33 @@ function RecipesPage() {
   const data = isCurrentResult ? result.data : null;
   const recipes = data?.content || [];
 
-  const handleSearch = (event) => {
-    event.preventDefault();
-    setKeyword(searchInput.trim());
-    setPage(0);
+  const updateIngredientSearchParam = (nextIngredient) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (nextIngredient) {
+      nextParams.set("ingredient", nextIngredient);
+    } else {
+      nextParams.delete("ingredient");
+    }
+    setSearchParams(nextParams, { replace: true });
   };
 
-  const handleCategoryChange = (event) => {
-    setCategoryId(event.target.value);
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const nextKeyword = searchInput.trim();
+    const nextIngredient = ingredientInput.trim();
+    setKeyword(nextKeyword);
+    setPage(0);
+    updateIngredientSearchParam(nextIngredient);
+  };
+
+  const handleClearIngredient = () => {
+    setIngredientInput("");
+    setPage(0);
+    updateIngredientSearchParam("");
+  };
+
+  const handleCategoryChange = (nextCategoryId) => {
+    setCategoryId(nextCategoryId);
     setPage(0);
   };
 
@@ -224,74 +253,112 @@ function RecipesPage() {
         <header className="mb-10 flex flex-col items-center text-center sm:mb-12">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-[#92f5a4] px-3 py-1.5 text-xs font-semibold tracking-wide text-[#007233]">
             <ChefHat aria-hidden="true" size={16} />
-            ChayBook Recipes
+            Công thức ChayBook
           </span>
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-chaybook-primary sm:text-4xl lg:text-5xl">
-            Recipes
+            Công thức
           </h1>
           <p className="mb-7 max-w-2xl text-base leading-7 text-[#3e4a3d] sm:text-lg">
-            Discover healthy, delicious vegetarian recipes made for everyday
-            life.
+            Khám phá những công thức chay ngon miệng, lành mạnh cho bữa ăn
+            thường ngày.
           </p>
 
-          <div className="flex w-full max-w-3xl flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex w-full max-w-4xl flex-col gap-3 lg:flex-row lg:items-center">
             <form
               onSubmit={handleSearch}
               role="search"
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-100 bg-white p-1.5 shadow-sm focus-within:shadow-md"
+              className="flex min-w-0 flex-1 flex-col gap-2 rounded-xl border border-gray-100 bg-white p-2 shadow-sm focus-within:shadow-md sm:flex-row sm:items-center"
             >
-              <label className="sr-only" htmlFor="recipe-search">
-                Search recipes
-              </label>
-              <Search
-                aria-hidden="true"
-                size={19}
-                className="ml-3 shrink-0 text-gray-400"
-              />
-              <input
-                id="recipe-search"
-                type="search"
-                placeholder="Search recipes..."
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                className="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
-              />
+              <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-gray-100 pb-2 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-2">
+                <label className="sr-only" htmlFor="recipe-search">
+                  Tìm công thức
+                </label>
+                <Search
+                  aria-hidden="true"
+                  size={18}
+                  className="ml-2 shrink-0 text-gray-400"
+                />
+                <input
+                  id="recipe-search"
+                  type="search"
+                  placeholder="Tìm tên công thức..."
+                  value={searchInput}
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-1.5 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+                />
+              </div>
+
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <label className="sr-only" htmlFor="ingredient-search">
+                  Tìm theo nguyên liệu
+                </label>
+                <Leaf
+                  aria-hidden="true"
+                  size={18}
+                  className="ml-2 shrink-0 text-chaybook-primary"
+                />
+                <input
+                  id="ingredient-search"
+                  type="search"
+                  placeholder="Tìm theo nguyên liệu (vd: đậu phụ)..."
+                  value={ingredientInput}
+                  onChange={(event) => setIngredientInput(event.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent px-1.5 py-2 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0"
+                />
+              </div>
+
               <Button type="submit" className="shrink-0 px-5">
-                Search
+                Tìm kiếm
               </Button>
             </form>
 
-            <div className="w-full sm:w-56 sm:shrink-0">
-              <label className="sr-only" htmlFor="recipe-category">
-                Filter recipes by category
-              </label>
-              <select
-                id="recipe-category"
-                aria-label="Filter recipes by category"
+            <div className="w-full lg:w-56 lg:shrink-0">
+              <CategorySelect
                 value={categoryId}
-                disabled={
-                  categoryStatus === "loading" || categoryStatus === "error"
-                }
+                categories={categories}
                 onChange={handleCategoryChange}
-                className="min-h-12 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-[#3e4a3d] shadow-sm outline-none transition focus:border-chaybook-primary focus:ring-2 focus:ring-chaybook-primary/20"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.categoryId} value={category.categoryId}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-              {categoryStatus === "error" && (
-                <p
-                  role="status"
-                  className="mt-2 text-left text-xs text-red-600"
-                >
-                  Categories could not be loaded.
+                disabled={loadingCategories || Boolean(categoryError)}
+              />
+
+              {loadingCategories && (
+                <p role="status" className="mt-2 text-xs text-slate-500">
+                  Đang tải danh mục...
                 </p>
+              )}
+
+              {categoryError && (
+                <div role="alert" className="mt-2 space-y-2">
+                  <p className="text-xs text-red-700">
+                    Không tải được danh mục.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={reloadCategories}
+                  >
+                    Thử lại
+                  </Button>
+                </div>
               )}
             </div>
           </div>
+
+          {ingredient && (
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-chaybook-primary/20 bg-white px-4 py-1.5 text-xs font-semibold text-chaybook-primary shadow-2xs">
+              <Leaf className="h-3.5 w-3.5" />
+              <span>
+                Đang lọc theo nguyên liệu: <strong>{ingredient}</strong>
+              </span>
+              <button
+                type="button"
+                onClick={handleClearIngredient}
+                aria-label="Xóa lọc nguyên liệu"
+                className="ml-1 inline-flex h-4 w-4 cursor-pointer items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </header>
 
         {isLoading ? (
@@ -307,16 +374,16 @@ function RecipesPage() {
               className="mb-4 text-[#6e7b6c]"
             />
             <h2 className="mb-2 text-xl font-semibold text-[#181c1b]">
-              No recipes found.
+              Không tìm thấy công thức.
             </h2>
             <p className="text-sm leading-6 text-[#3e4a3d]">
-              Try another keyword or category.
+              Hãy thử từ khóa hoặc danh mục khác.
             </p>
           </section>
         ) : (
           <>
             <section
-              aria-label="Recipes"
+              aria-label="Danh sách công thức"
               className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
               {recipes.map((recipe) => (

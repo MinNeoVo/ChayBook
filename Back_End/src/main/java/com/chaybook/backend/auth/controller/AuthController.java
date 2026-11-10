@@ -1,6 +1,5 @@
 package com.chaybook.backend.auth.controller;
 
-
 import com.chaybook.backend.auth.dto.*;
 import com.chaybook.backend.auth.service.AuthService;
 import com.chaybook.backend.auth.service.LoginResult;
@@ -8,7 +7,9 @@ import com.chaybook.backend.auth.service.LoginResult;
 import jakarta.validation.Valid;
 
 import java.util.Map;
+import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,90 +17,106 @@ import org.springframework.web.server.ResponseStatusException;
 
 // import java.util.UUID;
 
-@CrossOrigin(origins = "http://localhost:5173",
-allowCredentials = "true"
-        )
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+        private final AuthService authService;
 
+        @Value("${jwt.expiration}")
+        private long jwtExpiration;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+        public AuthController(AuthService authService) {
+                this.authService = authService;
+        }
 
-    @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(
-            @Valid @RequestBody RegisterRequest request
-    ) {
-        RegisterResponse response = authService.register(request);
+        @PostMapping("/register")
+        public ResponseEntity<RegisterResponse> register(
+                        @Valid @RequestBody RegisterRequest request) {
+                authService.startRegistration(request);
+                return ResponseEntity.accepted().body(new RegisterResponse(
+                                "Mã OTP đã được gửi đến email. Nhập mã trong vòng 10 phút để hoàn tất đăng ký.", null));
+        }
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+        @PostMapping("/register/verify")
+        public ResponseEntity<RegisterResponse> verifyRegistration(
+                        @Valid @RequestBody VerifyRegistrationRequest request) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(authService.verifyRegistration(request));
+        }
 
-@PostMapping(
-        value = "/login",
-        consumes = MediaType.APPLICATION_JSON_VALUE
-)
-public ResponseEntity<LoginResponse> login(
-        @RequestBody LoginRequest request
-) {
+        @PostMapping("/forgot-password")
+        public ResponseEntity<Map<String, String>> forgotPassword(
+                        @Valid @RequestBody ForgotPasswordRequest request) {
+                authService.requestPasswordReset(request.email());
+                return ResponseEntity.ok(Map.of("message", "Nếu email có tài khoản, mã OTP sẽ được gửi đến hộp thư."));
+        }
 
-    if (request.getEmail() == null
-            || request.getEmail().isBlank()
-            || request.getPassword() == null
-            || request.getPassword().isEmpty()) {
+        @PostMapping("/forgot-password/verify")
+        public ResponseEntity<PasswordResetVerificationResponse> verifyPasswordReset(
+                        @Valid @RequestBody VerifyPasswordResetRequest request) {
+                return ResponseEntity.ok(new PasswordResetVerificationResponse(
+                                authService.verifyPasswordReset(request)));
+        }
 
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Email and password are required"
-        );
-    }
+        @PostMapping("/reset-password")
+        public ResponseEntity<Map<String, String>> resetPassword(
+                        @Valid @RequestBody ResetPasswordRequest request) {
+                authService.resetPassword(request);
+                return ResponseEntity.ok(Map.of("message", "Mật khẩu đã được cập nhật."));
+        }
 
-    LoginResult result = authService.login(request);
+        @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseEntity<LoginResponse> login(
+                        @RequestBody LoginRequest request) {
 
-    ResponseCookie cookie = ResponseCookie
-            .from("CHAYBOOK_TOKEN", result.token())
-            .httpOnly(true)
-            .secure(false) // localhost HTTP
-            .sameSite("Lax")
-            .path("/")
-            .maxAge(60 * 60)
-            .build();
+                if (request.getEmail() == null
+                                || request.getEmail().isBlank()
+                                || request.getPassword() == null
+                                || request.getPassword().isEmpty()) {
 
-    return ResponseEntity
-            .ok()
-            .header(HttpHeaders.SET_COOKIE, cookie.toString())
-            .header("Cache-Control", "no-store")
-            .body(result.response());
-}
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Email and password are required");
+                }
 
-@GetMapping("/me")
-public ResponseEntity<MeResponse> getCurrentUser(
-        Authentication authentication
-) {
-    return ResponseEntity.ok(
-            authService.getCurrentUser(authentication)
-    );
-}
+                LoginResult result = authService.login(request);
+                // ok
+                ResponseCookie cookie = ResponseCookie
+                                .from("CHAYBOOK_TOKEN", result.token())
+                                .httpOnly(true)
+                                .secure(true) // localhost HTTP
+                                .sameSite("None")
+                                .path("/")
+                                .maxAge(Duration.ofMillis(jwtExpiration))
+                                .build();
 
-@PostMapping("/logout")
-public ResponseEntity<Map<String, String>> logout() {
+                return ResponseEntity
+                                .ok()
+                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .header("Cache-Control", "no-store")
+                                .body(result.response());
+        }
 
-    ResponseCookie cookie = ResponseCookie.from("CHAYBOOK_TOKEN", "")
-            .httpOnly(true)
-            .secure(false)
-            .sameSite("Lax")
-            .path("/")
-            .maxAge(0)
-            .build();
+        @GetMapping("/me")
+        public ResponseEntity<MeResponse> getCurrentUser(
+                        Authentication authentication) {
+                return ResponseEntity.ok(
+                                authService.getCurrentUser(authentication));
+        }
 
-    return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, cookie.toString())
-            .body(Map.of("message", "Logout successful"));
-}
+        @PostMapping("/logout")
+        public ResponseEntity<Map<String, String>> logout() {
+
+                ResponseCookie cookie = ResponseCookie.from("CHAYBOOK_TOKEN", "")
+                                .httpOnly(true)
+                                .secure(true)
+                                .sameSite("None")
+                                .path("/")
+                                .maxAge(0)
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                                .body(Map.of("message", "Logout successful"));
+        }
 }

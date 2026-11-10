@@ -1,10 +1,12 @@
 package com.chaybook.backend.recipe.service;
 
 
+import com.chaybook.backend.category.enums.CategoryStatus;
 import com.chaybook.backend.category.repository.CategoryRepository;
 import com.chaybook.backend.ingredient.entity.Ingredient;
 import com.chaybook.backend.recipe.dto.*;
 import com.chaybook.backend.recipe.entity.*;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recipe.repository.*;
 
 import org.springframework.data.domain.Page;
@@ -45,6 +47,16 @@ public class RecipeService {
             int page,
             int size
     ) {
+        return getRecipes(categoryId, keyword, null, page, size);
+    }
+
+    public Page<RecipeSummaryResponse> getRecipes(
+            Integer categoryId,
+            String keyword,
+            String ingredient,
+            int page,
+            int size
+    ) {
         if (page < 0 || size < 1 || size > 10) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -62,7 +74,7 @@ public class RecipeService {
         if (categoryId != null
                 && !categoryRepository.existsByCategoryIdAndStatusAndType(
                 categoryId,
-                "ACTIVE",
+                CategoryStatus.ACTIVE,
                 "RECIPE"
         )) {
             throw new ResponseStatusException(
@@ -72,6 +84,7 @@ public class RecipeService {
         }
 
         String normalizedKeyword = normalizeKeyword(keyword);
+        String normalizedIngredient = normalizeKeyword(ingredient);
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -84,6 +97,7 @@ public class RecipeService {
         recipes = recipeRepository.searchRecipes(
                 categoryId,
                 normalizedKeyword,
+                normalizedIngredient,
                 pageable
         );
 

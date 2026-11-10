@@ -2,6 +2,7 @@ package com.chaybook.backend.article.service.impl;
 
 import com.chaybook.backend.article.dto.ArticleResponse;
 import com.chaybook.backend.article.entity.Article;
+import com.chaybook.backend.article.enums.ArticleStatus;
 import com.chaybook.backend.article.repository.ArticleRepository;
 import com.chaybook.backend.article.service.ArticleService;
 import com.chaybook.backend.category.repository.CategoryRepository;
@@ -55,7 +56,7 @@ public Page<ArticleResponse> getArticles(
         );
     }
 
-    String normalizedStatus = normalizeStatus(status);
+    ArticleStatus normalizedStatus = normalizeStatus(status);
 
     Pageable pageable = PageRequest.of(
             page,
@@ -65,7 +66,12 @@ public Page<ArticleResponse> getArticles(
 
     Page<Article> articles;
 
-    if (categoryId != null && normalizedStatus != null) {
+    // Public reads never expose drafts, including an explicit status=DRAFT query.
+    if (normalizedStatus == ArticleStatus.DRAFT) {
+        return Page.empty(pageable);
+    }
+
+    if (categoryId != null) {
 
         articles = articleRepository
                 .findByCategory_CategoryIdAndStatus(
@@ -74,15 +80,7 @@ public Page<ArticleResponse> getArticles(
                         pageable
                 );
 
-    } else if (categoryId != null) {
-
-        articles = articleRepository
-                .findByCategory_CategoryId(
-                        categoryId,
-                        pageable
-                );
-
-    } else if (normalizedStatus != null) {
+    } else {
 
         articles = articleRepository
                 .findByStatus(
@@ -90,9 +88,6 @@ public Page<ArticleResponse> getArticles(
                         pageable
                 );
 
-    } else {
-
-        articles = articleRepository.findAll(pageable);
     }
 
     return articles.map(this::toResponse);
@@ -117,6 +112,7 @@ public Page<ArticleResponse> getArticles(
         }
 
         return articleRepository.findById(articleId)
+                .filter(article -> article.getStatusValue() == ArticleStatus.PUBLISHED)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Article not found"
@@ -124,9 +120,9 @@ public Page<ArticleResponse> getArticles(
     }
 
 
-    private String normalizeStatus(String status) {
+    private ArticleStatus normalizeStatus(String status) {
         if (status == null || status.isBlank()) {
-            return null;
+            return ArticleStatus.PUBLISHED;
         }
 
         String normalizedStatus = status.strip()
@@ -140,7 +136,7 @@ public Page<ArticleResponse> getArticles(
             );
         }
 
-        return normalizedStatus;
+        return ArticleStatus.valueOf(normalizedStatus);
     }
 
 
@@ -160,7 +156,7 @@ public Page<ArticleResponse> getArticles(
                 article.getTitle(),
                 article.getContent(),
                 article.getCoverImage(),
-                article.getStatus(),
+                article.getStatusValue().name(),
                 article.getCreatedAt(),
                 article.getUpdatedAt()
         );

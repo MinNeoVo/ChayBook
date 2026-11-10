@@ -15,7 +15,7 @@ function RecipeImage({ imageUrl, alt, className = "" }) {
       {showImage ? (
         <img
           src={src}
-          alt={alt || "Recipe"}
+          alt={alt || "Công thức"}
           className="absolute inset-0 h-full w-full object-cover"
           onError={() => setFailedImageUrl(src)}
         />

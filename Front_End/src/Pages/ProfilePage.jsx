@@ -6,12 +6,21 @@ import Button from "../components/common/Button";
 
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileSidebar from "../components/profile/ProfileSidebar";
+import SocialConnections from "../components/profile/SocialConnections";
+
 import PostCard from "../components/post/PostCard";
+import CreatePostModal from "../components/community/CreatePostModal";
+import PostCommentModal from "../components/community/PostCommentModal";
 
 import { getMyProfile } from "../services/userServices";
+import { getCategories } from "../services/categoryServices";
 import {
   addPostInteraction,
+  createPost,
+  deletePost,
   removePostInteraction,
+  updatePost,
+  withdrawPost,
 } from "../services/postServices";
 
 function ProfilePage() {
@@ -19,6 +28,47 @@ function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackIsError, setFeedbackIsError] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [pendingPostActionId, setPendingPostActionId] = useState(null);
+
+  const handleCommentCountChange = useCallback(
+    (targetPostId, newTotalCount) => {
+      setPosts((prevPosts) =>
+        prevPosts.map((p) =>
+          (p.postId ?? p.id) === targetPostId
+            ? {
+                ...p,
+                commentCount: newTotalCount,
+                stats: { ...(p.stats || {}), comments: newTotalCount },
+              }
+            : p,
+        ),
+      );
+
+      setSelectedPostForComments((prev) => {
+        if (!prev || (prev.postId ?? prev.id) !== targetPostId) return prev;
+        if (
+          (prev.commentCount ?? prev.stats?.comments ?? 0) === newTotalCount
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          commentCount: newTotalCount,
+          stats: { ...(prev.stats || {}), comments: newTotalCount },
+        };
+      });
+    },
+    [],
+  );
 
   const [activeStatus, setActiveStatus] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,6 +88,26 @@ function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const refreshProfileOnFocus = () => {
+      if (document.visibilityState === "visible") {
+        fetchProfile();
+      }
+    };
+
+    window.addEventListener("focus", refreshProfileOnFocus);
+    return () => window.removeEventListener("focus", refreshProfileOnFocus);
+  }, [fetchProfile]);
+
+  // Callback nhận dữ liệu user mới sau khi chỉnh sửa profile thành công.
+  // Merge vào state profile hiện tại để UI cập nhật ngay (không cần reload).
+  const handleProfileUpdated = useCallback((updatedUser) => {
+    setProfile((prev) => ({
+      ...prev,
+      ...updatedUser,
+    }));
   }, []);
 
   useEffect(() => {
@@ -71,13 +141,69 @@ function ProfilePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    getCategories("POST")
+      .then((data) => {
+        if (!cancelled) setCategories(data);
+      })
+      .catch((categoryLoadError) => {
+        console.error("Không thể tải danh mục:", categoryLoadError);
+        if (!cancelled) {
+          setCategoryError(
+            categoryLoadError.message || "Không thể tải danh mục.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCategoryLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCreatePost = async (postData) => {
+    await createPost(postData);
+    setIsCreatePostOpen(false);
+    setFeedbackIsError(false);
+    setFeedbackMessage(
+      "Bài viết đã được gửi thành công và đang chờ ban quản trị duyệt!",
+    );
+
+    try {
+      const data = await getMyProfile();
+      setProfile(data);
+      setPosts(Array.isArray(data.posts) ? data.posts : []);
+      setError(null);
+    } catch (refreshError) {
+      console.error(
+        "Bài viết đã được gửi nhưng không thể tải lại profile:",
+        refreshError,
+      );
+      setFeedbackIsError(false);
+      setFeedbackMessage(
+        "Bài viết đã được gửi và đang chờ duyệt, nhưng không thể làm mới danh sách bài viết.",
+      );
+    }
+  };
+
   // 2. Lọc và sắp xếp bài viết
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+    const normalizedFilter = activeStatus.toUpperCase();
 
     return posts.filter((post) => {
+      const normalizedStatus = String(post.status || "")
+        .trim()
+        .toUpperCase();
       const matchesStatus =
-        activeStatus === "ALL" || post.status === activeStatus;
+        normalizedFilter === "ALL" ||
+        (normalizedFilter === "REJECTED"
+          ? normalizedStatus === "REJECTED" || normalizedStatus === "DENIED"
+          : normalizedStatus === normalizedFilter);
 
       const matchesSearch =
         !query ||
@@ -90,9 +216,25 @@ function ProfilePage() {
 
   const statusCount = {
     ALL: posts.length,
-    APPROVED: posts.filter((p) => p.status === "APPROVED").length,
-    PENDING: posts.filter((p) => p.status === "PENDING").length,
-    DENIED: posts.filter((p) => p.status === "DENIED").length,
+    APPROVED: posts.filter(
+      (p) =>
+        String(p.status || "")
+          .trim()
+          .toUpperCase() === "APPROVED",
+    ).length,
+    PENDING: posts.filter(
+      (p) =>
+        String(p.status || "")
+          .trim()
+          .toUpperCase() === "PENDING",
+    ).length,
+    REJECTED: posts.filter((p) =>
+      ["REJECTED", "DENIED"].includes(
+        String(p.status || "")
+          .trim()
+          .toUpperCase(),
+      ),
+    ).length,
   };
 
   // 3. Chuẩn hóa post data cho PostCard
@@ -101,6 +243,7 @@ function ProfilePage() {
     id: post.postId ?? post.id,
     description: post.content ?? post.description,
     image: post.imageUrl ?? post.image,
+    moderationFeedback: post.adminReason ?? post.moderationFeedback,
     time: post.createdAt
       ? new Date(post.createdAt).toLocaleDateString("vi-VN", {
           day: "numeric",
@@ -110,7 +253,8 @@ function ProfilePage() {
       : post.time || "Vừa xong",
     author: {
       name: post.username ?? profile?.username ?? "ChayBook User",
-      avatar: post.avatarUrl ?? profile?.avatarUrl,
+      fullName: post.username ?? profile?.username ?? "ChayBook User",
+      avatarUrl: post.avatarUrl ?? profile?.avatarUrl,
       initials: (post.username || profile?.username || "CB")
         .slice(0, 2)
         .toUpperCase(),
@@ -146,6 +290,22 @@ function ProfilePage() {
       }),
     );
 
+    // Update selected post if it's the one being liked
+    setSelectedPostForComments((prev) => {
+      if (!prev) return null;
+      if ((prev.postId ?? prev.id) !== postId) return prev;
+
+      const nextLikes = isCurrentlyLiked
+        ? Math.max(0, currentLikes - 1)
+        : currentLikes + 1;
+
+      return {
+        ...prev,
+        likedByCurrentUser: !isCurrentlyLiked,
+        likeCount: nextLikes,
+      };
+    });
+
     try {
       if (isCurrentlyLiked) {
         await removePostInteraction(postId, "LIKE");
@@ -175,6 +335,15 @@ function ProfilePage() {
       }),
     );
 
+    setSelectedPostForComments((prev) => {
+      if (!prev || (prev.postId ?? prev.id) !== postId) return prev;
+
+      return {
+        ...prev,
+        bookmarkedByCurrentUser: !isCurrentlyBookmarked,
+      };
+    });
+
     try {
       if (isCurrentlyBookmarked) {
         await removePostInteraction(postId, "BOOKMARK");
@@ -188,7 +357,7 @@ function ProfilePage() {
   };
 
   const handleComment = (post) => {
-    console.log("Comment:", post.postId ?? post.id);
+    setSelectedPostForComments(post);
   };
 
   const handleShare = (post) => {
@@ -200,22 +369,151 @@ function ProfilePage() {
   };
 
   const handleEdit = (post) => {
-    console.log("Edit:", post.postId ?? post.id);
+    if (
+      !["PENDING", "REJECTED", "DENIED"].includes(
+        String(post.status || "")
+          .trim()
+          .toUpperCase(),
+      ) ||
+      pendingPostActionId != null
+    )
+      return;
+    setFeedbackMessage("");
+    setFeedbackIsError(false);
+    setEditingPost(post);
   };
 
-  const handleDelete = (post) => {
-    console.log("Delete:", post.postId ?? post.id);
+  const handleDelete = async (post) => {
+    const postId = post.postId ?? post.id;
+    if (!postId || pendingPostActionId != null) return;
+    if (!window.confirm("Bạn có chắc muốn xóa bài viết bị từ chối này không?"))
+      return;
+
+    setPendingPostActionId(postId);
+    setFeedbackMessage("");
+    setFeedbackIsError(false);
+    try {
+      await deletePost(postId);
+      setPosts((current) =>
+        current.filter((item) => (item.postId ?? item.id) !== postId),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).filter(
+                (item) => (item.postId ?? item.id) !== postId,
+              ),
+            }
+          : current,
+      );
+      setFeedbackMessage("Đã xóa bài viết.");
+    } catch (deleteError) {
+      console.error("Không thể xóa bài viết:", deleteError);
+      setFeedbackIsError(true);
+      setFeedbackMessage(
+        deleteError.message || "Không thể xóa bài viết. Vui lòng thử lại.",
+      );
+    } finally {
+      setPendingPostActionId(null);
+    }
   };
 
-  const handleWithdraw = (post) => {
-    console.log("Withdraw:", post.postId ?? post.id);
+  const handleWithdraw = async (post) => {
+    const postId = post.postId ?? post.id;
+    if (post.status !== "PENDING" || pendingPostActionId != null) return;
+    if (!window.confirm("Bạn có chắc muốn rút bài viết đang chờ duyệt không?"))
+      return;
+
+    setPendingPostActionId(postId);
+    setFeedbackMessage("");
+    setFeedbackIsError(false);
+    try {
+      await withdrawPost(postId);
+      setPosts((current) =>
+        current.filter((item) => (item.postId ?? item.id) !== postId),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).filter(
+                (item) => (item.postId ?? item.id) !== postId,
+              ),
+            }
+          : current,
+      );
+      setFeedbackMessage("Đã rút bài viết khỏi hàng chờ duyệt.");
+    } catch (withdrawError) {
+      console.error("Không thể rút bài viết:", withdrawError);
+      setFeedbackIsError(true);
+      setFeedbackMessage(
+        withdrawError.message || "Không thể rút bài viết. Vui lòng thử lại.",
+      );
+    } finally {
+      setPendingPostActionId(null);
+    }
+  };
+
+  const handleUpdatePost = async (postData) => {
+    const postId = editingPost?.postId ?? editingPost?.id;
+    if (!postId) throw new Error("Không tìm thấy bài viết cần chỉnh sửa.");
+
+    setPendingPostActionId(postId);
+    try {
+      const result = await updatePost(postId, postData);
+      const updatedPost = {
+        ...editingPost,
+        title: postData.title,
+        content: postData.content,
+        categoryId: postData.categoryId,
+        image: result.imageUrl,
+        imageUrl: result.imageUrl,
+        mediaType: result.mediaType,
+        mediaPublicId: result.mediaPublicId,
+        status: "PENDING",
+      };
+      setPosts((current) =>
+        current.map((item) =>
+          (item.postId ?? item.id) === postId ? updatedPost : item,
+        ),
+      );
+      setProfile((current) =>
+        current
+          ? {
+              ...current,
+              posts: (current.posts || []).map((item) =>
+                (item.postId ?? item.id) === postId ? updatedPost : item,
+              ),
+            }
+          : current,
+      );
+      setEditingPost(null);
+      setFeedbackIsError(false);
+      setFeedbackMessage("Đã cập nhật bài viết và gửi lại để duyệt.");
+
+      try {
+        const refreshedProfile = await getMyProfile();
+        setProfile(refreshedProfile);
+        setPosts(
+          Array.isArray(refreshedProfile.posts) ? refreshedProfile.posts : [],
+        );
+      } catch (refreshError) {
+        console.error(
+          "Bài viết đã cập nhật nhưng không thể làm mới profile:",
+          refreshError,
+        );
+      }
+    } finally {
+      setPendingPostActionId(null);
+    }
   };
 
   // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
-        <main className="w-full pt-20 bg-[#f7faf7]">
+        <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
           <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 rounded-2xl p-8">
             <Loader2 className="h-8 w-8 animate-spin text-chaybook-primary" />
             <p className="text-sm font-medium text-gray-500">
@@ -231,7 +529,7 @@ function ProfilePage() {
   if (error) {
     return (
       <div className="min-h-screen bg-[#f7faf7] text-[#181c1b] antialiased">
-        <main className="w-full pt-20 bg-[#f7faf7]">
+        <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl p-8 text-center">
             <div>
               <h2 className="text-xl font-semibold text-gray-800">
@@ -264,9 +562,16 @@ function ProfilePage() {
       antialiased
     "
     >
-      <main className="w-full pt-20 bg-[#f7faf7]">
+      <main className="w-full bg-[#f7faf7] pt-4 sm:pt-8">
         {/* ================= PROFILE HEADER ================= */}
-        <ProfileHeader profile={profile} />
+        <ProfileHeader
+          profile={profile}
+          onProfileUpdated={handleProfileUpdated}
+          onCreatePost={() => {
+            setFeedbackMessage("");
+            setIsCreatePostOpen(true);
+          }}
+        />
 
         {/* ================= MAIN CONTENT ================= */}
         <section
@@ -278,6 +583,18 @@ function ProfilePage() {
           py-8
         "
         >
+          {feedbackMessage && (
+            <p
+              role={feedbackIsError ? "alert" : "status"}
+              className={`mx-auto mb-5 max-w-[1280px] rounded-xl border px-4 py-3 text-sm font-medium ${
+                feedbackIsError
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-800"
+              }`}
+            >
+              {feedbackMessage}
+            </p>
+          )}
           <div
             className="
             max-w-[1280px]
@@ -287,10 +604,11 @@ function ProfilePage() {
             lg:grid-cols-12
             gap-8
             items-start
+            
+   
           "
           >
-            {/* LEFT SIDEBAR */}
-            <ProfileSidebar profile={profile} />
+            <ProfileSidebar />
 
             {/* RIGHT CONTENT */}
             <section
@@ -303,6 +621,7 @@ function ProfilePage() {
             "
             >
               {/* ================= POSTS HEADER ================= */}
+              <SocialConnections />
               <div
                 className="
                 bg-white
@@ -334,7 +653,7 @@ function ProfilePage() {
                       text-gray-900
                     "
                     >
-                      My Posts
+                      Bài viết của tôi
                     </h2>
 
                     <span
@@ -348,7 +667,7 @@ function ProfilePage() {
                       font-bold
                     "
                     >
-                      ({posts.length} posts)
+                      ({posts.length} bài viết)
                     </span>
                   </div>
 
@@ -356,7 +675,7 @@ function ProfilePage() {
                     <Input
                       type="search"
                       icon={Search}
-                      placeholder="Search my recipes & notes..."
+                      placeholder="Tìm công thức và ghi chú của tôi..."
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}
                     />
@@ -374,30 +693,30 @@ function ProfilePage() {
                 "
                 >
                   <StatusFilter
-                    label={`All (${statusCount.ALL})`}
+                    label={`Tất cả (${statusCount.ALL})`}
                     active={activeStatus === "ALL"}
                     onClick={() => setActiveStatus("ALL")}
                   />
 
                   <StatusFilter
-                    label={`Approved (${statusCount.APPROVED})`}
+                    label={`Đã duyệt (${statusCount.APPROVED})`}
                     active={activeStatus === "APPROVED"}
                     color="green"
                     onClick={() => setActiveStatus("APPROVED")}
                   />
 
                   <StatusFilter
-                    label={`Pending (${statusCount.PENDING})`}
+                    label={`Chờ duyệt (${statusCount.PENDING})`}
                     active={activeStatus === "PENDING"}
                     color="gray"
                     onClick={() => setActiveStatus("PENDING")}
                   />
 
                   <StatusFilter
-                    label={`Denied (${statusCount.DENIED})`}
-                    active={activeStatus === "DENIED"}
+                    label={`Đã từ chối (${statusCount.REJECTED})`}
+                    active={activeStatus === "REJECTED"}
                     color="red"
-                    onClick={() => setActiveStatus("DENIED")}
+                    onClick={() => setActiveStatus("REJECTED")}
                   />
                 </div>
               </div>
@@ -420,6 +739,10 @@ function ProfilePage() {
                         onEdit={() => handleEdit(post)}
                         onDelete={() => handleDelete(post)}
                         onWithdraw={() => handleWithdraw(post)}
+                        isPendingAction={
+                          pendingPostActionId === (post.postId ?? post.id)
+                        }
+                        isActionDisabled={pendingPostActionId != null}
                       />
                     );
                   })
@@ -470,6 +793,38 @@ function ProfilePage() {
           </div>
         </section>
       </main>
+
+      <PostCommentModal
+        isOpen={Boolean(selectedPostForComments)}
+        post={selectedPostForComments}
+        currentUser={profile}
+        onClose={() => setSelectedPostForComments(null)}
+        onLike={handleLike}
+        onBookmark={handleBookmark}
+        onCommentCountChange={handleCommentCountChange}
+      />
+      {isCreatePostOpen && (
+        <CreatePostModal
+          isOpen={isCreatePostOpen}
+          onClose={() => setIsCreatePostOpen(false)}
+          onSubmit={handleCreatePost}
+          categories={categories}
+          categoryLoading={categoryLoading}
+          categoryError={categoryError}
+        />
+      )}
+      {editingPost && (
+        <CreatePostModal
+          key={`edit-post-${editingPost.postId ?? editingPost.id}`}
+          isOpen
+          initialPost={editingPost}
+          onClose={() => setEditingPost(null)}
+          onSubmit={handleUpdatePost}
+          categories={categories}
+          categoryLoading={categoryLoading}
+          categoryError={categoryError}
+        />
+      )}
     </div>
   );
 }
