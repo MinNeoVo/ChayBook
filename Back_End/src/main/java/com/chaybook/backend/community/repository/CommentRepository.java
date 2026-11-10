@@ -108,15 +108,21 @@ public interface CommentRepository
             @Param("rootIds") List<Integer> rootIds
     );
 
-    long countByPost_PostIdAndStatus(
-            Integer postId,
-            String status
-    );
+    @Query("""
+            SELECT COUNT(c)
+            FROM Comment c
+            WHERE c.post.postId = :postId
+              AND c.status = 'ACTIVE'
+            """)
+    long countActiveByPostId(@Param("postId") Integer postId);
 
-    long countByParentComment_CommentIdAndStatus(
-            Integer rootId,
-            String status
-    );
+    @Query("""
+            SELECT COUNT(c)
+            FROM Comment c
+            WHERE c.parentComment.commentId = :rootId
+              AND c.status = 'ACTIVE'
+            """)
+    long countActiveRepliesByRootId(@Param("rootId") Integer rootId);
 
     interface CommentCount {
         Integer getPostId();

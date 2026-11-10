@@ -436,10 +436,7 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
 
         long totalCommentCount =
-                commentRepository.countByPost_PostIdAndStatus(
-                        post.getPostId(),
-                        CommentStatus.ACTIVE.name()
-                );
+                commentRepository.countActiveByPostId(post.getPostId());
 
         return new CommentPageResponse(
                 items,
@@ -460,16 +457,10 @@ public class CommentServiceImpl implements CommentService {
         Comment root = rootOf(comment);
 
         long rootReplyCount =
-                commentRepository.countByParentComment_CommentIdAndStatus(
-                        root.getCommentId(),
-                        CommentStatus.ACTIVE.name()
-                );
+                commentRepository.countActiveRepliesByRootId(root.getCommentId());
 
         long totalCommentCount =
-                commentRepository.countByPost_PostIdAndStatus(
-                        post.getPostId(),
-                        CommentStatus.ACTIVE.name()
-                );
+                commentRepository.countActiveByPostId(post.getPostId());
 
         boolean rootVisible = !root.isDeleted() || rootReplyCount > 0;
 

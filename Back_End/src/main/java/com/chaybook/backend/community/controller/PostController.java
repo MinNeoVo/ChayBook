@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 @CrossOrigin(
-        origins = "http://localhost:5173",
+        origins = {"http://localhost:5173", "https://chay-book.vercel.app"},
         allowCredentials = "true"
 )
 public class PostController {
