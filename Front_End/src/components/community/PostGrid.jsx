@@ -1,6 +1,6 @@
 import PostCard from "../post/PostCard";
 
-function PostGrid({ posts, onLike, onBookmark, onComment, canDelete, onRequestDelete, isDeletePending }) {
+function PostGrid({ posts, onLike, onBookmark, onComment, onEdit, canDelete, onRequestDelete, isDeletePending }) {
   return (
     <section className="columns-1 gap-6 md:columns-2">
       {posts.map((post) => {
@@ -33,6 +33,8 @@ function PostGrid({ posts, onLike, onBookmark, onComment, canDelete, onRequestDe
           bookmarkedByCurrentUser: post.bookmarkedByCurrentUser,
         };
 
+        const allowDelete = Boolean(canDelete?.(post));
+
         return (
           <div key={normalizedPost.id} className="mb-6 break-inside-avoid">
             <PostCard
@@ -40,8 +42,9 @@ function PostGrid({ posts, onLike, onBookmark, onComment, canDelete, onRequestDe
               onLike={() => onLike?.(normalizedPost.id)}
               onBookmark={() => onBookmark?.(normalizedPost.id)}
               onComment={() => onComment?.(normalizedPost)}
-              canDelete={canDelete?.(post)}
-              onRequestDelete={() => onRequestDelete?.(post)}
+              onEdit={allowDelete && onEdit ? () => onEdit(post) : undefined}
+              canDelete={allowDelete}
+              onRequestDelete={allowDelete ? () => onRequestDelete?.(post) : undefined}
               isActionDisabled={isDeletePending}
             />
           </div>

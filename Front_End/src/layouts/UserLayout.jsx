@@ -1,10 +1,20 @@
-import { Outlet, useMatch } from "react-router-dom";
+import { Navigate, Outlet, useMatch } from "react-router-dom";
 
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
+import { useAuth } from "../context/useAuth";
 
 function UserLayout() {
+  const { user, loading } = useAuth();
   const isArticleDetail = useMatch("/content/:id") !== null;
+
+  if (loading) {
+    return null;
+  }
+
+  if (user?.role === "ADMIN") {
+    return <Navigate to="/admin" replace />;
+  }
 
   return (
     <div

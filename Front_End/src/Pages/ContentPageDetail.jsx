@@ -3,12 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
-  Bookmark,
   CalendarDays,
   Clock3,
   FileText,
   FolderOpen,
-  Heart,
   Share2,
   UserRound,
 } from "lucide-react";
@@ -64,38 +62,12 @@ function BackToContent() {
   );
 }
 
-function ArticleActions({ liked, saved, onLike, onSave, onShare }) {
+function ArticleActions({ onShare }) {
   const actionClass =
     "inline-flex items-center gap-2 rounded-xl border border-gray-100 bg-white px-4 py-2.5 text-sm font-semibold text-[#181c1b] shadow-sm transition-colors hover:bg-[#f7faf7]";
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <button
-        type="button"
-        aria-pressed={liked}
-        onClick={onLike}
-        className={actionClass}
-      >
-        <Heart
-          aria-hidden="true"
-          size={19}
-          className={liked ? "fill-red-500 text-red-500" : "text-red-500"}
-        />
-        {liked ? "Đã thích" : "Thích"}
-      </button>
-      <button
-        type="button"
-        aria-pressed={saved}
-        onClick={onSave}
-        className={actionClass}
-      >
-        <Bookmark
-          aria-hidden="true"
-          size={19}
-          className={saved ? "fill-chaybook-primary text-chaybook-primary" : ""}
-        />
-        {saved ? "Đã lưu bài viết" : "Lưu bài viết"}
-      </button>
       <button type="button" onClick={onShare} className={actionClass}>
         <Share2 aria-hidden="true" size={19} />
         Chia sẻ
