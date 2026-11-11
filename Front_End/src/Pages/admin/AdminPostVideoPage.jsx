@@ -1150,7 +1150,6 @@ function AdminPostVideoPage() {
             {[
               { key: "ALL", label: "Tất cả" },
               { key: "POST", label: "Bài viết" },
-              { key: "VIDEO", label: "Video" },
             ].map((tab) => (
               <button
                 key={tab.key}
