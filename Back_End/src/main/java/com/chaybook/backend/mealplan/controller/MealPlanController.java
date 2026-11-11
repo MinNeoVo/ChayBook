@@ -43,6 +43,15 @@ public class MealPlanController {
         return mealPlanService.getPlan(authenticatedUserId(jwt), mealPlanId);
     }
 
+    @DeleteMapping("/{mealPlanId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePlan(
+            @PathVariable Integer mealPlanId,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        mealPlanService.deletePlan(authenticatedUserId(jwt), mealPlanId);
+    }
+
     private Integer authenticatedUserId(Jwt jwt) {
         if (jwt == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Please log in");

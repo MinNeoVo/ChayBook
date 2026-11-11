@@ -22,13 +22,16 @@ function PostCard({
   onComment,
   onShare,
   onBookmark,
+  onMore,
   onEdit,
-  onWithdraw,
+  onDelete,
   canDelete = false,
   onRequestDelete,
   isPendingAction = false,
   isActionDisabled = false,
 }) {
+  const triggerDelete = () => (onRequestDelete || onDelete)?.(post);
+  const showOwnerDelete = Boolean(canDelete || onRequestDelete || onDelete);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef(null);
   const {
@@ -342,7 +345,51 @@ function PostCard({
               />
             </button>
 
-            {renderDeleteMenu()}
+            {/* Delete (on Profile page) or More (on Community page) */}
+            {showOwnerDelete ? (
+              <button
+                type="button"
+                onClick={triggerDelete}
+                disabled={isActionDisabled}
+                aria-busy={isPendingAction}
+                className="
+                  flex
+                  cursor-pointer
+                  items-center
+                  gap-1
+                  rounded-lg
+                  px-2.5
+                  py-1.5
+                  text-sm
+                  font-medium
+                  text-red-600
+                  transition-colors
+                  hover:bg-red-50
+                  disabled:cursor-not-allowed
+                  disabled:opacity-50
+                "
+                title="Xóa bài viết"
+              >
+                <Trash2 size={16} />
+                <span>{isPendingAction ? "Đang xóa..." : "Xóa bài viết"}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onMore?.(post)}
+                className="
+                  cursor-pointer
+                  rounded-lg
+                  p-1.5
+                  text-gray-500
+                  transition-colors
+                  hover:bg-gray-100
+                "
+                title="Tùy chọn khác"
+              >
+                <MoreVertical size={20} />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -362,11 +409,35 @@ function PostCard({
           "
         >
           <span className="text-[11px] text-gray-500">
-            Bạn có thể chỉnh sửa bài viết và gửi lại bất cứ lúc nào.
+            Bạn có thể chỉnh sửa bài viết và nộp lại bất cứ lúc nào.
           </span>
 
           <div className="flex items-center gap-2">
-            {/* Edit */}
+            {/* Delete */}
+            <button
+              type="button"
+              onClick={triggerDelete}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
+              className="
+                flex
+                cursor-pointer
+                items-center
+                gap-1
+                px-2
+                py-1
+                text-sm
+                text-red-600
+                hover:underline
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              <Trash2 size={15} />
+              {isPendingAction ? "Đang xóa..." : "Xóa bài viết"}
+            </button>
+
+            {/* Edit & Resubmit */}
             <button
               type="button"
               onClick={() => onEdit?.(post)}
@@ -391,11 +462,9 @@ function PostCard({
               "
             >
               <Edit3 size={16} />
-              {isPendingAction ? "Đang lưu..." : "Chỉnh sửa & gửi lại"}
+              {isPendingAction ? "Đang lưu..." : "Chỉnh sửa & nộp lại"}
             </button>
           </div>
-
-          {renderDeleteMenu()}
         </div>
       )}
 
@@ -421,31 +490,10 @@ function PostCard({
             "
           >
             <LockKeyhole size={14} />
-            Đang khóa trong thời gian kiểm duyệt
+            Đang chờ kiểm duyệt
           </span>
 
           <div className="flex items-center gap-2">
-            {/* Withdraw */}
-            <button
-              type="button"
-              onClick={() => onWithdraw?.(post)}
-              disabled={isActionDisabled}
-              aria-busy={isPendingAction}
-              className="
-                cursor-pointer
-                rounded-lg
-                px-3
-                py-1
-                text-sm
-                text-gray-600
-                hover:bg-gray-100
-                disabled:cursor-not-allowed
-                disabled:opacity-50
-              "
-            >
-              {isPendingAction ? "Đang xử lý..." : "Rút bài viết"}
-            </button>
-
             {/* Edit */}
             <button
               type="button"
@@ -453,11 +501,14 @@ function PostCard({
               disabled={isActionDisabled}
               aria-busy={isPendingAction}
               className="
+                flex
                 cursor-pointer
+                items-center
+                gap-1
                 rounded-lg
                 bg-gray-100
                 px-3
-                py-1
+                py-1.5
                 text-sm
                 font-medium
                 text-gray-800
@@ -466,11 +517,36 @@ function PostCard({
                 disabled:opacity-50
               "
             >
+              <Edit3 size={15} />
               Chỉnh sửa
             </button>
-          </div>
 
-          {renderDeleteMenu()}
+            {/* Delete */}
+            <button
+              type="button"
+              onClick={triggerDelete}
+              disabled={isActionDisabled}
+              aria-busy={isPendingAction}
+              className="
+                flex
+                cursor-pointer
+                items-center
+                gap-1
+                rounded-lg
+                px-3
+                py-1.5
+                text-sm
+                font-medium
+                text-red-600
+                hover:bg-red-50
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+              "
+            >
+              <Trash2 size={15} />
+              {isPendingAction ? "Đang xóa..." : "Xóa bài viết"}
+            </button>
+          </div>
         </div>
       )}
     </article>

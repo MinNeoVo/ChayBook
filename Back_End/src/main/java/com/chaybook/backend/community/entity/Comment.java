@@ -3,14 +3,15 @@ package com.chaybook.backend.community.entity;
 import com.chaybook.backend.community.enums.CommentStatus;
 import com.chaybook.backend.user.entity.User;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "[COMMENT]")
 public class Comment {
+
+    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,13 +45,25 @@ public class Comment {
     @Column(name = "content", nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
-    @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now(VIETNAM_ZONE);
+        if (this.createdAt == null) {
+            this.createdAt = now;
+        }
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now(VIETNAM_ZONE);
+    }
 
     public Comment() {
     }

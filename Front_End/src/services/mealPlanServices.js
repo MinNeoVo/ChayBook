@@ -10,3 +10,9 @@ export function createMealPlan({ healthGoal, durationDays, dietaryPreference }) 
     body: JSON.stringify({ healthGoal, durationDays, dietaryPreference }),
   });
 }
+
+export function deleteMealPlan(mealPlanId) {
+  return apiFetch(`/meal-plans/${encodeURIComponent(mealPlanId)}`, {
+    method: "DELETE",
+  });
+}

@@ -369,6 +369,14 @@ public PostCreateResponse createPost(
             );
         }
 
+        // Bài đã được duyệt chỉ cho phép xóa, không cho phép chỉnh sửa.
+        if (post.getStatusValue() == PostStatus.APPROVED) {
+            throw new PostException(
+                    HttpStatus.BAD_REQUEST,
+                    "Approved posts cannot be edited"
+            );
+        }
+
         // Không gửi hoặc gửi null thì giữ nguyên.
         String newTitle = request.title() == null
                 ? post.getTitle()
@@ -487,7 +495,8 @@ public PostCreateResponse createPost(
                 ));
 
         // Bài đã xóa không được sửa lại hoặc xóa lần nữa.
-        if (post.getStatusValue() == PostStatus.REMOVED) {
+        if (post.getStatusValue() == PostStatus.REMOVED
+                || post.getStatusValue() == PostStatus.DELETED) {
             throw new PostException(
                     HttpStatus.NOT_FOUND,
                     "Post not found"
