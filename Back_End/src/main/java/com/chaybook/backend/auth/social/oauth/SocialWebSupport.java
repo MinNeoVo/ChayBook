@@ -209,6 +209,7 @@ public class SocialWebSupport {
 
     private ResponseCookie cookie(String value, long maxAge) {
         boolean secure = properties.isSecureCookie();
+
         return ResponseCookie.from("CHAYBOOK_TOKEN", value)
                 .httpOnly(true)
                 .secure(secure)
