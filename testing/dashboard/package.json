@@ -1,0 +1,1 @@
+{"name":"chaybook-testing-dashboard","private":true,"type":"module","scripts":{"build":"vite build --config vite.config.mjs","serve":"python -B ../tools/dashboard_server.py"},"dependencies":{"react":"^19.3.1","react-dom":"^19.3.1"},"devDependencies":{"vite":"^8.3.6"}}

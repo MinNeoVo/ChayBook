@@ -1,0 +1,484 @@
+{
+  "productDefects": [
+    {
+      "id": "DEF-AI-001",
+      "severity": "HIGH",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-AI-008",
+        "CB-PW-AI-005",
+        "CB-PW-AI-006",
+        "CB-PW-AI-007"
+      ],
+      "rootCause": "Nullable conversation.user previously bypassed guest ownership.",
+      "repair": "Server-signed guest identity and exact-conversation grant; authorization before saves/provider; legacy rows retained but cannot be claimed.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "SERVICE_HTTP_BROWSER_FAKE_DB",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.assistant.controller.ChatbotGuestSecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.safehttp.Group6ReliabilityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.assistant.controller.ChatbotGuestSecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.safehttp.Group6ReliabilityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.assistant.controller.ChatbotGuestSecurityTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.assistant.service.ChatbotServiceSprint3Test.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.safehttp.Group6ReliabilityTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/browser-release-1/results.json",
+        "testing/reports/evidence/group6/browser-release-2/results.json",
+        "testing/reports/evidence/group6/browser-release-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group1-resolution.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Real persistence/deployment ownership and cookie transport remain blocked"
+    },
+    {
+      "id": "DEF-AUTH-002",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-UI-004",
+        "CB-PW-AUTH-025"
+      ],
+      "rootCause": "Rejected logout promise escaped the navbar click.",
+      "repair": "Controlled failure, local identity clear, visible server-session uncertainty, retry/relogin.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.auth.controller.AuthApiSprint3Test.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/browser-release-1/results.json",
+        "testing/reports/evidence/group6/browser-release-2/results.json",
+        "testing/reports/evidence/group6/browser-release-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group1-resolution.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-AUTH-003",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-UI-004",
+        "CB-PW-AUTH-025"
+      ],
+      "rootCause": "Stale auth cookie rejected public login/logout before recovery controllers.",
+      "repair": "Ignore old cookie only on exact public POST login/logout; other JWT checks retained.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "SECURITY_FILTER_HTTP",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-critical-3/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.auth.controller.AuthApiSprint3Test.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+        "testing/reports/evidence/group6/backend-full-1/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+        "testing/reports/evidence/group6/browser-release-1/results.json",
+        "testing/reports/evidence/group6/browser-release-2/results.json",
+        "testing/reports/evidence/group6/browser-release-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group1-resolution.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-001",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-UI-007"
+      ],
+      "rootCause": "Shared label lacked htmlFor/control association.",
+      "repair": "Stable IDs, native label association and accessible validation descriptions.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group1-resolution.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-002",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-PROFILE-010"
+      ],
+      "rootCause": "Escape dismissed pending profile save.",
+      "repair": "Close/Escape guard while saving/uploading.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-critical-2/results.json",
+        "testing/reports/evidence/group6/ui-critical-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group3-ui-completion.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-003",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-POST-020"
+      ],
+      "rootCause": "Failed optimistic interactions refreshed page=false.",
+      "repair": "Numeric page0 refresh and actor/count restoration.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-critical-2/results.json",
+        "testing/reports/evidence/group6/ui-critical-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group3-ui-completion.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-004",
+      "severity": "LOW",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-COMMENT-012"
+      ],
+      "rootCause": "Reply-cancel control lacked an accessible name; later replies were unavailable.",
+      "repair": "Accessible cancel plus explicitly authorized existing-API pagination/cache/retry/dedup/nested targeting.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-critical-2/results.json",
+        "testing/reports/evidence/group6/ui-critical-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group3-ui-completion.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-005",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-PLACES-020"
+      ],
+      "rootCause": "Old radius response overwrote newer results.",
+      "repair": "Latest-request sequence and unmount invalidation.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-critical-2/results.json",
+        "testing/reports/evidence/group6/ui-critical-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group3-ui-completion.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    },
+    {
+      "id": "DEF-UI-006",
+      "severity": "MEDIUM",
+      "classification": "PRODUCT_DEFECT",
+      "ids": [
+        "CB-PW-DASH-008"
+      ],
+      "rootCause": "Consumed-body response overwrote selected dashboard range after abort.",
+      "repair": "Check aborted signal before chart/general success updates.",
+      "status": "FIXED_AT_VERIFIED_LAYER",
+      "verifiedLayer": "CHROMIUM_UI_MOCK",
+      "regressionEvidence": [
+        "testing/reports/evidence/group6/ui-critical-2/results.json",
+        "testing/reports/evidence/group6/ui-critical-3/results.json",
+        "testing/reports/evidence/group6/ui-full-3/results.json"
+      ],
+      "beforeEvidenceRegister": "testing/reports/group3-ui-completion.md",
+      "productionSqlDeploymentVerified": false,
+      "remaining": "Scope is the named regression layer; no SQL/deployment equivalence claimed"
+    }
+  ],
+  "group6TestAndReliabilityDefects": [
+    {
+      "id": "G6-TEST-001",
+      "classification": "FAIL_TEST",
+      "status": "FIXED_AT_TEST_LAYER",
+      "cases": [
+        "CB-PW-AUTH-009",
+        "CB-PW-AUTH-021",
+        "CB-PW-MOD-007"
+      ],
+      "rootCause": "when(existingAnswer(...)) executed fake repository answers while stubbing, including null save and a barrier before concurrent workers existed.",
+      "fix": "doAnswer(...).when(mock) avoids invoking the previous answer.",
+      "before": "backend-targeted-1:9 PASS/3 ERROR",
+      "after": "backend-targeted-2:12 PASS; full/critical runs PASS"
+    },
+    {
+      "id": "G6-TEST-002",
+      "classification": "FAIL_TEST",
+      "status": "FIXED_AT_FIXTURE_LAYER",
+      "cases": [
+        "CB-PW-UI-004",
+        "CB-PW-AUTH-025"
+      ],
+      "rootCause": "New outbound guard aborted decorative fonts/images, manufacturing console errors in nine logout regressions.",
+      "fix": "Serve deterministic local decorative assets while preserving strict application/backend allowlist and console assertions.",
+      "before": "ui-full-1:nine logout console failures",
+      "after": "ui-guard-targeted-2 PASS; logout subtests PASS in ui-full-2 (suite had unrelated ARECIPE-018 failure); ui-full-3 final suite PASS"
+    },
+    {
+      "id": "G6-FLAKY-001",
+      "classification": "FLAKY_CONFIRMED",
+      "status": "FIXED_AT_TEST_LAYER",
+      "cases": [
+        "CB-PW-MOD-010",
+        "CB-PW-UI-008"
+      ],
+      "rootCause": "Synchronous stats request-count assertion ran after dialog closed but before asynchronous refresh dispatch; Group5 passed, Group6 observed1 instead of>1.",
+      "fix": "Await expect.poll with the identical>1 condition; no sleep, retry increase or product/Expected Result change.",
+      "before": "ui-full-1 MOD-010 FAIL; prior frozen Group5 PASS",
+      "after": "ui-full-3 and two independent ui-critical repeats PASS"
+    },
+    {
+      "id": "G6-FLAKY-002",
+      "classification": "FLAKY_CONFIRMED",
+      "status": "FIXED_AT_TEST_LAYER",
+      "cases": [
+        "CB-PW-ARECIPE-018"
+      ],
+      "rootCause": "Disabled save button was observed while catalog still loading; test replaced failure route before failure request arrived, so retry button never appeared.",
+      "fix": "Await exact catalog failure alert and visible retry button before installing successful response; preserve retry/save assertions.",
+      "before": "ARECIPE-018 passed within ui-full-1; timed out waiting for retry in ui-full-2",
+      "after": "targeted fix, ui-full-3 and two independent critical UI repeats PASS"
+    },
+    {
+      "id": "G6-TEST-003",
+      "classification": "FAIL_TEST",
+      "status": "FIXED_AT_RUNNER_LAYER",
+      "cases": [],
+      "rootCause": "Source snapshot loop shadowed the run-name variable; launch rejected before tests.",
+      "fix": "Use source_name for snapshot iteration.",
+      "before": "ui-guard-targeted:zero test executions",
+      "after": "ui-guard-targeted-2 PASS"
+    },
+    {
+      "id": "G6-TEST-004",
+      "classification": "FAIL_TEST",
+      "status": "FIXED_AT_RUNNER_LAYER",
+      "cases": [],
+      "rootCause": "Broad backend-* dispatch caught backend-package and ran an additional safe full test command.",
+      "fix": "Exclude package prefix from test branch; execute verified package command separately.",
+      "before": "backend-package is extra829-test regression, not packaging",
+      "after": "backend-package-verified build PASS; command provenance preserved"
+    },
+    {
+      "id": "G6-TEST-005",
+      "classification": "FAIL_TEST",
+      "status": "FIXED_AT_RUNNER_LAYER",
+      "cases": [],
+      "rootCause": "Group6 evidence root retained a trailing separator; prefix guard compared against a double separator and refused a valid owned path.",
+      "fix": "Canonicalize root with path.resolve; keep workspace-boundary guard.",
+      "before": "browser-1 setup failure, zero tests/server startup",
+      "after": "three browser-release runs and owned-port negative checks PASS"
+    },
+    {
+      "id": "G6-FLAKY-003",
+      "classification": "FLAKY_CONFIRMED",
+      "status": "MITIGATED_WITH_STABLE_BUILD_PREVIEW_DEV_TRIGGER_UNRESOLVED",
+      "cases": [
+        "CB-PW-AUTH-020",
+        "CB-PW-AUTH-024"
+      ],
+      "rootCause": "Observed: development-browser OTP email field became empty before submit, causing45-second timeout; first identical workflow passed. Exact dev reload/readiness trigger is suspected, not proven.",
+      "fix": "Group6 browser/backend uses the verified production build preview, eliminating dev optimizer/HMR from its execution surface; no product or assertion change.",
+      "before": "browser-final-1 PASS11; browser-final-2 PASS10/FAIL1",
+      "after": "three independent browser-release runs PASS11 each; raw failed evidence preserved",
+      "productRootCauseConfirmed": false
+    }
+  ],
+  "group7ReportingFindings": [
+    {
+      "id": "G7-REPORT-001",
+      "classification": "REPORTING_COVERAGE_GAP",
+      "severity": "MEDIUM",
+      "status": "CORRECTED_IN_FINAL_REPORT_AUTOMATION_GAPS_OPEN",
+      "cases": [
+        "CB-PW-PROFILE-003",
+        "CB-PW-PROFILE-004",
+        "CB-PW-PROFILE-011",
+        "CB-PW-PROFILE-014",
+        "CB-PW-BMI-008",
+        "CB-PW-MEAL-013",
+        "CB-PW-MEAL-014",
+        "CB-PW-RECIPE-013",
+        "CB-PW-POST-017",
+        "CB-PW-POST-019",
+        "CB-PW-POST-021",
+        "CB-PW-COMMENT-013",
+        "CB-PW-DASH-007",
+        "CB-PW-CATEGORY-012",
+        "CB-PW-RECIPE-008"
+      ],
+      "rootCause": "Historical UI full-layer reviews treated representative assertions as covering every explicit original data/step partition.",
+      "evidence": "testing/reports/evidence/sprint3-final/ui-scope-reaudit.json",
+      "productFailureReproduced": false,
+      "repair": "Final ledger reclassifies15 IDs PARTIAL, preserves green execution evidence and lists precise missing assertions; no test or Expected Result was changed."
+    }
+  ],
+  "otherHistoricalTestIssues": [
+    {
+      "group": "Baseline/1",
+      "records": "TEST-001..003, ENV-001..003",
+      "current": "Test assertions/locators/Maven cache/server lifecycle repaired; DB and engines remain blocked.",
+      "evidence": "testing/reports/defects.md"
+    },
+    {
+      "group": 2,
+      "current": "Imports/payloads/PageImpl/authentication fixture corrections preserved; final full Group6 regression passes.",
+      "evidence": "testing/reports/group2-p0-completion.md"
+    },
+    {
+      "group": 3,
+      "current": "Fixture/locator/unsupported duration/unused Response.json hook corrected; confirmed product race has separate before evidence.",
+      "evidence": "testing/reports/group3-ui-completion.md"
+    },
+    {
+      "group": 4,
+      "current": "SQL test DTO/signature compilation corrected offline; no SQL product defect reproduced.",
+      "evidence": "testing/reports/group4-sqlserver-completion.md"
+    },
+    {
+      "group": 5,
+      "current": "Wrong routes/status/cookie context/provider restubbing/filesystem cleanup/compile-server overlap corrected; not product defect evidence.",
+      "evidence": "testing/reports/group5-api-e2e-completion.md"
+    }
+  ],
+  "confirmedNewGroup7ProductDefects": [],
+  "confirmedUnresolvedProductDefectsInExecutedScopes": [],
+  "seriousDefectAbsenceEstablishedForRelease": false,
+  "openSecurityPolicyRisks": [
+    {
+      "id": "CB-PW-ALLERGY-005",
+      "priority": "P0",
+      "originalExpected": "B cannot be changed; extraneous property acceptance Needs confirmation",
+      "status": "REQUIRES_CLARIFICATION",
+      "proposal": "Reject extraneous ownership fields consistently, or explicitly document that authenticated identity always wins.",
+      "securityOrReliabilityImpact": "Silent extra-field acceptance can confuse callers; foreign-user mutation is already denied.",
+      "decisionApplied": false,
+      "currentEvidence": "testing/reports/group5-api-e2e-traceability.json#CB-PW-ALLERGY-005",
+      "ownerDecisionRequired": true,
+      "currentImplementation": "Controller derives actor from authenticated principal; extra ownership JSON is not a supported ownership selector. Foreign actor changes denied; strict unknown-property rejection not implemented consistently.",
+      "ambiguity": "Reject extraneous ownership fields consistently, or explicitly document that authenticated identity always wins.",
+      "owner": "Security owner + backend lead",
+      "ownerApproval": "PENDING_NO_DECISION_APPLIED",
+      "acceptanceEffect": "Blocks full acceptance; SQL blocker also applies",
+      "currentMethods": [
+        "P0IdentityContractsTest.allergySelectionCannotChooseAnotherOwner"
+      ],
+      "currentSourceAssertions": "testing/reports/group6-traceability.json#CB-PW-ALLERGY-005"
+    },
+    {
+      "id": "CB-PW-SEC-006",
+      "priority": "P0",
+      "originalExpected": "Community/admin recheck status; several other paths lack active-status checks. Universal immediate revocation Needs confirmation",
+      "status": "REQUIRES_CLARIFICATION",
+      "proposal": "Specify active-status enforcement for every protected operation and an acceptable disablement propagation interval.",
+      "securityOrReliabilityImpact": "A captured valid JWT can retain access on paths without an active-status check.",
+      "decisionApplied": false,
+      "currentEvidence": "testing/reports/group5-api-e2e-traceability.json#CB-PW-SEC-006",
+      "ownerDecisionRequired": true,
+      "currentImplementation": "Community and admin services recheck active status; a captured token can still read profile paths lacking equivalent checks. Immediate universal revocation absent.",
+      "ambiguity": "Specify active-status enforcement for every protected operation and an acceptable disablement propagation interval.",
+      "owner": "Security owner + backend lead",
+      "ownerApproval": "PENDING_NO_DECISION_APPLIED",
+      "acceptanceEffect": "Blocks full acceptance; SQL blocker also applies",
+      "currentMethods": [
+        "SafeHttpContractsTest.securityPoliciesRemainCharacterization",
+        "P0ContentContractsTest.characterizeDisabledAvatarMediaAndPlanPaths",
+        "P0IdentityContractsTest.characterizeNonUniversalAccountStatusChecks",
+        "ChatbotGuestSecurityTest.characterizeDisabledUserChatWithoutInventingRevocationPolicy"
+      ],
+      "currentSourceAssertions": "testing/reports/group6-traceability.json#CB-PW-SEC-006"
+    },
+    {
+      "id": "CB-PW-SEC-009",
+      "priority": "P0",
+      "originalExpected": "Logout expires browser cookie only; server revocation absent. Replay denial Needs confirmation",
+      "status": "REQUIRES_CLARIFICATION",
+      "proposal": "Choose cookie-only logout versus immediate server-side JWT revocation and a bounded replay window.",
+      "securityOrReliabilityImpact": "Cookie expiry alone cannot revoke an already captured JWT.",
+      "decisionApplied": false,
+      "currentEvidence": "testing/reports/group5-api-e2e-traceability.json#CB-PW-SEC-009",
+      "ownerDecisionRequired": true,
+      "currentImplementation": "Logout expires the browser cookie; captured valid JWT still authenticates /me. No server revocation list/token version check.",
+      "ambiguity": "Choose cookie-only logout versus immediate server-side JWT revocation and a bounded replay window.",
+      "owner": "Security owner + backend lead",
+      "ownerApproval": "PENDING_NO_DECISION_APPLIED",
+      "acceptanceEffect": "Blocks full acceptance at the stated contract boundary",
+      "currentMethods": [
+        "SafeHttpContractsTest.securityPoliciesRemainCharacterization",
+        "P0IdentityContractsTest.characterizeLogoutReplayWithoutInventingRevocationPolicy"
+      ],
+      "currentSourceAssertions": "testing/reports/group6-traceability.json#CB-PW-SEC-009"
+    },
+    {
+      "id": "CB-PW-SEC-010",
+      "priority": "P0",
+      "originalExpected": "No token-version/revocation check found; immediate invalidation Needs confirmation",
+      "status": "REQUIRES_CLARIFICATION",
+      "proposal": "Specify whether password reset/change revokes all existing sessions, then choose token versioning/revocation if required.",
+      "securityOrReliabilityImpact": "A stolen token may remain usable after credential changes until expiry.",
+      "decisionApplied": false,
+      "currentEvidence": "testing/reports/group5-api-e2e-traceability.json#CB-PW-SEC-010",
+      "ownerDecisionRequired": true,
+      "currentImplementation": "Captured JWT remains accepted after reset/change until expiry; credential changes do not establish immediate session revocation.",
+      "ambiguity": "Specify whether password reset/change revokes all existing sessions, then choose token versioning/revocation if required.",
+      "owner": "Security owner + backend lead",
+      "ownerApproval": "PENDING_NO_DECISION_APPLIED",
+      "acceptanceEffect": "Blocks full acceptance at the stated contract boundary",
+      "currentMethods": [
+        "SafeHttpContractsTest.securityPoliciesRemainCharacterization",
+        "P0IdentityContractsTest.characterizePasswordChangesWithoutInventingRevocationPolicy"
+      ],
+      "currentSourceAssertions": "testing/reports/group6-traceability.json#CB-PW-SEC-010"
+    },
+    {
+      "id": "CB-PW-SEC-013",
+      "priority": "P0",
+      "originalExpected": "Evaluate Lax/CORS/browser protections; CSRF-token rejection is not implemented; desired threat-model contract Needs confirmation",
+      "status": "REQUIRES_CLARIFICATION",
+      "proposal": "Approve deployment origins/sites/TLS/proxy handling and CSRF threat model; require a CSRF token if that topology needs one.",
+      "securityOrReliabilityImpact": "Local Lax/Origin tests do not establish protection for every deployed browser topology.",
+      "decisionApplied": false,
+      "currentEvidence": "testing/reports/group5-api-e2e-traceability.json#CB-PW-SEC-013",
+      "ownerDecisionRequired": true,
+      "currentImplementation": "SecurityConfig disables CSRF tokens. Credentialed CORS/trusted-Origin and local Lax-cookie behavior are tested; trusted-origin no-token write can succeed.",
+      "ambiguity": "Approve deployment origins/sites/TLS/proxy handling and CSRF threat model; require a CSRF token if that topology needs one.",
+      "owner": "Security owner + backend lead",
+      "ownerApproval": "PENDING_NO_DECISION_APPLIED",
+      "acceptanceEffect": "Blocks full acceptance at the stated contract boundary",
+      "currentMethods": [
+        "SafeHttpContractsTest.securityPoliciesRemainCharacterization",
+        "P0IdentityContractsTest.characterizeCorsAndDisabledCsrfWithoutClaimingBrowserProtection"
+      ],
+      "currentSourceAssertions": "testing/reports/group6-traceability.json#CB-PW-SEC-013"
+    }
+  ],
+  "notReproduced": [
+    "PROFILE-018 historical stale-identity suspicion",
+    "Published article draft disclosure in historical BUSINESS_RULES.md"
+  ],
+  "warning": "No new reproduced product failure in fake scopes is not evidence of zero serious SQL/security/deployment defects."
+}

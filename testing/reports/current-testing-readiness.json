@@ -1,0 +1,1470 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-07T10:27:09.965231+00:00",
+  "releaseVerdict": "REDUCED_SUITE_PASS_FULL_ACCEPTANCE",
+  "dashboardUrl": "http://127.0.0.1:5190",
+  "baselineCounts": {
+    "BLOCKED_SQL": 156,
+    "PASS_AT_TESTED_LAYER": 11,
+    "PASS_FULL_ACCEPTANCE": 109,
+    "FEATURE_NOT_IMPLEMENTED": 4,
+    "REQUIRES_CLARIFICATION": 13,
+    "PARTIAL": 1,
+    "BLOCKED_CROSS_BROWSER": 4
+  },
+  "acceptanceCounts": {
+    "PASS_FULL_ACCEPTANCE": 74
+  },
+  "p0": {
+    "total": 56,
+    "counts": {
+      "BLOCKED_SQL": 38,
+      "PASS_AT_TESTED_LAYER": 4,
+      "PASS_FULL_ACCEPTANCE": 11,
+      "REQUIRES_CLARIFICATION": 3
+    },
+    "strictSqlOrPolicyBlockers": 41,
+    "sqlBlocked": 38,
+    "fullOriginalScopedAcceptance": 11,
+    "passAtTestedLayerOnly": 4
+  },
+  "objectives": {
+    "dashboard": "CURRENT_CORE_BUILD_AND_8_BROWSER_INVOCATIONS_PASS",
+    "sqlEnvironment": "LIVE_BLOCKED_NO_CONNECTION",
+    "automation": "TARGETED_VERIFIED_WITH_MEDIA010_CONTRACT_FAILURE"
+  },
+  "sql": {
+    "targetInstance": "CHAYBOOK_TEST",
+    "targetDatabase": "ChayBook_Test",
+    "portPlan": 15433,
+    "level": 1,
+    "requiredIds": 133,
+    "preparedContributionIds": 133,
+    "preparedEntireOriginalScopes": false,
+    "definitions": 63,
+    "anticipatedExecutions": null,
+    "executions": 0,
+    "gates": {
+      "A": "INSTANCE_BINARY_OBSERVED_NO_ACTIVE_PID",
+      "B": "BLOCKED",
+      "C": "BLOCKED"
+    },
+    "instanceCreatedByThisTask": false,
+    "databaseCreatedByThisTask": false,
+    "physicalTargetVerified": false,
+    "liveRunnerEnabled": false,
+    "sixNewCompanions": [
+      {
+        "id": "CB-PW-AUTH-022",
+        "method": "resetPayloadPartitionsPreserveRowsAndAuthorizedBoundsPersist",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 669,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "Invalid fields 400; authorized valid password accepted",
+        "browserSqlHandoffRequired": false,
+        "ownerDecisionRequired": false
+      },
+      {
+        "id": "CB-PW-ARECIPE-015",
+        "method": "recipeUploadFailureRetainsPersistedRecipeAndRelations",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 684,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "No recipe PUT; persisted recipe unchanged; edits/preview retained",
+        "browserSqlHandoffRequired": true,
+        "ownerDecisionRequired": false
+      },
+      {
+        "id": "CB-PW-AI-019",
+        "method": "clearedClientStartsNewConversationWithoutDeletingOldHistory",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 692,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "Visible messages/ID clear; persisted conversation retained; next send starts new conversation",
+        "browserSqlHandoffRequired": true,
+        "ownerDecisionRequired": false
+      },
+      {
+        "id": "CB-PW-PLACES-010",
+        "method": "recommendationRechecksStoredAccountBeforeProviderAndPreservesRows",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 699,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "Disabled403; missing account401 before provider search",
+        "browserSqlHandoffRequired": false,
+        "ownerDecisionRequired": false
+      },
+      {
+        "id": "CB-PW-SEC-006",
+        "method": "disabledPreexistingTokenCharacterizesReadAndCommunityAdminDenials",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 706,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "Community/admin recheck status; several other paths lack active-status checks. Universal immediate revocation Needs confirmation",
+        "browserSqlHandoffRequired": false,
+        "ownerDecisionRequired": true
+      },
+      {
+        "id": "CB-PW-SEC-008",
+        "method": "malformedSignedSubjectsCannotWriteStoredRows",
+        "source": "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+        "line": 723,
+        "layer": "SQL_PREPARED_NOT_EXECUTED",
+        "runtime": "NOT_VERIFIED",
+        "compileEvidence": "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+        "contributionOnly": true,
+        "originalExpected": "Many controllers return401; /me conversion lacks equivalent guard. Consistent response Needs confirmation",
+        "browserSqlHandoffRequired": false,
+        "ownerDecisionRequired": true
+      }
+    ],
+    "historicalDefinitions": 66,
+    "historicalAnticipatedExecutions": 77,
+    "gateAssessment": {
+      "B": "BLOCKED",
+      "C": "BLOCKED",
+      "evidence": [
+        "testing/reports/evidence/core-testing-task2/sql-preflight.json",
+        "testing/reports/evidence/core-testing-task2/sql-preflight-service-manager.json"
+      ],
+      "reason": "SQL2022 named-service binary observed; active process/listener not attested. Gate B batches 02/03 absent; schema/history/effective rights and JDBC/JPA unverified. No SQL connection made."
+    }
+  },
+  "ui": {
+    "workbookRelatedIds": 87,
+    "currentScopeExecutedAfterCleanup": true,
+    "originalOutcomesUnchanged": true,
+    "executionScope": "TARGETED_ONLY",
+    "fullUiScopeExecuted": false,
+    "targetedIds": [
+      "CB-PW-AARTICLE-003",
+      "CB-PW-AARTICLE-004",
+      "CB-PW-AI-020",
+      "CB-PW-AI-022",
+      "CB-PW-ARECIPE-004",
+      "CB-PW-ARTICLE-011",
+      "CB-PW-AUTH-002",
+      "CB-PW-AUTH-008",
+      "CB-PW-AUTH-009",
+      "CB-PW-AUTH-020",
+      "CB-PW-AUTH-024",
+      "CB-PW-AUTH-025",
+      "CB-PW-AUTH-026",
+      "CB-PW-BMI-008",
+      "CB-PW-CATEGORY-012",
+      "CB-PW-COMMENT-013",
+      "CB-PW-DASH-007",
+      "CB-PW-MEAL-001",
+      "CB-PW-MEAL-009",
+      "CB-PW-MEAL-014",
+      "CB-PW-MEDIA-014",
+      "CB-PW-POST-004",
+      "CB-PW-POST-019",
+      "CB-PW-POST-021",
+      "CB-PW-PROFILE-004",
+      "CB-PW-PROFILE-011",
+      "CB-PW-PROFILE-014",
+      "CB-PW-RECIPE-008",
+      "CB-PW-SEC-018",
+      "CB-PW-UI-002",
+      "CB-PW-UI-003",
+      "CB-PW-UI-010",
+      "CB-PW-UI-012"
+    ],
+    "rawInvocations": 42
+  },
+  "contractDecisions": [],
+  "acceptanceCriteria": [
+    {
+      "id": "REDUCED-SUITE-74",
+      "requirement": "74 retained active cases",
+      "status": "PASS_FULL_ACCEPTANCE",
+      "rationale": "Every active ID is an unchanged PASS_FULL_ACCEPTANCE result from the pre-reduction ledger.",
+      "verifiedClauses": [
+        "74 unique active IDs",
+        "Active mapping matches ledger order",
+        "Historical evidence remains linked from each retained case"
+      ],
+      "unverifiedClauses": [],
+      "evidence": [
+        "testing/backup/active-suite-240-before-74-20261107/manifest.json"
+      ]
+    }
+  ],
+  "featuresNotImplemented": [],
+  "scopeLimit": "Reduced Test Suite — 74 cases retained from original 240. This is a narrowed test scope and does not represent whole-project acceptance.",
+  "filesModified": [
+    "Back_End/src/test/java/com/chaybook/backend/sqlserver/PersistenceSqlServerIT.java",
+    "Back_End/src/test/java/com/chaybook/backend/sqlserver/SqlServerFixtures.java",
+    "Back_End/src/test/java/com/chaybook/backend/sqlserver/SqlServerSafety.java",
+    "Back_End/src/test/java/com/chaybook/backend/sqlserver/SqlServerSafetyTest.java",
+    "Back_End/src/test/resources/sqlserver/V001__base.sql",
+    "Back_End/src/test/resources/sqlserver/V002__AddAuthOtpChallenge.sql",
+    "Back_End/src/test/resources/sqlserver/V003__UpdateComment_Category_Recipe.sql",
+    "Back_End/src/test/resources/sqlserver/V004__Update_Artical_Post.sql",
+    "Back_End/src/test/resources/sqlserver/V005__Add_Status_And_Admin_Decision.sql",
+    "Back_End/src/test/resources/sqlserver/V006__AddIngredientStatus.sql",
+    "testing/tests/group3-handlers.js",
+    "testing/tools/run-sqlserver.ps1",
+    "testing/tools/start-safe-http.mjs",
+    "testing/tools/test-sqlserver-runner.ps1",
+    "testing/sqlserver/README.md"
+  ],
+  "filesCreated": [
+    "Back_End/src/test/java/com/chaybook/backend/safehttp/TestingSystemHttpGapsTest.java",
+    "Back_End/src/test/java/com/chaybook/backend/sqlserver/SqlServerConnectionGuardTest.java",
+    "testing/dashboard/README.md",
+    "testing/dashboard/index.html",
+    "testing/dashboard/package.json",
+    "testing/dashboard/src/main.jsx",
+    "testing/dashboard/src/style.css",
+    "testing/dashboard/vite.config.mjs",
+    "testing/sqlserver/named-instance-approval-plan.md",
+    "testing/system-dashboard.config.js",
+    "testing/tests/system-dashboard.spec.js",
+    "testing/tests/system-gap-handlers.js",
+    "testing/tools/complete_testing_system.py",
+    "testing/tools/dashboard_data.py",
+    "testing/tools/dashboard_pipeline_test.py",
+    "testing/tools/dashboard_server.py",
+    "testing/tools/start-testing-dashboard.mjs",
+    "testing/tools/system_execute.py",
+    "testing/tools/verify_testing_system.py"
+  ],
+  "fileInventoryScope": "Implementation source/configuration; generated evidence/reports/build outputs listed separately.",
+  "reportsCreated": [
+    "testing/reports/testing-system-completion.md",
+    "testing/reports/dashboard-implementation-report.md",
+    "testing/reports/sql-safety-hardening-report.md",
+    "testing/reports/automation-gap-closure.md",
+    "testing/reports/testing-system-readiness.json",
+    "testing/reports/testing-dashboard-data-validation.json",
+    "testing/reports/testing-system-case-results.json"
+  ],
+  "additionalDefects": [],
+  "approvalsPlan": "testing/sqlserver/named-instance-approval-plan.md",
+  "scopeChange": {
+    "name": "Reduced Test Suite — 74 cases retained from original 240",
+    "sourceActiveCount": 240,
+    "retainedCount": 74,
+    "removedCount": 166,
+    "rule": "Only existing PASS_FULL_ACCEPTANCE ledger rows are active. Historical evidence and checkpoints remain immutable."
+  },
+  "historicalRegression": {
+    "backendFull": {
+      "PASS": 854,
+      "SKIP": 1
+    },
+    "backendFinalTargeted": {
+      "PASS": 143
+    },
+    "uiFull": {
+      "PASS": 136,
+      "SKIP": 1
+    },
+    "browserBackend": {
+      "PASS": 11
+    },
+    "sqlOfflineSafety": {
+      "PASS": 32
+    },
+    "runnerNegatives": [
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "named-instance-unapproved",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "named-instance-legacy-flag",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "existing-mode",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "existing-legacy-authorized",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "container-unapproved",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "offline-legacy-flag",
+        "exit": 1
+      },
+      {
+        "status": "PASS",
+        "databaseConnectionAttempted": false,
+        "name": "offline-image",
+        "exit": 1
+      }
+    ],
+    "runs": [
+      {
+        "id": "testing-system/dashboard-ui-preservation-final",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:32:24.011Z",
+        "sourceStatus": "MATCHES_CURRENT_SOURCE",
+        "sourceDigest": "157fbd8d93dc9128",
+        "counts": {
+          "PASS": 5
+        },
+        "durationSeconds": 30.0,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/run.log",
+          "testing/reports/evidence/testing-system/dashboard-ui-preservation-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": true,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/dashboard-ui-hardening-final",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:26:42.198Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "e33a80a5517c1c28",
+        "counts": {
+          "PASS": 5
+        },
+        "durationSeconds": 27.63,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/run.log",
+          "testing/reports/evidence/testing-system/dashboard-ui-hardening-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-safety-hardening-final",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:24:08.488645+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "e33a80a5517c1c28",
+        "counts": {
+          "PASS": 32
+        },
+        "durationSeconds": 42.54,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/command.json",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/run.log",
+          "testing/reports/evidence/testing-system/backend-safety-hardening-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/dashboard-ui-final",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:20:58.978Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "36ca282eddc9a680",
+        "counts": {
+          "PASS": 5
+        },
+        "durationSeconds": 26.47,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-final/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-final/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-final/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-final/run.log",
+          "testing/reports/evidence/testing-system/dashboard-ui-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-gaps-final",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:14:49.506642+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "726582f027a70fb3",
+        "counts": {
+          "PASS": 19
+        },
+        "durationSeconds": 52.81,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-gaps-final/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml",
+          "testing/reports/evidence/testing-system/backend-gaps-final/command.json",
+          "testing/reports/evidence/testing-system/backend-gaps-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-gaps-final/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-gaps-final/run.log",
+          "testing/reports/evidence/testing-system/backend-gaps-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-targeted-final",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:12:48.331199+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "abbc76bc4b714d04",
+        "counts": {
+          "PASS": 143
+        },
+        "durationSeconds": 60.76,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-targeted-final/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-final/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-final/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-final/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-final/command.json",
+          "testing/reports/evidence/testing-system/backend-targeted-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-targeted-final/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-targeted-final/run.log",
+          "testing/reports/evidence/testing-system/backend-targeted-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/browser-release-1",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:11:19.587Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "b9cb39681dc96257",
+        "counts": {
+          "PASS": 11
+        },
+        "durationSeconds": 58.33,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/browser-release-1/results.json",
+          "testing/reports/evidence/testing-system/browser-release-1/command.json",
+          "testing/reports/evidence/testing-system/browser-release-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/browser-release-1/run-summary.json",
+          "testing/reports/evidence/testing-system/browser-release-1/run.log",
+          "testing/reports/evidence/testing-system/browser-release-1/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-safety-final",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:09:43.974882+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "b9cb39681dc96257",
+        "counts": {
+          "PASS": 32
+        },
+        "durationSeconds": 76.84,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-safety-final/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-final/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-final/command.json",
+          "testing/reports/evidence/testing-system/backend-safety-final/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-safety-final/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-safety-final/run.log",
+          "testing/reports/evidence/testing-system/backend-safety-final/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-full-2",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:05:38.259950+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "d4166994e5bf181f",
+        "counts": {
+          "PASS": 854,
+          "SKIP": 1
+        },
+        "durationSeconds": 201.62,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.AdminApiSecurityTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.article.service.AdminArticleIntegrationTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.dashboard.service.AdminDashboardStatisticsServiceTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.post.service.AdminPostVideoServiceTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.recipe.service.AdminRecipeServiceImplTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.admin.user.service.AdminUserAuthorizationTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.allergy.service.AllergyServiceTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.article.service.PublicArticleVisibilityTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.assistant.client.GeminiClientSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.assistant.controller.ChatbotGuestSecurityTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.assistant.service.ChatbotServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.assistant.service.GuestTrialLimiterTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.auth.controller.AuthApiSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.auth.controller.AuthRecoverySecurityTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.auth.service.AuthServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.bmi.service.BmiServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.common.validation.RequestValidationSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.community.service.CommentServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.community.service.PostServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.mealplan.service.MealPlanServiceTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.media.service.MediaServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.moderation.client.GroqModerationClientIntegrationTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.moderation.client.GroqModerationClientSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.moderation.service.impl.AiModerationServiceSprint3Test.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.safehttp.Group6ReliabilityTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.security.P0AuthorizationMatrixTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.security.P0ContentContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.security.P0IdentityContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.security.P0QueryBindingTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.config.GeoapifyConfigTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.context.RecommendationContextResolversTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.controller.ShopControllerTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.dto.ShopRecommendationRequestTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.policy.ShopRecommendationPolicyTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.provider.geoapify.GeoapifyPlacesSearchProviderTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.service.ShopRecommendationServiceTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.shop.ShopModuleStartupTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-full-2/command.json",
+          "testing/reports/evidence/testing-system/backend-full-2/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-full-2/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-full-2/run.log",
+          "testing/reports/evidence/testing-system/backend-full-2/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/ui-full-1",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:05:03.569Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "3daf1cc991eec6ac",
+        "counts": {
+          "PASS": 136,
+          "SKIP": 1
+        },
+        "durationSeconds": 405.91,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/ui-full-1/results.json",
+          "testing/reports/evidence/testing-system/ui-full-1/command.json",
+          "testing/reports/evidence/testing-system/ui-full-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/ui-full-1/run-summary.json",
+          "testing/reports/evidence/testing-system/ui-full-1/run.log",
+          "testing/reports/evidence/testing-system/ui-full-1/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-full-1",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:04:49.579675+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "3daf1cc991eec6ac",
+        "counts": {},
+        "durationSeconds": 22.78,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-full-1/command.json",
+          "testing/reports/evidence/testing-system/backend-full-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-full-1/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-full-1/run.log",
+          "testing/reports/evidence/testing-system/backend-full-1/launched.json"
+        ],
+        "runStatus": "FAILED_WITHOUT_TESTS",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/ui-targeted-4",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:03:11.772Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "e54e2c1b693ca2c8",
+        "counts": {
+          "PASS": 15
+        },
+        "durationSeconds": 70.15,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/ui-targeted-4/results.json",
+          "testing/reports/evidence/testing-system/ui-targeted-4/command.json",
+          "testing/reports/evidence/testing-system/ui-targeted-4/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/ui-targeted-4/run-summary.json",
+          "testing/reports/evidence/testing-system/ui-targeted-4/run.log",
+          "testing/reports/evidence/testing-system/ui-targeted-4/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-targeted-3",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:02:57.689012+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "e54e2c1b693ca2c8",
+        "counts": {
+          "PASS": 142
+        },
+        "durationSeconds": 80.72,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-targeted-3/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-3/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-3/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-3/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-3/command.json",
+          "testing/reports/evidence/testing-system/backend-targeted-3/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-targeted-3/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-targeted-3/run.log",
+          "testing/reports/evidence/testing-system/backend-targeted-3/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/dashboard-ui-3",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:01:51.304Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "596443a8a9618127",
+        "counts": {
+          "PASS": 5
+        },
+        "durationSeconds": 42.68,
+        "exit": 0,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-3/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-3/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-3/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-3/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-3/run.log",
+          "testing/reports/evidence/testing-system/dashboard-ui-3/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/dashboard-ui-2",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:01:15.811Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "596443a8a9618127",
+        "counts": {},
+        "durationSeconds": 4.04,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-2/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-2/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-2/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-2/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-2/run.log",
+          "testing/reports/evidence/testing-system/dashboard-ui-2/launched.json"
+        ],
+        "runStatus": "FAILED_WITHOUT_TESTS",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/ui-targeted-3",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T08:01:01.924Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "596443a8a9618127",
+        "counts": {
+          "PASS": 14,
+          "FAIL": 1
+        },
+        "durationSeconds": 79.95,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/ui-targeted-3/results.json",
+          "testing/reports/evidence/testing-system/ui-targeted-3/command.json",
+          "testing/reports/evidence/testing-system/ui-targeted-3/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/ui-targeted-3/run-summary.json",
+          "testing/reports/evidence/testing-system/ui-targeted-3/run.log",
+          "testing/reports/evidence/testing-system/ui-targeted-3/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-targeted-2",
+        "framework": "JUnit",
+        "timestamp": "2026-11-01T08:00:41.691461+00:00",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "596443a8a9618127",
+        "counts": {
+          "PASS": 140,
+          "FAIL": 2
+        },
+        "durationSeconds": 91.98,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-targeted-2/TEST-com.chaybook.backend.safehttp.SafeHttpContractsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-2/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-2/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-2/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-targeted-2/command.json",
+          "testing/reports/evidence/testing-system/backend-targeted-2/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-targeted-2/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-targeted-2/run.log",
+          "testing/reports/evidence/testing-system/backend-targeted-2/launched.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/ui-targeted-2",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T07:55:11.705Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "17da776214caf01a",
+        "counts": {
+          "PASS": 14,
+          "FAIL": 1
+        },
+        "durationSeconds": 61.27,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/ui-targeted-2/results.json",
+          "testing/reports/evidence/testing-system/ui-targeted-2/command.json",
+          "testing/reports/evidence/testing-system/ui-targeted-2/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/ui-targeted-2/run-summary.json",
+          "testing/reports/evidence/testing-system/ui-targeted-2/run.log"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/dashboard-ui-1",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T07:53:21.928Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "fe35303c81eb258c",
+        "counts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "durationSeconds": 501.6,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/dashboard-ui-1/results.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-1/command.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-1/run-summary.json",
+          "testing/reports/evidence/testing-system/dashboard-ui-1/run.log"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/ui-targeted-1",
+        "framework": "Playwright",
+        "timestamp": "2026-11-01T07:52:51.550Z",
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "fe35303c81eb258c",
+        "counts": {
+          "PASS": 13,
+          "FAIL": 2
+        },
+        "durationSeconds": 76.94,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/ui-targeted-1/results.json",
+          "testing/reports/evidence/testing-system/ui-targeted-1/command.json",
+          "testing/reports/evidence/testing-system/ui-targeted-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/ui-targeted-1/run-summary.json",
+          "testing/reports/evidence/testing-system/ui-targeted-1/run.log"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-safety-first",
+        "framework": "JUnit",
+        "timestamp": null,
+        "sourceStatus": "NOT_VERIFIED",
+        "sourceDigest": null,
+        "counts": {
+          "PASS": 30,
+          "FAIL": 1
+        },
+        "durationSeconds": null,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-safety-first/TEST-com.chaybook.backend.sqlserver.SqlServerConnectionGuardTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-first/TEST-com.chaybook.backend.sqlserver.SqlServerSafetyTest.xml",
+          "testing/reports/evidence/testing-system/backend-safety-first/run-summary.json"
+        ],
+        "runStatus": "EXECUTED",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      },
+      {
+        "id": "testing-system/backend-targeted-1",
+        "framework": "JUnit",
+        "timestamp": null,
+        "sourceStatus": "SOURCE_CHANGED",
+        "sourceDigest": "5e7f41bb49a9b066",
+        "counts": {},
+        "durationSeconds": 17.66,
+        "exit": 1,
+        "evidence": [
+          "testing/reports/evidence/testing-system/backend-targeted-1/command.json",
+          "testing/reports/evidence/testing-system/backend-targeted-1/execution-source-hashes.json",
+          "testing/reports/evidence/testing-system/backend-targeted-1/run-summary.json",
+          "testing/reports/evidence/testing-system/backend-targeted-1/run.log"
+        ],
+        "runStatus": "FAILED_WITHOUT_TESTS",
+        "verified": false,
+        "description": "Execution artifact snapshot. Counts are instances, never unique workbook acceptance. Mockito/MockMvc classification is available at mapped case/source level."
+      }
+    ],
+    "dashboardFinal": {
+      "PASS": 5
+    },
+    "pipelineFinal": {
+      "PASS": 10
+    }
+  },
+  "historicalUi": {
+    "workbookRelatedIds": 87,
+    "fullAtUiLayer": 109,
+    "partialAtUiLayer": 4,
+    "blockedEngineIds": 4,
+    "absentFeatureIds": 4,
+    "gapCasesExecuted": 15,
+    "gapsClosed": 15,
+    "targetedCounts": {
+      "PASS": 15
+    },
+    "fullCounts": {
+      "PASS": 136,
+      "SKIP": 1
+    }
+  },
+  "historicalDashboardValidation": {
+    "schemaVersion": 1,
+    "checkedAt": "2026-11-01T08:34:08.192370+00:00",
+    "status": "PASS",
+    "uniqueOriginalWorkbookIds": 298,
+    "duplicateIds": 0,
+    "originalExpectedFieldsPreserved": true,
+    "counts": {
+      "BLOCKED_SQL": 156,
+      "PASS_AT_TESTED_LAYER": 11,
+      "PASS_FULL_ACCEPTANCE": 109,
+      "FEATURE_NOT_IMPLEMENTED": 4,
+      "REQUIRES_CLARIFICATION": 13,
+      "PARTIAL": 1,
+      "BLOCKED_CROSS_BROWSER": 4
+    },
+    "caseLedgerSha256": "55c96fd47d0b28f0ce4a3abe81cf5a42f5a0bd737cbe407c91ca619dcc96cd3d",
+    "pipelineWarnings": [],
+    "sourceEvidenceLinksValidated": 394,
+    "representativeHttpEvidence": [
+      {
+        "path": "testing/reports/evidence/group6/backend-critical-2/command.json",
+        "status": 200,
+        "servedAsPlainText": true
+      },
+      {
+        "path": "testing/reports/evidence/group6/backend-critical-2/TEST-com.chaybook.backend.assistant.controller.ChatbotGuestSecurityTest.xml",
+        "status": 200,
+        "servedAsPlainText": true
+      },
+      {
+        "path": "testing/reports/acceptance.md",
+        "status": 200,
+        "servedAsPlainText": true
+      }
+    ],
+    "traversalRefusals": 3,
+    "buildExit": 0,
+    "pipelineTests": {
+      "PASS": 10,
+      "FAIL": 0
+    },
+    "dashboardUi": {
+      "PASS": 5
+    },
+    "localDashboardHttp": 200,
+    "sqlExecutions": 0,
+    "historyFilesUnchanged": 1804,
+    "excelSha256": "25a465c2773e16218e83773946af290f4d334f6d53d935dc47a5b2bcd1582a85",
+    "runScopeChecks": {
+      "ui-full-1": {
+        "relevantSourcesMatch": true,
+        "unrelatedReportingSqlPreparationChangesDoNotRewriteHistoricalRun": true
+      },
+      "browser-release-1": {
+        "relevantSourcesMatch": true,
+        "unrelatedReportingSqlPreparationChangesDoNotRewriteHistoricalRun": true
+      }
+    },
+    "liveSqlApproved": false,
+    "gates": {
+      "A": "PENDING",
+      "B": "PENDING",
+      "C": "PENDING"
+    }
+  },
+  "historicalDashboardLastVerified": "2026-11-01T08:34:08.194904+00:00",
+  "historicalHttp": {
+    "additionalMethods": 19,
+    "methodsPass": 19,
+    "originalScopeCasesClosed": 18,
+    "remainingPartialIds": [
+      "CB-PW-MEDIA-010"
+    ],
+    "adapterBoundary": "Real Geoapify adapter/service/controller; intercepted transport; no live provider"
+  },
+  "historicalHistory": {
+    "filesChecked": 1804,
+    "changed": [],
+    "originalExcelSha256": "25a465c2773e16218e83773946af290f4d334f6d53d935dc47a5b2bcd1582a85",
+    "originalFieldsCompared": 298
+  },
+  "historicalGeneratedAt": "2026-11-01T08:31:55.713801+00:00",
+  "coreTestingTask2": {
+    "date": "2026-11-05",
+    "executionCounts": {
+      "core-testing-task2/backend-cleanup": {
+        "framework": "JUnit",
+        "counts": {
+          "PASS": 22
+        },
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/backend-media-contract": {
+        "framework": "JUnit",
+        "counts": {
+          "PASS": 1,
+          "FAIL": 1
+        },
+        "checkInvocations": null,
+        "exit": 1
+      },
+      "core-testing-task2/dashboard-browser": {
+        "framework": "Playwright",
+        "counts": {
+          "PASS": 6
+        },
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-build": {
+        "framework": "Vite build",
+        "counts": {},
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-build-evidence-links": {
+        "framework": "Vite build",
+        "counts": {},
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-build-failure-metric": {
+        "framework": "Vite build",
+        "counts": {},
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-current-failure": {
+        "framework": "Playwright",
+        "counts": {
+          "PASS": 1
+        },
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-current-failure-evidence": {
+        "framework": "Playwright",
+        "counts": {
+          "PASS": 1
+        },
+        "checkInvocations": null,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-gate-evidence": {
+        "framework": "Python unittest",
+        "counts": {},
+        "checkInvocations": 1,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-pipeline": {
+        "framework": "Python unittest",
+        "counts": {},
+        "checkInvocations": 14,
+        "exit": 0
+      },
+      "core-testing-task2/dashboard-run-metadata": {
+        "framework": "Python unittest",
+        "counts": {},
+        "checkInvocations": 2,
+        "exit": 0
+      },
+      "core-testing-task2/ui-core-targeted": {
+        "framework": "Playwright",
+        "counts": {
+          "PASS": 42
+        },
+        "checkInvocations": null,
+        "exit": 0
+      }
+    },
+    "casesWithNewContribution": 50,
+    "sqlConnections": 0,
+    "acceptanceChange": {
+      "id": "CB-PW-MEDIA-010",
+      "before": "PARTIAL",
+      "after": "FAIL_PRODUCT",
+      "evidence": [
+        "testing/reports/evidence/core-testing-task2/backend-media-contract/TEST-com.chaybook.backend.safehttp.TestingSystemHttpGapsTest.xml"
+      ]
+    },
+    "browserAvailability": [
+      {
+        "engine": "chromium",
+        "installed": true
+      },
+      {
+        "engine": "firefox",
+        "installed": false
+      },
+      {
+        "engine": "webkit",
+        "installed": false
+      }
+    ],
+    "sqlGateAssessment": {
+      "B": "BLOCKED",
+      "C": "BLOCKED",
+      "evidence": [
+        "testing/reports/evidence/core-testing-task2/sql-preflight.json",
+        "testing/reports/evidence/core-testing-task2/sql-preflight-service-manager.json"
+      ],
+      "reason": "SQL2022 named-service binary observed; active process/listener not attested. Gate B batches 02/03 absent; schema/history/effective rights and JDBC/JPA unverified. No SQL connection made."
+    },
+    "scope": "Actual layer contributions only. No SQL, live provider or full E2E acceptance.",
+    "modifiedFiles": [
+      "Back_End/src/test/java/com/chaybook/backend/safehttp/TestingSystemHttpGapsTest.java",
+      "testing/dashboard/src/main.jsx",
+      "testing/reports/current-case-results.json",
+      "testing/reports/current-test-id-mapping.json",
+      "testing/reports/current-test-summary.json",
+      "testing/reports/current-testcases.csv",
+      "testing/reports/current-testing-readiness.json",
+      "testing/system-dashboard.config.js",
+      "testing/tests/system-dashboard.spec.js",
+      "testing/tools/active_scope.py",
+      "testing/tools/core_testing_task2.py",
+      "testing/tools/current_scope_report.py",
+      "testing/tools/dashboard_data.py",
+      "testing/tools/dashboard_pipeline_test.py",
+      "testing/tools/system_execute.py",
+      "testing/tools/validate_current_scope.py",
+      "testing/README.md",
+      "testing/dashboard/vite.config.mjs",
+      "testing/dashboard/dist/index.html"
+    ],
+    "p0Remaining": [
+      {
+        "id": "CB-PW-AUTH-001",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-002",
+        "status": "PASS_AT_TESTED_LAYER",
+        "reason": [
+          "Original E2E identity/navigation/cookie workflow has controlled UI and real browser/backend-fake-repository evidence; real repository/deployed session integration is not proven."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-003",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-004",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-008",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-009",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-017",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-020",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-021",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AUTH-025",
+        "status": "PASS_AT_TESTED_LAYER",
+        "reason": [
+          "Original E2E identity/navigation/cookie workflow has controlled UI and real browser/backend-fake-repository evidence; real repository/deployed session integration is not proven."
+        ]
+      },
+      {
+        "id": "CB-PW-PROFILE-008",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-PROFILE-015",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-PROFILE-017",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-ALLERGY-005",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance.",
+          "REQUIRES_CLARIFICATION: Reject extraneous ownership fields consistently, or explicitly document that authenticated identity always wins."
+        ]
+      },
+      {
+        "id": "CB-PW-BMI-003",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MEAL-001",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MEAL-005",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MEAL-008",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-ARTICLE-001",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-ARTICLE-002",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-POST-001",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-POST-004",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-POST-010",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-POST-012",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-COMMENT-005",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-COMMENT-006",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-ARECIPE-004",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AARTICLE-003",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AARTICLE-004",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MOD-003",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MOD-004",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-MOD-007",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AI-005",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AI-006",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AI-007",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AI-008",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-AI-020",
+        "status": "PASS_AT_TESTED_LAYER",
+        "reason": [
+          "Original Expected Result contains historical defect/suspicion wording. Authorized positive remediation verified; immutable literal characterization is not claimed PASS_FULL_ACCEPTANCE. Preserve Group1/2 authorized identity isolation and late reply denial despite historical source suspicion."
+        ]
+      },
+      {
+        "id": "CB-PW-PLACES-009",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-003",
+        "status": "PASS_AT_TESTED_LAYER",
+        "reason": [
+          "Allowed-role controller matrix/status/serialization and selected actual-service ownership pass; controlled418 dispatch and mock domain responses do not establish every module-specific business/ownership outcome."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-006",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Unresolved universal disabled-account policy; HTTP characterization exists. Do not invent additional persistence policy. SQL execution remains BLOCKED_ENVIRONMENT.",
+          "REQUIRES_CLARIFICATION: Specify active-status enforcement for every protected operation and an acceptable disablement propagation interval."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-007",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-009",
+        "status": "REQUIRES_CLARIFICATION",
+        "reason": [
+          "REQUIRES_CLARIFICATION: Choose cookie-only logout versus immediate server-side JWT revocation and a bounded replay window."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-010",
+        "status": "REQUIRES_CLARIFICATION",
+        "reason": [
+          "REQUIRES_CLARIFICATION: Specify whether password reset/change revokes all existing sessions, then choose token versioning/revocation if required."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-013",
+        "status": "REQUIRES_CLARIFICATION",
+        "reason": [
+          "REQUIRES_CLARIFICATION: Approve deployment origins/sites/TLS/proxy handling and CSRF threat model; require a CSRF token if that topology needs one."
+        ]
+      },
+      {
+        "id": "CB-PW-SEC-017",
+        "status": "BLOCKED_SQL",
+        "reason": [
+          "BLOCKED_SQL: zero real SQL executions; Concrete partial SQL assertions compiled; ALL live persistence/SQL dialect/transaction/cleanup behavior remains UNVERIFIED_SQL_RUNTIME. HTTP partitions, external delivery and any unspecified policy are separate obligations. Mapping is a workflow contribution, never full-clause SQL acceptance."
+        ]
+      }
+    ]
+  },
+  "finalAcceptance": {
+    "verdict": "REDUCED_SUITE_PASS_FULL_ACCEPTANCE",
+    "complete": false,
+    "scopeComplete": true,
+    "baseline": 240,
+    "current": 74,
+    "removed": 166,
+    "acceptanceBuckets": {
+      "PASS_FULL": 74,
+      "FAIL": 0,
+      "PARTIAL": 0,
+      "BLOCKED": 0,
+      "SKIP": 0
+    },
+    "fullAcceptanceRatePercent": 100.0,
+    "dashboard": "PENDING_REDUCED_SUITE_VALIDATION",
+    "scopeNote": "The active reduced suite is fully accepted; this is not a whole-project acceptance claim."
+  }
+}
