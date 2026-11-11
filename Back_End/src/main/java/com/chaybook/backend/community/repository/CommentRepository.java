@@ -151,7 +151,7 @@ public interface CommentRepository
             FROM Comment cm
             JOIN cm.post p
             WHERE p.user.userId = :authorId
-              AND p.status <> 'DELETED'
+              AND p.status NOT IN ('REMOVED', 'DELETED')
               AND cm.status = 'ACTIVE'
             GROUP BY p.postId
             """)
