@@ -57,58 +57,57 @@ function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-chaybook-bg/95 backdrop-blur-sm shadow-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:px-8">
-        {/* Logo + Desktop Navigation */}
-        <div className="flex min-w-0 items-center gap-6 xl:gap-8">
-          <Link
-            to="/"
-            onClick={closeMobileMenu}
-            className="flex shrink-0 items-center gap-2.5"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-chaybook-primary text-lg font-bold text-white shadow-sm">
-              C
-            </div>
+      <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-2 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link
+          to="/"
+          onClick={closeMobileMenu}
+          className="flex shrink-0 items-center gap-2.5"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-chaybook-primary text-lg font-bold text-white shadow-sm">
+            C
+          </div>
 
-            <span className="text-lg font-bold tracking-tight text-chaybook-primary sm:text-xl">
-              ChayBook
-            </span>
-          </Link>
+          <span className="text-lg font-bold tracking-tight text-chaybook-primary sm:text-xl">
+            ChayBook
+          </span>
+        </Link>
 
-          <nav
-            aria-label="Điều hướng chính"
-            className="hidden items-center gap-4 xl:flex 2xl:gap-6"
-          >
-            {navItems.map((item) => (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                end={item.end}
-                className={({ isActive }) =>
-                  `relative whitespace-nowrap py-7 text-sm font-semibold transition-colors ${
-                    isActive
-                      ? "text-chaybook-primary"
-                      : "text-gray-700 hover:text-chaybook-primary"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {item.name}
+        {/* Desktop navigation (enough room for all nine links and admin actions) */}
+        <nav
+          aria-label="Điều hướng chính"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-5 min-[1440px]:flex"
+        >
+          {navItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              end={item.end}
+              className={({ isActive }) =>
+                `relative shrink-0 whitespace-nowrap py-7 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? "text-chaybook-primary"
+                    : "text-gray-700 hover:text-chaybook-primary"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {item.name}
 
-                    {isActive && (
-                      <span className="absolute bottom-0 left-0 h-[2.5px] w-full rounded-full bg-chaybook-primary" />
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 h-[2.5px] w-full rounded-full bg-chaybook-primary" />
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
 
         {/* Actions + Mobile Menu Button */}
-        <div className="flex shrink-0 items-center gap-2.5 sm:gap-3.5">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3.5">
           {isLoggedIn && user?.role === "ADMIN" && (
-            <Link to="/admin" className="hidden xl:block">
+            <Link to="/admin" className="hidden min-[1440px]:block">
               <Button
                 type="button"
                 size="md"
@@ -125,12 +124,12 @@ function Navbar() {
               type="button"
               size="md"
               onClick={logout}
-              className="hidden h-10 whitespace-nowrap py-2 xl:inline-flex"
+              className="hidden h-10 whitespace-nowrap py-2 min-[1440px]:inline-flex"
             >
               Đăng xuất
             </Button>
           ) : (
-            <Link to="/login" className="hidden xl:block">
+            <Link to="/login" className="hidden min-[1440px]:block">
               <Button
                 type="button"
                 size="md"
@@ -159,7 +158,7 @@ function Navbar() {
             </Link>
           )}
 
-          {/* Hamburger Toggle Button (< xl) */}
+          {/* Hamburger Toggle Button (< 1440px) */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
@@ -168,7 +167,7 @@ function Navbar() {
             }
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation-menu"
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-2xs transition-colors hover:border-chaybook-primary/40 hover:bg-chaybook-container hover:text-chaybook-primary xl:hidden"
+            className="inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-2xs transition-colors hover:border-chaybook-primary/40 hover:bg-chaybook-container hover:text-chaybook-primary min-[1440px]:hidden"
           >
             {mobileMenuOpen ? (
               <X className="h-5 w-5" />
@@ -179,20 +178,20 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Collapsible Mobile / Tablet Menu (< xl) */}
+      {/* Collapsible Mobile / Tablet Menu (< 1440px) */}
       {mobileMenuOpen && (
         <>
           <div
             aria-hidden="true"
             onClick={closeMobileMenu}
-            className="fixed inset-x-0 top-16 bottom-0 z-40 bg-black/25 backdrop-blur-[1px] sm:top-20 xl:hidden"
+            className="fixed inset-x-0 top-16 bottom-0 z-40 bg-black/25 backdrop-blur-[1px] sm:top-20 min-[1440px]:hidden"
           />
 
           <div
             id="mobile-navigation-menu"
             role="dialog"
             aria-label="Menu điều hướng di động"
-            className="relative z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-gray-200 bg-chaybook-bg px-4 pt-3 pb-5 shadow-xl sm:max-h-[calc(100dvh-5rem)] sm:px-6 xl:hidden"
+            className="relative z-50 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-gray-200 bg-chaybook-bg px-4 pt-3 pb-5 shadow-xl sm:max-h-[calc(100dvh-5rem)] sm:px-6 min-[1440px]:hidden"
           >
             <nav
               aria-label="Điều hướng di động"

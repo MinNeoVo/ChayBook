@@ -9,6 +9,7 @@ import ProfileSidebar from "../components/profile/ProfileSidebar";
 import SocialConnections from "../components/profile/SocialConnections";
 
 import PostCard from "../components/post/PostCard";
+import PostDeleteConfirmModal from "../components/post/PostDeleteConfirmModal";
 import CreatePostModal from "../components/community/CreatePostModal";
 import PostCommentModal from "../components/community/PostCommentModal";
 
@@ -37,6 +38,8 @@ function ProfilePage() {
   const [feedbackIsError, setFeedbackIsError] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [pendingPostActionId, setPendingPostActionId] = useState(null);
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const handleCommentCountChange = useCallback(
     (targetPostId, newTotalCount) => {
@@ -364,10 +367,6 @@ function ProfilePage() {
     console.log("Share:", post.postId ?? post.id);
   };
 
-  const handleMore = (post) => {
-    console.log("More:", post.postId ?? post.id);
-  };
-
   const handleEdit = (post) => {
     if (
       !["PENDING", "REJECTED", "DENIED"].includes(
@@ -383,11 +382,23 @@ function ProfilePage() {
     setEditingPost(post);
   };
 
-  const handleDelete = async (post) => {
-    const postId = post.postId ?? post.id;
+  const requestDeletePost = (post) => {
+    if (pendingPostActionId != null) return;
+
+    setDeleteError("");
+    setPostToDelete(post);
+  };
+
+  const closeDeleteDialog = () => {
+    if (pendingPostActionId != null) return;
+
+    setDeleteError("");
+    setPostToDelete(null);
+  };
+
+  const confirmDeletePost = async () => {
+    const postId = postToDelete?.postId ?? postToDelete?.id;
     if (!postId || pendingPostActionId != null) return;
-    if (!window.confirm("Bạn có chắc muốn xóa bài viết này không?"))
-      return;
 
     setPendingPostActionId(postId);
     setFeedbackMessage("");
@@ -407,13 +418,18 @@ function ProfilePage() {
             }
           : current,
       );
-      setFeedbackMessage("Đã xóa bài viết.");
-    } catch (deleteError) {
-      console.error("Không thể xóa bài viết:", deleteError);
-      setFeedbackIsError(true);
-      setFeedbackMessage(
-        deleteError.message || "Không thể xóa bài viết. Vui lòng thử lại.",
+      setSelectedPostForComments((current) =>
+        (current?.postId ?? current?.id) === postId ? null : current,
       );
+      setPostToDelete(null);
+      setFeedbackMessage("Đã xóa bài viết.");
+    } catch (deleteFailure) {
+      console.error("Không thể xóa bài viết:", deleteFailure);
+      setFeedbackIsError(true);
+      const message =
+        deleteFailure.message || "Không thể xóa bài viết. Vui lòng thử lại.";
+      setDeleteError(message);
+      setFeedbackMessage(message);
     } finally {
       setPendingPostActionId(null);
     }
@@ -735,10 +751,10 @@ function ProfilePage() {
                         onComment={() => handleComment(post)}
                         onShare={() => handleShare(post)}
                         onBookmark={() => handleBookmark(post)}
-                        onMore={() => handleMore(post)}
                         onEdit={() => handleEdit(post)}
-                        onDelete={() => handleDelete(post)}
                         onWithdraw={() => handleWithdraw(post)}
+                        canDelete
+                        onRequestDelete={() => requestDeletePost(post)}
                         isPendingAction={
                           pendingPostActionId === (post.postId ?? post.id)
                         }
@@ -802,6 +818,13 @@ function ProfilePage() {
         onLike={handleLike}
         onBookmark={handleBookmark}
         onCommentCountChange={handleCommentCountChange}
+      />
+      <PostDeleteConfirmModal
+        isOpen={Boolean(postToDelete)}
+        isDeleting={pendingPostActionId != null}
+        error={deleteError}
+        onClose={closeDeleteDialog}
+        onConfirm={confirmDeletePost}
       />
       {isCreatePostOpen && (
         <CreatePostModal
