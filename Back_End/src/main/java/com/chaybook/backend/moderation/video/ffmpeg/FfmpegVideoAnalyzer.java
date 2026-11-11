@@ -50,10 +50,10 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
             List<String> frames;
             try {
                 frames = extractFrames(videoFile, workDir, duration);
-                if (frames.size() < 2) {
+                if (frames.size() < 3) {
                     failureReason = appendFailure(
                             failureReason,
-                            "FFmpeg trích xuất được ít hơn 2 frame; phần hình ảnh chưa được kiểm tra đầy đủ."
+                            "FFmpeg trích xuất được ít hơn 3 frame; phần hình ảnh chưa được kiểm tra đầy đủ."
                     );
                 }
             } catch (Exception exception) {
@@ -148,8 +148,9 @@ public class FfmpegVideoAnalyzer implements VideoAnalyzer {
             double duration
     ) throws Exception {
         double[] timestamps = {
-                duration / 2,
-                Math.max(0, duration - 0.5)
+                duration * 0.25,
+                duration * 0.50,
+                duration * 0.75
         };
 
         List<String> frames = new ArrayList<>();
