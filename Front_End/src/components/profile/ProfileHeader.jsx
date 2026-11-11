@@ -11,6 +11,7 @@ import {
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 import EditProfileModal from "./EditProfileModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 import API_BASE_URL from "../../services/app";
 
 function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {

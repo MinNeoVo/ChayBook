@@ -1,6 +1,6 @@
 import PostCard from "../post/PostCard";
 
-function PostGrid({ posts, onLike, onBookmark, onComment }) {
+function PostGrid({ posts, onLike, onBookmark, onComment, canDelete, onRequestDelete, isDeletePending }) {
   return (
     <section className="columns-1 gap-6 md:columns-2">
       {posts.map((post) => {
@@ -40,6 +40,9 @@ function PostGrid({ posts, onLike, onBookmark, onComment }) {
               onLike={() => onLike?.(normalizedPost.id)}
               onBookmark={() => onBookmark?.(normalizedPost.id)}
               onComment={() => onComment?.(normalizedPost)}
+              canDelete={canDelete?.(post)}
+              onRequestDelete={() => onRequestDelete?.(post)}
+              isActionDisabled={isDeletePending}
             />
           </div>
         );

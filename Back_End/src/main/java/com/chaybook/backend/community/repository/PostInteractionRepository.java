@@ -84,7 +84,7 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
             FROM PostInteraction i
             JOIN i.post p
             WHERE p.user.userId = :authorId
-              AND p.status <> 'DELETED'
+              AND p.status NOT IN ('REMOVED', 'DELETED')
               AND i.type IN ('LIKE', 'BOOKMARK')
             GROUP BY p.postId, i.type
             """)
@@ -102,7 +102,7 @@ public interface PostInteractionRepository extends JpaRepository<PostInteraction
             FROM PostInteraction i
             JOIN i.post p
             WHERE p.user.userId = :authorId
-              AND p.status <> 'DELETED'
+              AND p.status NOT IN ('REMOVED', 'DELETED')
               AND i.user.userId = :currentUserId
               AND i.type IN ('LIKE', 'BOOKMARK')
             """)

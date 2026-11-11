@@ -1,6 +1,7 @@
 package com.chaybook.backend.recipe.repository;
 
 import com.chaybook.backend.recipe.entity.Recipe;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,7 +103,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Integer> {
     );
 
     // Dùng cho tạo thực đơn và lấy dữ liệu chatbot.
-    List<Recipe> findByStatus(String status);
+    List<Recipe> findByStatus(RecipeStatus status);
 
     // Admin: không gửi status thì lấy cả ACTIVE và DELETED.
     @Query(

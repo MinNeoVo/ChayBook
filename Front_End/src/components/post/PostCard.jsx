@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   Bookmark,
@@ -21,13 +22,15 @@ function PostCard({
   onComment,
   onShare,
   onBookmark,
-  onMore,
   onEdit,
-  onDelete,
   onWithdraw,
+  canDelete = false,
+  onRequestDelete,
   isPendingAction = false,
   isActionDisabled = false,
 }) {
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef(null);
   const {
     status,
     time,
@@ -58,6 +61,70 @@ function PostCard({
   const isApproved = !status || normalizedStatus === "APPROVED";
   const isDenied = normalizedStatus === "REJECTED" || normalizedStatus === "DENIED";
   const isPending = normalizedStatus === "PENDING";
+
+  useEffect(() => {
+    if (!isMoreMenuOpen) return undefined;
+
+    const closeMenuOnOutsideClick = (event) => {
+      if (!moreMenuRef.current?.contains(event.target)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+
+    const closeMenuOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setIsMoreMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeMenuOnOutsideClick);
+    document.addEventListener("keydown", closeMenuOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeMenuOnOutsideClick);
+      document.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [isMoreMenuOpen]);
+
+  const renderDeleteMenu = () => {
+    if (!canDelete) return null;
+
+    return (
+      <div ref={moreMenuRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsMoreMenuOpen((current) => !current)}
+          className="cursor-pointer rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          aria-label="Tùy chọn bài viết"
+          aria-expanded={isMoreMenuOpen}
+          aria-haspopup="menu"
+        >
+          <MoreVertical size={20} />
+        </button>
+
+        {isMoreMenuOpen && (
+          <div
+            role="menu"
+            className="absolute right-0 bottom-full z-20 mb-2 min-w-40 rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                onRequestDelete?.(post);
+              }}
+              disabled={isActionDisabled}
+              className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Trash2 size={16} />
+              Xóa bài viết
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <article className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-6">
@@ -275,22 +342,7 @@ function PostCard({
               />
             </button>
 
-            {/* More */}
-            <button
-              type="button"
-              onClick={() => onMore?.(post)}
-              className="
-                cursor-pointer
-                rounded-lg
-                p-1.5
-                text-gray-500
-                transition-colors
-                hover:bg-gray-100
-              "
-              title="Tùy chọn khác"
-            >
-              <MoreVertical size={20} />
-            </button>
+            {renderDeleteMenu()}
           </div>
         </div>
       )}
@@ -314,30 +366,6 @@ function PostCard({
           </span>
 
           <div className="flex items-center gap-2">
-            {/* Delete */}
-            <button
-              type="button"
-              onClick={() => onDelete?.(post)}
-              disabled={isActionDisabled}
-              aria-busy={isPendingAction}
-              className="
-                flex
-                cursor-pointer
-                items-center
-                gap-1
-                px-2
-                py-1
-                text-sm
-                text-red-600
-                hover:underline
-                disabled:cursor-not-allowed
-                disabled:opacity-50
-              "
-            >
-              <Trash2 size={15} />
-              {isPendingAction ? "Đang xóa..." : "Xóa bài viết"}
-            </button>
-
             {/* Edit */}
             <button
               type="button"
@@ -366,6 +394,8 @@ function PostCard({
               {isPendingAction ? "Đang lưu..." : "Chỉnh sửa & gửi lại"}
             </button>
           </div>
+
+          {renderDeleteMenu()}
         </div>
       )}
 
@@ -439,6 +469,8 @@ function PostCard({
               Chỉnh sửa
             </button>
           </div>
+
+          {renderDeleteMenu()}
         </div>
       )}
     </article>
