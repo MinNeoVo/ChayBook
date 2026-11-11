@@ -71,7 +71,7 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
             LEFT JOIN FETCH p.user
             LEFT JOIN FETCH p.category
             WHERE p.user.userId = :userId
-              AND p.status <> 'DELETED'
+              AND p.status NOT IN ('REMOVED', 'DELETED')
             ORDER BY p.createdAt DESC, p.postId DESC
             """)
     List<Post> findPostsByUserId(
