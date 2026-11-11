@@ -116,7 +116,7 @@ public class MealPlanService {
                     : new HashSet<>(recipeIngredientRepository.findRecipeIdsContainingAllergies(allergyIds));
 
             List<Recipe> eligibleRecipes =
-                    recipeRepository.findByStatus(RecipeStatus.ACTIVE.name()).stream()
+                    recipeRepository.findByStatus(RecipeStatus.ACTIVE).stream()
                     .filter(recipe -> recipe.getCalories() != null && recipe.getCalories() > 0)
                     .filter(recipe -> !excludedRecipeIds.contains(recipe.getRecipeId()))
                     .toList();

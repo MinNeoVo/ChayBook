@@ -8,6 +8,7 @@ import com.chaybook.backend.mealplan.entity.MealPlan;
 import com.chaybook.backend.mealplan.repository.MealPlanItemRepository;
 import com.chaybook.backend.mealplan.repository.MealPlanRepository;
 import com.chaybook.backend.recipe.entity.Recipe;
+import com.chaybook.backend.recipe.enums.RecipeStatus;
 import com.chaybook.backend.recipe.repository.RecipeIngredientRepository;
 import com.chaybook.backend.recipe.repository.RecipeRepository;
 import com.chaybook.backend.user.entity.User;
@@ -84,7 +85,7 @@ class MealPlanServiceTest {
         });
         when(recipeIngredientRepository.findRecipeIdsContainingAllergies(List.of(ALLERGY_ID)))
                 .thenReturn(List.of(1));
-        when(recipeRepository.findByStatus("ACTIVE")).thenReturn(List.of(blocked, safe));
+        when(recipeRepository.findByStatus(RecipeStatus.ACTIVE)).thenReturn(List.of(blocked, safe));
 
         MealPlanResponse response = service.generate(USER_ID, request(3));
 
@@ -124,7 +125,7 @@ class MealPlanServiceTest {
                 .thenReturn(Optional.of(bmiRecord));
         when(recipeIngredientRepository.findRecipeIdsContainingAllergies(List.of(ALLERGY_ID)))
                 .thenReturn(List.of(1));
-        when(recipeRepository.findByStatus("ACTIVE")).thenReturn(List.of(recipe));
+        when(recipeRepository.findByStatus(RecipeStatus.ACTIVE)).thenReturn(List.of(recipe));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
