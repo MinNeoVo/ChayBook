@@ -6,17 +6,21 @@ import CommunityToolbar from "../components/community/CommunityToolbar";
 import PostGrid from "../components/community/PostGrid";
 import CreatePostModal from "../components/community/CreatePostModal";
 import PostCommentModal from "../components/community/PostCommentModal";
+import PostDeleteConfirmModal from "../components/post/PostDeleteConfirmModal";
+import { useAuth } from "../context/useAuth";
 
 import { getCategories } from "../services/categoryServices";
 
 import {
   getPosts,
   createPost,
+  deletePost,
   addPostInteraction,
   removePostInteraction,
 } from "../services/postServices";
 
 function CommunityPage() {
+  const { user } = useAuth();
   // Danh mục bài viết
   const [categories, setCategories] = useState([]);
   const [categoryLoading, setCategoryLoading] = useState(true);
@@ -44,6 +48,9 @@ function CommunityPage() {
 
   // Popup xem chi tiết & bình luận bài viết
   const [selectedPostForComments, setSelectedPostForComments] = useState(null);
+  const [postToDelete, setPostToDelete] = useState(null);
+  const [isDeletingPost, setIsDeletingPost] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // 1. Tải danh sách bài viết từ backend với phân trang
   const fetchPosts = useCallback(
@@ -405,6 +412,55 @@ function CommunityPage() {
     }
   };
 
+  const canDeletePost = (post) => {
+    if (!user) return false;
+
+    return (
+      user.role === "ADMIN" ||
+      (user.userId != null && Number(user.userId) === Number(post.userId))
+    );
+  };
+
+  const requestDeletePost = (post) => {
+    if (!canDeletePost(post)) return;
+
+    setDeleteError("");
+    setPostToDelete(post);
+  };
+
+  const closeDeleteDialog = () => {
+    if (isDeletingPost) return;
+
+    setDeleteError("");
+    setPostToDelete(null);
+  };
+
+  const confirmDeletePost = async () => {
+    const postId = postToDelete?.postId ?? postToDelete?.id;
+    if (!postId || isDeletingPost) return;
+
+    setIsDeletingPost(true);
+    setDeleteError("");
+
+    try {
+      await deletePost(postId);
+      setPosts((current) =>
+        current.filter((post) => (post.postId ?? post.id) !== postId),
+      );
+      setSelectedPostForComments((current) =>
+        (current?.postId ?? current?.id) === postId ? null : current,
+      );
+      setPostToDelete(null);
+      showFeedback("success", "Đã xóa bài viết.");
+    } catch (deleteFailure) {
+      setDeleteError(
+        deleteFailure.message || "Không thể xóa bài viết. Vui lòng thử lại.",
+      );
+    } finally {
+      setIsDeletingPost(false);
+    }
+  };
+
   // 9. Cập nhật số lượng bình luận khi thêm/xóa bình luận trong modal
   const handleCommentCountChange = useCallback((targetPostId, newTotalCount) => {
     setPosts((prevPosts) =>
@@ -507,6 +563,9 @@ function CommunityPage() {
                 onLike={handleLike}
                 onBookmark={handleBookmark}
                 onComment={(post) => setSelectedPostForComments(post)}
+                canDelete={canDeletePost}
+                onRequestDelete={requestDeletePost}
+                isDeletePending={isDeletingPost}
               />
               <div ref={sentinelRef} />
             </>
@@ -545,6 +604,14 @@ function CommunityPage() {
             onLike={(p) => handleLike(p.postId ?? p.id)}
             onBookmark={(p) => handleBookmark(p.postId ?? p.id)}
             onCommentCountChange={handleCommentCountChange}
+          />
+
+          <PostDeleteConfirmModal
+            isOpen={Boolean(postToDelete)}
+            isDeleting={isDeletingPost}
+            error={deleteError}
+            onClose={closeDeleteDialog}
+            onConfirm={confirmDeletePost}
           />
         </div>
       </main>
