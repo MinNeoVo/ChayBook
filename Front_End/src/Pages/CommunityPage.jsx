@@ -413,12 +413,20 @@ function CommunityPage() {
   };
 
   const canDeletePost = (post) => {
-    if (!user) return false;
+    if (!user || !post) return false;
 
-    return (
-      user.role === "ADMIN" ||
-      (user.userId != null && Number(user.userId) === Number(post.userId))
-    );
+    const currentUserId = user.userId ?? user.id;
+    const postOwnerId = post.userId ?? post.author?.userId;
+
+    if (currentUserId != null && postOwnerId != null) {
+      return Number(currentUserId) === Number(postOwnerId);
+    }
+
+    if (user.username && post.username) {
+      return user.username === post.username;
+    }
+
+    return false;
   };
 
   const requestDeletePost = (post) => {

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   BookMarked,
-  LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
@@ -106,18 +105,6 @@ function Navbar() {
 
         {/* Actions + Mobile Menu Button */}
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3.5">
-          {isLoggedIn && user?.role === "ADMIN" && (
-            <Link to="/admin" className="hidden min-[1440px]:block">
-              <Button
-                type="button"
-                size="md"
-                className="h-10 whitespace-nowrap py-2"
-              >
-                Bảng điều khiển
-              </Button>
-            </Link>
-          )}
-
           {/* Desktop Login / Logout */}
           {isLoggedIn ? (
             <Button
@@ -261,26 +248,9 @@ function Navbar() {
                   </div>
 
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    {user?.role === "ADMIN" && (
-                      <Link
-                        to="/admin"
-                        onClick={closeMobileMenu}
-                        className="flex-1"
-                      >
-                        <Button
-                          type="button"
-                          size="md"
-                          className="h-10 w-full gap-2 py-2"
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Bảng điều khiển
-                        </Button>
-                      </Link>
-                    )}
-
                     <Button
                       type="button"
-                      variant={user?.role === "ADMIN" ? "outline" : "primary"}
+                      variant="primary"
                       size="md"
                       onClick={handleMobileLogout}
                       className="h-10 flex-1 gap-2 py-2"

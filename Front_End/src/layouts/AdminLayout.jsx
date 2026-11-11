@@ -7,7 +7,6 @@ import {
   FileText,
   ChefHat,
   Video,
-  ArrowLeft,
   LogOut,
   Leaf,
   Menu,
@@ -94,7 +93,7 @@ function AdminLayout() {
             <Leaf aria-hidden="true" size={23} />
           </span>
           <Link
-            to="/"
+            to="/admin"
             onClick={() => setSidebarOpen(false)}
             className="min-w-0"
           >
@@ -135,19 +134,10 @@ function AdminLayout() {
         </nav>
 
         <div className="shrink-0 space-y-2 border-t border-white/20 p-4">
-          <Link
-            to="/"
-            onClick={() => setSidebarOpen(false)}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white"
-          >
-            <ArrowLeft className="h-5 w-5 shrink-0" />
-            <span>Quay lại ChayBook</span>
-          </Link>
-
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/90 transition-colors hover:bg-white/15 hover:text-white"
           >
             <LogOut className="h-5 w-5 shrink-0" />
             <span>Đăng xuất</span>
