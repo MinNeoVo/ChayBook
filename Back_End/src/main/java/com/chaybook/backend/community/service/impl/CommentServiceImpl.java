@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.Objects;
 public class CommentServiceImpl implements CommentService {
 
     private static final int MAX_PAGE_SIZE = 50;
+    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
@@ -136,6 +138,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setParentComment(root);
         comment.setReplyToComment(target);
         comment.setStatus(CommentStatus.ACTIVE);
+        LocalDateTime now = LocalDateTime.now(VIETNAM_ZONE);
+        comment.setCreatedAt(now);
+        comment.setUpdatedAt(now);
 
         Comment saved = commentRepository.saveAndFlush(comment);
 
@@ -174,7 +179,9 @@ public class CommentServiceImpl implements CommentService {
 
         if (!content.equals(comment.getContent())) {
             comment.setContent(content);
-            comment.setEditedAt(LocalDateTime.now());
+            LocalDateTime now = LocalDateTime.now(VIETNAM_ZONE);
+            comment.setEditedAt(now);
+            comment.setUpdatedAt(now);
             commentRepository.saveAndFlush(comment);
         }
 

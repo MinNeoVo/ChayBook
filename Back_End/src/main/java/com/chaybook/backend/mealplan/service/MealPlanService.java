@@ -273,6 +273,25 @@ public class MealPlanService {
         }
     }
 
+    @Transactional
+    public void deletePlan(Integer userId, Integer mealPlanId) {
+        try {
+            MealPlan plan = mealPlanRepository.findByMealPlanIdAndUserUserId(mealPlanId, userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Meal plan not found"));
+            List<MealPlanItem> items = mealPlanItemRepository
+                    .findByMealPlanMealPlanIdOrderByDayNumberAscMealItemIdAsc(mealPlanId);
+            if (!items.isEmpty()) {
+                mealPlanItemRepository.deleteAll(items);
+            }
+            mealPlanRepository.delete(plan);
+        } catch (ResponseStatusException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
+            log.error("Failed to delete mealPlanId={} for userId={}", mealPlanId, userId, exception);
+            throw exception;
+        }
+    }
+
     private String normalizeGoal(String goal) {
         if (goal == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose a health goal");

@@ -386,7 +386,7 @@ function ProfilePage() {
   const handleDelete = async (post) => {
     const postId = post.postId ?? post.id;
     if (!postId || pendingPostActionId != null) return;
-    if (!window.confirm("Bạn có chắc muốn xóa bài viết bị từ chối này không?"))
+    if (!window.confirm("Bạn có chắc muốn xóa bài viết này không?"))
       return;
 
     setPendingPostActionId(postId);

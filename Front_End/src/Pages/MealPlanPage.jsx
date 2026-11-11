@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { CalendarDays, Leaf, Sparkles } from "lucide-react";
+import { CalendarDays, Leaf, Sparkles, Trash2 } from "lucide-react";
 
 import AllergySelector from "../components/allergy/AllergySelector";
 import BmiCalculator from "../components/bmi/BmiCalculator";
 import Button from "../components/common/Button";
 import MealPlanSchedule from "../components/mealplan/MealPlanSchedule";
 import { useBmi } from "../context/useBmi";
-import { createMealPlan, getMealPlans } from "../services/mealPlanServices";
+import { createMealPlan, deleteMealPlan, getMealPlans } from "../services/mealPlanServices";
 import { formatBmiValue, getBmiCategoryLabel } from "../utils/bmi";
 
 const goalOptions = [
@@ -31,6 +31,7 @@ function MealPlanPage() {
   const [dietaryPreference, setDietaryPreference] = useState("");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [deletingPlanId, setDeletingPlanId] = useState(null);
   const [error, setError] = useState("");
   const [allergyStatus, setAllergyStatus] = useState({
     ready: false,
@@ -138,6 +139,32 @@ function MealPlanPage() {
       setError(requestError.message || "Không thể tạo thực đơn.");
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function handleDeletePlan(planId) {
+    if (!planId || deletingPlanId != null) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa thực đơn này không?")) return;
+
+    setError("");
+    setDeletingPlanId(planId);
+    try {
+      await deleteMealPlan(planId);
+      setReturnPlan(null);
+      setPlans((currentPlans) => {
+        const remaining = currentPlans.filter((plan) => plan.mealPlanId !== planId);
+        setSelectedPlanId((currentSelectedId) =>
+          currentSelectedId === planId
+            ? remaining[0]?.mealPlanId ?? null
+            : currentSelectedId,
+        );
+        return remaining;
+      });
+    } catch (requestError) {
+      console.error("Failed to delete meal plan:", requestError);
+      setError(requestError.message || "Không thể xóa thực đơn.");
+    } finally {
+      setDeletingPlanId(null);
     }
   }
 
@@ -301,17 +328,29 @@ function MealPlanPage() {
             </p>
           ) : selectedPlan ? (
             <div className="flex min-w-0 flex-col gap-5">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl bg-white p-5 text-sm text-gray-700 shadow-sm">
-                <span className="flex items-center gap-2 font-semibold text-chaybook-primary">
-                  <CalendarDays className="h-4 w-4" /> {selectedPlan.durationDays} ngày
-                </span>
-                <span>Mục tiêu: {goalLabels[selectedPlan.healthGoal] || selectedPlan.healthGoal.replaceAll("_", " ").toLowerCase()}</span>
-                {selectedPlan.bmi && (
-                  <span>BMI: {formatBmiValue(selectedPlan.bmi.bmi)} · {getBmiCategoryLabel(selectedPlan.bmi.category)}</span>
-                )}
-                {selectedPlan.dietaryPreference && (
-                  <span>Sở thích: {selectedPlan.dietaryPreference}</span>
-                )}
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 text-sm text-gray-700 shadow-sm">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  <span className="flex items-center gap-2 font-semibold text-chaybook-primary">
+                    <CalendarDays className="h-4 w-4" /> {selectedPlan.durationDays} ngày
+                  </span>
+                  <span>Mục tiêu: {goalLabels[selectedPlan.healthGoal] || selectedPlan.healthGoal.replaceAll("_", " ").toLowerCase()}</span>
+                  {selectedPlan.bmi && (
+                    <span>BMI: {formatBmiValue(selectedPlan.bmi.bmi)} · {getBmiCategoryLabel(selectedPlan.bmi.category)}</span>
+                  )}
+                  {selectedPlan.dietaryPreference && (
+                    <span>Sở thích: {selectedPlan.dietaryPreference}</span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeletePlan(selectedPlan.mealPlanId)}
+                  disabled={deletingPlanId === selectedPlan.mealPlanId}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/70 px-3.5 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {deletingPlanId === selectedPlan.mealPlanId ? "Đang xóa…" : "Xóa thực đơn"}
+                </button>
               </div>
 
               <MealPlanSchedule

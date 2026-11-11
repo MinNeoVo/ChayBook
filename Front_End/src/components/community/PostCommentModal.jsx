@@ -25,26 +25,49 @@ import {
 
 const API_ORIGIN = new URL(API_BASE_URL).origin;
 
-function formatRelativeTime(dateString) {
-  if (!dateString) return "Vừa xong";
+function parseServerDate(dateString) {
+  if (!dateString) return null;
   const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "Vừa xong";
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
 
-  const now = new Date();
-  const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+function formatFullDateTime(dateString) {
+  const date = parseServerDate(dateString);
+  if (!date) return "";
+  return date.toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
-  if (diffSec < 60) return "Vừa xong";
+function formatRelativeTime(dateString, nowMs = Date.now()) {
+  const date = parseServerDate(dateString);
+  if (!date) return "Vừa xong";
+
+  const diffSec = Math.floor((nowMs - date.getTime()) / 1000);
+  const timeClock = date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  if (diffSec < 60) return `Vừa xong • ${timeClock}`;
   const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffMin < 60) return `${diffMin} phút trước • ${timeClock}`;
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `${diffHour} giờ trước`;
+  if (diffHour < 24) return `${diffHour} giờ trước • ${timeClock}`;
   const diffDays = Math.floor(diffHour / 24);
-  if (diffDays < 7) return `${diffDays} ngày trước`;
+  if (diffDays < 7) return `${diffDays} ngày trước • ${timeClock}`;
 
   return date.toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -86,6 +109,18 @@ export default function PostCommentModal({
 
   // Deleting state: commentId in progress
   const [deletingId, setDeletingId] = useState(null);
+
+  // Real-time clock tick for relative timestamps
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    setNowMs(Date.now());
+    const intervalId = setInterval(() => {
+      setNowMs(Date.now());
+    }, 30000);
+    return () => clearInterval(intervalId);
+  }, [isOpen]);
 
   const inputRef = useRef(null);
   const commentsContainerRef = useRef(null);
@@ -175,7 +210,13 @@ export default function PostCommentModal({
         replyToCommentId: replyTarget?.commentId ?? null,
       });
 
-      const newComment = response?.comment;
+      const rawComment = response?.comment;
+      const newComment = rawComment
+        ? {
+            ...rawComment,
+            createdAt: new Date().toISOString(),
+          }
+        : null;
       const updatedTotalCount = Number(
         response?.totalCommentCount ?? totalCommentCount + 1,
       );
@@ -607,6 +648,7 @@ export default function PostCommentModal({
                   <CommentItem
                     key={rootComment.commentId}
                     comment={rootComment}
+                    nowMs={nowMs}
                     onStartReply={handleStartReply}
                     onStartEdit={(c) =>
                       setEditingComment({
@@ -730,6 +772,7 @@ export default function PostCommentModal({
  */
 function CommentItem({
   comment,
+  nowMs,
   isReply = false,
   onStartReply,
   onStartEdit,
@@ -782,8 +825,11 @@ function CommentItem({
               )}
             </div>
 
-            <span className="text-[10px] text-gray-400 shrink-0">
-              {formatRelativeTime(comment.createdAt)}
+            <span
+              className="text-[10px] text-gray-400 shrink-0"
+              title={formatFullDateTime(comment.createdAt)}
+            >
+              {formatRelativeTime(comment.createdAt, nowMs)}
             </span>
           </div>
 
@@ -900,6 +946,7 @@ function CommentItem({
                     <CommentItem
                       key={reply.commentId}
                       comment={reply}
+                      nowMs={nowMs}
                       isReply={true}
                       onStartReply={onStartReply}
                       onStartEdit={onStartEdit}
