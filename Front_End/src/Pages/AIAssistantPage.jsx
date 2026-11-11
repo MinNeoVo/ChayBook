@@ -8,12 +8,14 @@ import SuggestionChips from "../components/ai/SuggestionChips";
 
 import { useAuth } from "../context/useAuth";
 
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import {
   sendAIMessage,
   getAIConversations,
   getAIConversationMessages,
+  deleteAIConversationHistory,
+  deleteAIConversation,
 } from "../services/aiAssistantService";
 
 function AIAssistantPage() {
@@ -51,6 +53,8 @@ function AIAssistantPage() {
   const [historyError, setHistoryError] = useState("");
   const [loadingConversationId, setLoadingConversationId] = useState(null);
   const [isTyping, setIsTyping] = useState(() => Boolean(initialPrompt));
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
+  const [deletingConversationId, setDeletingConversationId] = useState(null);
   const [error, setError] = useState(null);
   const [lastUserPrompt, setLastUserPrompt] = useState(() => initialPrompt);
   const [guestTrialExhausted, setGuestTrialExhausted] = useState(false);
@@ -150,6 +154,49 @@ function AIAssistantPage() {
       setHistoryError(err.message || "Không tải được tin nhắn của hội thoại.");
     } finally {
       setLoadingConversationId(null);
+    }
+  };
+
+  const handleDeleteHistory = async () => {
+    if (isDeletingHistory || conversations.length === 0) return;
+    if (!window.confirm("Bạn có chắc muốn xóa toàn bộ lịch sử trò chuyện AI? Hành động này không thể hoàn tác.")) return;
+
+    setIsDeletingHistory(true);
+    setHistoryError("");
+    try {
+      await deleteAIConversationHistory();
+      setConversations([]);
+      setMessages([]);
+      setConversationId(null);
+      setError(null);
+      setLastUserPrompt("");
+    } catch (err) {
+      setHistoryError(err.message || "Không thể xóa lịch sử hội thoại.");
+    } finally {
+      setIsDeletingHistory(false);
+    }
+  };
+
+  const handleDeleteConversation = async (conversation) => {
+    const id = conversation.conversationId;
+    if (isDeletingHistory || deletingConversationId !== null || loadingConversationId !== null) return;
+    if (!window.confirm(`Bạn có chắc muốn xóa cuộc trò chuyện “${conversation.title || `Hội thoại #${id}`}”?`)) return;
+
+    setDeletingConversationId(id);
+    setHistoryError("");
+    try {
+      await deleteAIConversation(id);
+      setConversations((current) => current.filter((item) => item.conversationId !== id));
+      if (conversationId === id) {
+        setMessages([]);
+        setConversationId(null);
+        setError(null);
+        setLastUserPrompt("");
+      }
+    } catch (err) {
+      setHistoryError(err.message || "Không thể xóa cuộc hội thoại.");
+    } finally {
+      setDeletingConversationId(null);
     }
   };
 
@@ -358,35 +405,57 @@ function AIAssistantPage() {
               {!isHistoryLoading &&
                 !historyError &&
                 conversations.map((conversation) => (
-                  <button
+                  <div
                     key={conversation.conversationId}
-                    type="button"
-                    onClick={() => handleSelectConversation(conversation)}
-                    disabled={isTyping || loadingConversationId !== null}
-                    className="w-full rounded-xl border border-gray-100 bg-gray-50 p-3 text-left transition-colors hover:border-emerald-200 hover:bg-emerald-50 disabled:cursor-wait disabled:opacity-60"
+                    className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 p-2 transition-colors hover:border-emerald-200 hover:bg-emerald-50"
                   >
-                    <p className="text-sm font-semibold text-gray-800">
-                      {conversation.title ||
-                        `Hội thoại #${conversation.conversationId}`}
-                    </p>
-
-                    <span className="text-xs text-gray-500">
-                      {loadingConversationId === conversation.conversationId
-                        ? "Đang tải tin nhắn..."
-                        : conversation.updatedAt
-                          ? new Date(
-                            conversation.updatedAt,
-                          ).toLocaleString("vi-VN")
-                          : ""}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectConversation(conversation)}
+                      disabled={isTyping || loadingConversationId !== null || isDeletingHistory || deletingConversationId !== null}
+                      className="min-w-0 flex-1 cursor-pointer p-1 text-left disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <p className="truncate text-sm font-semibold text-gray-800">
+                        {conversation.title || `Hội thoại #${conversation.conversationId}`}
+                      </p>
+                      <span className="text-xs text-gray-500">
+                        {loadingConversationId === conversation.conversationId
+                          ? "Đang tải tin nhắn..."
+                          : conversation.updatedAt
+                            ? new Date(conversation.updatedAt).toLocaleString("vi-VN")
+                            : ""}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteConversation(conversation)}
+                      disabled={isTyping || loadingConversationId !== null || isDeletingHistory || deletingConversationId !== null}
+                      aria-label={`Xóa hội thoại ${conversation.title || conversation.conversationId}`}
+                      title="Xóa cuộc trò chuyện"
+                      className="cursor-pointer rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {deletingConversationId === conversation.conversationId
+                        ? <span className="text-xs">...</span>
+                        : <Trash2 className="h-4 w-4" />}
+                    </button>
+                  </div>
                 ))}
             </div>
 
-            <div className="flex shrink-0 justify-end border-t border-gray-100 p-5 pt-3">
+            <div className="flex shrink-0 items-center justify-between border-t border-gray-100 p-5 pt-3">
+              <button
+                type="button"
+                onClick={handleDeleteHistory}
+                disabled={isDeletingHistory || isHistoryLoading || conversations.length === 0}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {isDeletingHistory ? "Đang xóa..." : "Xóa toàn bộ lịch sử"}
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
+                disabled={isDeletingHistory}
                 className="cursor-pointer rounded-xl bg-chaybook-primary px-4 py-2 text-xs font-semibold text-white"
               >
                 Đóng
