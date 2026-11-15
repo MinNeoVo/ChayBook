@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Crown, Zap } from "lucide-react";
 
 import Button from "../common/Button";
 import VideoProgress from "./VideoProgress";
+import ProLockModal from "../common/ProLockModal";
+import { useAuth } from "../../context/useAuth";
 
 import { submitVideoFile, submitVideoUrl } from "../../services/videoServices";
 
@@ -15,6 +17,7 @@ import {
 } from "../../utils/videoAnalysis";
 
 export default function VideoSourceForm() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const pending = useRef(null);
 
@@ -25,11 +28,17 @@ export default function VideoSourceForm() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [showProModal, setShowProModal] = useState(false);
 
   useEffect(() => () => pending.current?.abort(), []);
 
   async function submit(event) {
     event.preventDefault();
+
+    if (!user?.isPro) {
+      setShowProModal(true);
+      return;
+    }
 
     if (pending.current) {
       return;
@@ -208,9 +217,42 @@ export default function VideoSourceForm() {
         />
       )}
 
+      {!user?.isPro && (
+        <div className="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+              <Crown className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-gray-900 text-sm">Tính năng Dành riêng cho Gói Pro</h4>
+                <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">PRO VIP</span>
+              </div>
+              <p className="mt-1 text-xs text-gray-600 leading-relaxed">
+                Phân tích và trích xuất công thức món chay từ video YouTube hoặc upload là đặc quyền của gói ChayBook Pro. Nâng cấp ngay để mở khóa!
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowProModal(true)}
+                className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-colors cursor-pointer"
+              >
+                <Zap className="h-3.5 w-3.5" /> Nâng cấp Pro để phân tích video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Button type="submit" disabled={busy}>
-        {busy ? "Đang gửi video…" : "Gửi video để phân tích"}
+        {busy ? "Đang gửi video…" : user?.isPro ? "Gửi video để phân tích" : "Gửi video để phân tích (Yêu cầu Pro 👑)"}
       </Button>
+
+      <ProLockModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName="Phân tích công thức từ Video"
+        customMessage="Tính năng phân tích và trích xuất công thức từ video YouTube/file upload chỉ dành riêng cho thành viên ChayBook Pro. Nâng cấp ngay để trải nghiệm!"
+      />
     </form>
   );
 }

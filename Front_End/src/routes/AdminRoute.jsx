@@ -5,7 +5,11 @@ function AdminRoute() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-chaybook-bg">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-chaybook-primary border-t-transparent" />
+      </div>
+    );
   }
 
   if (!user) {

@@ -16,6 +16,7 @@ import {
 
 import { useAuth } from "../context/useAuth";
 import NotificationBell from "../components/common/NotificationBell";
+import ChayBookLogo from "../components/common/ChayBookLogo";
 
 function AdminLayout() {
   const navigate = useNavigate();
@@ -88,21 +89,18 @@ function AdminLayout() {
           (sidebarOpen ? "translate-x-0" : "-translate-x-full")
         }
       >
-        <div className="flex h-20 shrink-0 items-center gap-3 border-b border-white/20 px-5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-            <Leaf aria-hidden="true" size={23} />
-          </span>
+        <div className="flex h-20 shrink-0 items-center border-b border-white/20 px-5">
           <Link
             to="/admin"
             onClick={() => setSidebarOpen(false)}
-            className="min-w-0"
+            className="flex items-center min-w-0 transition-opacity hover:opacity-90"
           >
-            <span className="block truncate text-lg font-bold tracking-tight">
-              ChayBook
-            </span>
-            <span className="block text-xs font-medium text-white/75">
-              Bảng quản trị
-            </span>
+            <ChayBookLogo
+              size="md"
+              withText
+              subtitle="Bảng quản trị"
+              inverted
+            />
           </Link>
         </div>
 

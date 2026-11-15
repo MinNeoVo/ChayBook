@@ -30,9 +30,10 @@ export const loginUser = async (loginData) => {
   });
 };
 
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (options = {}) => {
   return apiFetch("/auth/me", {
     method: "GET",
+    ...options,
   });
 };
 

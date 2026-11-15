@@ -7,6 +7,8 @@ import com.chaybook.backend.assistant.entity.AiConversation;
 import com.chaybook.backend.assistant.entity.AiMessage;
 import com.chaybook.backend.assistant.repository.AiConversationRepository;
 import com.chaybook.backend.assistant.repository.AiMessageRepository;
+import com.chaybook.backend.payment.entity.UserDailyUsage;
+import com.chaybook.backend.payment.repository.UserDailyUsageRepository;
 import com.chaybook.backend.recipe.entity.Recipe;
 import com.chaybook.backend.recipe.repository.RecipeRepository;
 import com.chaybook.backend.user.entity.User;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -44,13 +47,42 @@ public class ChatbotService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserDailyUsageRepository dailyUsageRepository;
+
     // Đổi chữ ký hàm ở đầu ChatbotService
     public ChatMessageResponse sendMessage(Integer userId, String guestId, ChatMessageRequest request) {
         boolean guestRequest = userId == null;
-        if (guestRequest && !trialLimiter.tryAcquire(guestId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.TOO_MANY_REQUESTS,
-                    "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục.");
+        Integer userQuestionsRemaining = null;
+        Boolean isProUser = null;
+
+        if (guestRequest) {
+            if (!trialLimiter.tryAcquire(guestId)) {
+                throw new ResponseStatusException(
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục.");
+            }
+        } else {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
+            isProUser = user.isPro();
+            if (!isProUser) {
+                LocalDate today = LocalDate.now();
+                UserDailyUsage dailyUsage = dailyUsageRepository.findByUserUserIdAndUsageDate(userId, today)
+                        .orElseGet(() -> new UserDailyUsage(user, today));
+
+                if (dailyUsage.getChatbotCount() >= 5) {
+                    throw new ResponseStatusException(
+                            HttpStatus.TOO_MANY_REQUESTS,
+                            "Bạn đã dùng hết 5 lượt hỏi miễn phí trong ngày hôm nay. Hãy nâng cấp gói Pro để trò chuyện không giới hạn!");
+                }
+
+                dailyUsage.setChatbotCount(dailyUsage.getChatbotCount() + 1);
+                dailyUsageRepository.save(dailyUsage);
+                userQuestionsRemaining = Math.max(0, 5 - dailyUsage.getChatbotCount());
+            } else {
+                userQuestionsRemaining = -1; // Không giới hạn đối với Pro
+            }
         }
 
         try {
@@ -135,7 +167,9 @@ public class ChatbotService {
                     conversation.getConversationId(),
                     aiMsg.getMessageId(),
                     aiReply,
-                    guestRequest ? trialLimiter.getRemaining(guestId) : null);
+                    guestRequest ? trialLimiter.getRemaining(guestId) : null,
+                    userQuestionsRemaining,
+                    isProUser);
 
         } catch (RuntimeException e) {
             if (guestRequest) {

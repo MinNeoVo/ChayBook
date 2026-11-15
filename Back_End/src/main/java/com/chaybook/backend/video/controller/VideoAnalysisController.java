@@ -1,4 +1,6 @@
 package com.chaybook.backend.video.controller;
+import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.repository.UserRepository;
 import com.chaybook.backend.video.dto.*;
 import com.chaybook.backend.video.service.VideoAnalysisService;
 import jakarta.validation.Valid;
@@ -9,12 +11,18 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/user/video-analyses")
 public class VideoAnalysisController {
     private final VideoAnalysisService service;
-    public VideoAnalysisController(VideoAnalysisService service) { this.service = service; }
+    private final UserRepository userRepository;
+
+    public VideoAnalysisController(VideoAnalysisService service, UserRepository userRepository) {
+        this.service = service;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping("/active")
     public ResponseEntity<VideoSubmissionResponse> active(@AuthenticationPrincipal Jwt jwt) {
@@ -27,12 +35,14 @@ public class VideoAnalysisController {
     public ResponseEntity<VideoSubmissionResponse> upload(@AuthenticationPrincipal Jwt jwt,
             @RequestPart("file") MultipartFile file,
             @RequestParam(name = "includeSummary", defaultValue = "true") boolean includeSummary) {
+        requireProUser(jwt);
         return accepted(service.submitUpload(VideoAuthentication.requireUserId(jwt), file, includeSummary));
     }
 
     @PostMapping(value = "/urls", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<VideoSubmissionResponse> url(@AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody SubmitVideoUrlRequest request) {
+        requireProUser(jwt);
         return accepted(service.submitUrl(VideoAuthentication.requireUserId(jwt), request));
     }
 
@@ -74,5 +84,17 @@ public class VideoAnalysisController {
     private ResponseEntity<VideoSubmissionResponse> accepted(VideoSubmissionResponse response) {
         return ResponseEntity.accepted().location(URI.create(
                 "/api/user/video-analyses/submissions/" + response.submissionId())).body(response);
+    }
+
+    private void requireProUser(Jwt jwt) {
+        Integer userId = VideoAuthentication.requireUserId(jwt);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại."));
+        if (!user.isPro()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Tính năng phân tích công thức từ video chỉ dành cho tài khoản Pro. Vui lòng nâng cấp gói Pro để sử dụng."
+            );
+        }
     }
 }

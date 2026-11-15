@@ -8,7 +8,8 @@ import SuggestionChips from "../components/ai/SuggestionChips";
 
 import { useAuth } from "../context/useAuth";
 
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, Crown, Zap } from "lucide-react";
+import ProLockModal from "../components/common/ProLockModal";
 
 import {
   sendAIMessage,
@@ -58,6 +59,9 @@ function AIAssistantPage() {
   const [error, setError] = useState(null);
   const [lastUserPrompt, setLastUserPrompt] = useState(() => initialPrompt);
   const [guestTrialExhausted, setGuestTrialExhausted] = useState(false);
+  const [userLimitExhausted, setUserLimitExhausted] = useState(false);
+  const [userRemaining, setUserRemaining] = useState(null);
+  const [showProModal, setShowProModal] = useState(false);
 
   const [activeModal, setActiveModal] = useState(null);
 
@@ -79,6 +83,12 @@ function AIAssistantPage() {
         if (!user && aiMessage.guestQuestionsRemaining === 0) {
           setGuestTrialExhausted(true);
         }
+        if (aiMessage.userQuestionsRemaining !== undefined) {
+          setUserRemaining(aiMessage.userQuestionsRemaining);
+          if (aiMessage.userQuestionsRemaining === 0) {
+            setUserLimitExhausted(true);
+          }
+        }
       })
       .catch((err) => {
         console.error("AI Assistant error:", err);
@@ -86,12 +96,19 @@ function AIAssistantPage() {
         let errorMessage = "Không thể tạo câu trả lời. Vui lòng thử lại.";
 
         if (err.status === 429) {
-          errorMessage =
-            "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          if (user) {
+            errorMessage =
+              "Bạn đã dùng hết 5 lượt hỏi miễn phí hôm nay. Vui lòng nâng cấp gói Pro để trò chuyện không giới hạn!";
+            setUserLimitExhausted(true);
+            setShowProModal(true);
+          } else {
+            errorMessage =
+              "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+            setGuestTrialExhausted(true);
+          }
           setMessages((prev) =>
             prev.filter((message) => !String(message.id).startsWith("user-init-")),
           );
-          setGuestTrialExhausted(true);
         } else if (err.status === 503) {
           errorMessage =
             "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
@@ -243,18 +260,31 @@ function AIAssistantPage() {
       if (!user && aiMessage.guestQuestionsRemaining === 0) {
         setGuestTrialExhausted(true);
       }
+      if (aiMessage.userQuestionsRemaining !== undefined) {
+        setUserRemaining(aiMessage.userQuestionsRemaining);
+        if (aiMessage.userQuestionsRemaining === 0) {
+          setUserLimitExhausted(true);
+        }
+      }
     } catch (err) {
       console.error("AI Assistant error:", err);
 
       let errorMessage = "Không thể tạo câu trả lời. Vui lòng thử lại.";
 
       if (err.status === 429) {
-        errorMessage =
-          "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+        if (user) {
+          errorMessage =
+            "Bạn đã dùng hết 5 lượt hỏi miễn phí hôm nay. Vui lòng nâng cấp gói Pro để trò chuyện không giới hạn!";
+          setUserLimitExhausted(true);
+          setShowProModal(true);
+        } else {
+          errorMessage =
+            "Bạn đã dùng hết 3 lượt hỏi dành cho khách. Vui lòng đăng nhập để tiếp tục sử dụng AI Assistant.";
+          setGuestTrialExhausted(true);
+        }
         setMessages((prev) =>
           prev.filter((message) => message.id !== userMessage.id),
         );
-        setGuestTrialExhausted(true);
       } else if (err.status === 503) {
         errorMessage =
           "AI Assistant đang tạm thời quá tải. Vui lòng thử lại sau.";
@@ -349,17 +379,50 @@ function AIAssistantPage() {
 
         {/* Input */}
         <div className="mt-auto flex flex-col gap-2.5 border-t border-gray-200/60 pt-3">
+            {/* User Daily Quota Bar */}
+            {user ? (
+              user?.isPro ? (
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50/80 border border-amber-200 px-3 py-1 rounded-full w-fit mx-auto">
+                  <Crown className="h-3.5 w-3.5 text-amber-500" /> Thành viên Pro: Hỏi đáp không giới hạn
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 px-3.5 py-1.5 rounded-xl">
+                  <span>
+                    Hôm nay:{" "}
+                    <strong>
+                      {userRemaining != null ? `${userRemaining}/5 câu hỏi còn lại` : "5 câu hỏi / 1 ngày"}
+                    </strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowProModal(true)}
+                    className="inline-flex items-center gap-1 font-bold text-amber-600 hover:text-amber-700 cursor-pointer"
+                  >
+                    <Zap className="h-3.5 w-3.5" /> Nâng cấp Pro không giới hạn
+                  </button>
+                </div>
+              )
+            ) : null}
+
             <ChatInput
               onSendMessage={handleSendMessage}
-              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted) || (user && userLimitExhausted)}
             />
 
             <SuggestionChips
               onSelectSuggestion={handleSendMessage}
-              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted)}
+              disabled={isAuthLoading || isTyping || (!user && guestTrialExhausted) || (user && userLimitExhausted)}
             />
         </div>
       </div>
+
+      {/* Pro Lock Modal */}
+      <ProLockModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName="hỏi đáp Chatbot AI không giới hạn"
+        customMessage="Bạn đã sử dụng hết 5 câu hỏi miễn phí trong ngày hôm nay. Hãy nâng cấp gói Pro để trò chuyện thoải mái không giới hạn và mở khóa tất cả tính năng AI!"
+      />
 
       {/* =========================
           HISTORY MODAL

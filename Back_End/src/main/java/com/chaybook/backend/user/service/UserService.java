@@ -160,6 +160,8 @@ public class UserService {
                 user.getAvatarUrl(),
                 user.getRole(),
                 user.getStatusValue().name(),
+                user.isPro(),
+                user.getProExpiresAt(),
                 user.getCreatedAt(),
                 postResponses
         );

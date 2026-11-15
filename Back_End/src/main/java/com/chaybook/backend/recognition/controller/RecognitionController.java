@@ -3,6 +3,8 @@ package com.chaybook.backend.recognition.controller;
 import com.chaybook.backend.recognition.dto.ConnectionCheckResponse;
 import com.chaybook.backend.recognition.dto.RecognizeIngredientResponse;
 import com.chaybook.backend.recognition.service.RecognitionService;
+import com.chaybook.backend.user.entity.User;
+import com.chaybook.backend.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,11 +21,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class RecognitionController {
 
     private final RecognitionService recognitionService;
+    private final UserRepository userRepository;
 
     public RecognitionController(
-            RecognitionService recognitionService
+            RecognitionService recognitionService,
+            UserRepository userRepository
     ) {
         this.recognitionService = recognitionService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/connection-check")
@@ -56,6 +61,15 @@ public class RecognitionController {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Thông tin đăng nhập không hợp lệ."
+            );
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại."));
+        if (!user.isPro()) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Tính năng nhận diện nguyên liệu qua hình ảnh chỉ dành cho tài khoản Pro. Vui lòng nâng cấp gói Pro để sử dụng."
             );
         }
 

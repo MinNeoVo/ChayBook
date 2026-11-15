@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Share2, MessageSquare, Mail } from "lucide-react";
+import ChayBookLogo from "./ChayBookLogo";
 
 const footerSections = [
   {
@@ -55,14 +56,8 @@ function Footer() {
         <div className="grid grid-cols-1 gap-8 border-b border-gray-300/60 pb-12 md:grid-cols-2 lg:grid-cols-5">
           {/* Logo + Description */}
           <div className="flex flex-col gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-chaybook-primary text-base font-bold text-white shadow-sm">
-                C
-              </div>
-
-              <span className="text-xl font-bold tracking-tight text-chaybook-primary">
-                ChayBook
-              </span>
+            <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-90">
+              <ChayBookLogo size="md" withText />
             </Link>
 
             <p className="text-xs leading-relaxed text-gray-600">

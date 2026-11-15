@@ -43,6 +43,8 @@ export async function sendAIMessage(prompt, conversationId = null) {
       conversationId: response.conversationId ?? conversationId,
       createdAt: "Just now",
       guestQuestionsRemaining: response.guestQuestionsRemaining,
+      userQuestionsRemaining: response.userQuestionsRemaining,
+      isPro: response.isPro,
     };
   } catch (err) {
     console.error("Error calling AI assistant API:", err);

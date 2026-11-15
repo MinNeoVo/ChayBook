@@ -4,6 +4,7 @@ import { Mail } from "lucide-react";
 import { requestPasswordReset } from "../../services/authServices";
 import Input from "../common/Input";
 import Button from "../common/Button";
+import ChayBookLogo from "../common/ChayBookLogo";
 
 export default function ForgotPasswordForm() {
   const navigate = useNavigate();
@@ -26,6 +27,11 @@ export default function ForgotPasswordForm() {
   };
 
   return <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+    <div className="mb-4 flex justify-center">
+      <Link to="/" className="inline-block transition-transform hover:scale-105">
+        <ChayBookLogo size="lg" withText />
+      </Link>
+    </div>
     <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 sm:text-3xl">Quên mật khẩu</h1>
     <p className="mb-6 text-center text-sm text-gray-500">Nhập email để nhận mã OTP.</p>
     {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}

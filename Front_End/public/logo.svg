@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="cb-logo-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00873a" />
+      <stop offset="100%" stop-color="#006b2c" />
+    </linearGradient>
+    <linearGradient id="cb-logo-leaf-l" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#16a34a" />
+      <stop offset="100%" stop-color="#4ade80" />
+    </linearGradient>
+    <linearGradient id="cb-logo-leaf-r" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#34d399" />
+    </linearGradient>
+    <linearGradient id="cb-logo-gold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+    <filter id="cb-logo-shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.25" flood-color="#002b12"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle rounded badge -->
+  <rect width="120" height="120" rx="32" fill="url(#cb-logo-bg)" />
+  <rect x="2.5" y="2.5" width="115" height="115" rx="29.5" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"/>
+
+  <!-- Logo Graphics -->
+  <g filter="url(#cb-logo-shadow)">
+    <!-- Open Book Base Pages (soft white / mint) -->
+    <path d="M60 88 C48 83 30 83 18 90 C18 67 18 51 18 45 C30 39 48 39 60 46 Z" fill="#ffffff" fill-opacity="0.96" />
+    <path d="M60 88 C72 83 90 83 102 90 C102 67 102 51 102 45 C90 39 72 39 60 46 Z" fill="#f0fdf4" fill-opacity="0.96" />
+
+    <!-- Left Sprouting Leaf Page -->
+    <path d="M60 76 C46 72 23 61 22 36 C38 33 53 45 60 62 Z" fill="url(#cb-logo-leaf-l)" />
+    <!-- Right Sprouting Leaf Page -->
+    <path d="M60 76 C74 72 97 61 98 36 C82 33 67 45 60 62 Z" fill="url(#cb-logo-leaf-r)" />
+
+    <!-- Leaf Veins -->
+    <path d="M33 46 C41 49 51 57 56 64" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+    <path d="M87 46 C79 49 69 57 64 64" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+
+    <!-- Central Sprout / Stem -->
+    <path d="M60 82 V26" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-opacity="0.9"/>
+    
+    <!-- Golden Sprout Leaf Bud at the top -->
+    <path d="M60 32 C52 23 55 15 60 13 C65 15 68 23 60 32 Z" fill="url(#cb-logo-gold)" stroke="#ffffff" stroke-width="1" />
+  </g>
+</svg>

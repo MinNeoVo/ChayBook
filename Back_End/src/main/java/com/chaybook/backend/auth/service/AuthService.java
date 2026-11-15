@@ -115,7 +115,9 @@ public class AuthService {
                         user.getEmail(),
                         user.getFullName(),
                         user.getAvatarUrl(),
-                        user.getRole()));
+                        user.getRole(),
+                        user.isPro(),
+                        user.getProExpiresAt()));
 
         return new LoginResult(response, token);
     }
@@ -365,7 +367,9 @@ public class AuthService {
                 user.getEmail(),
                 user.getFullName(),
                 user.getAvatarUrl(),
-                user.getRole());
+                user.getRole(),
+                user.isPro(),
+                user.getProExpiresAt());
     }
 
     private void requireActive(User user) {

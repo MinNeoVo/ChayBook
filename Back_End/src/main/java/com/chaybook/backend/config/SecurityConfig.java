@@ -86,6 +86,9 @@ public class SecurityConfig {
                                                 // Mở cửa cho Chatbot (Guest)
                                                 .requestMatchers("/api/chatbot/**").permitAll()
 
+                                                // Mở cửa cho Webhook thanh toán PayOS
+                                                .requestMatchers("/api/payment/payos-webhook").permitAll()
+
                                                 // Mở cửa cho các API công khai khác
                                                 .requestMatchers(
                                                                 "/api/auth/register",
@@ -136,13 +139,28 @@ public class SecurityConfig {
                 return http.build();
         }
 
+        @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,https://chay-book.vercel.app}")
+        private String allowedOrigins;
+
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                configuration.setAllowedOrigins(List.of(
-                                "http://localhost:5173",
-                                "https://chay-book.vercel.app"));
+                List<String> patterns = new java.util.ArrayList<>();
+                patterns.add("http://localhost:*");
+                patterns.add("https://*.vercel.app");
+                patterns.add("https://*.onrender.com");
+
+                if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+                        for (String origin : allowedOrigins.split(",")) {
+                                String trimmed = origin.trim();
+                                if (!trimmed.isEmpty() && !patterns.contains(trimmed)) {
+                                        patterns.add(trimmed);
+                                }
+                        }
+                }
+
+                configuration.setAllowedOriginPatterns(patterns);
 
                 configuration.setAllowedMethods(List.of(
                                 "GET",

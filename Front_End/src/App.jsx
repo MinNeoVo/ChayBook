@@ -48,6 +48,9 @@ import ScrollToTop from "./components/common/ScrollToTop";
 import VideoAnalysisPage from "./Pages/VideoAnalysisPage";
 import MyRecipesPage from "./Pages/MyRecipesPage";
 import MyRecipeDetailPage from "./Pages/MyRecipeDetailPage";
+import UpgradeProPage from "./Pages/UpgradeProPage";
+import PaymentSuccessPage from "./Pages/PaymentSuccessPage";
+import PaymentCancelPage from "./Pages/PaymentCancelPage";
 
 function App() {
   return (
@@ -74,6 +77,9 @@ function App() {
           <Route path="/recipes/:recipeId" element={<RecipeDetailPage />} />
           <Route path="/bmi" element={<BmiPage />} />
           <Route path="/ai-assistant" element={<AIAssistantPage />} />
+          <Route path="/upgrade-pro" element={<UpgradeProPage />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
 
           {/* Protected User Routes */}
           <Route element={<ProtectedRoute />}>
