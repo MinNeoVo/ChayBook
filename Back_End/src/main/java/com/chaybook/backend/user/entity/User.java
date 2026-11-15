@@ -47,6 +47,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.ACTIVE;
 
+    @Column(name = "pro_expires_at")
+    private LocalDateTime proExpiresAt;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -157,5 +160,20 @@ public class User {
 
     public void setAllergies(Set<Allergy> allergies) {
         this.allergies = allergies;
+    }
+
+    public LocalDateTime getProExpiresAt() {
+        return proExpiresAt;
+    }
+
+    public void setProExpiresAt(LocalDateTime proExpiresAt) {
+        this.proExpiresAt = proExpiresAt;
+    }
+
+    public boolean isPro() {
+        if ("ADMIN".equalsIgnoreCase(this.role)) {
+            return true;
+        }
+        return proExpiresAt != null && proExpiresAt.isAfter(LocalDateTime.now());
     }
 }

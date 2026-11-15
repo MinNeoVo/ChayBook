@@ -90,6 +90,14 @@ public class MealPlanService {
         try {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+            if (!user.isPro()) {
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Tính năng tạo thực đơn cá nhân chỉ dành cho tài khoản Pro. Vui lòng nâng cấp gói Pro để sử dụng."
+                );
+            }
+
             BmiRecord bmi = bmiRecordRepository.findFirstByUserUserIdOrderByCalculatedAtDesc(userId)
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.CONFLICT,

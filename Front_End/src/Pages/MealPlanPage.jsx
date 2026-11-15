@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { CalendarDays, Leaf, Sparkles, Trash2 } from "lucide-react";
+import { CalendarDays, Leaf, Sparkles, Trash2, Crown, Zap } from "lucide-react";
 
 import AllergySelector from "../components/allergy/AllergySelector";
 import BmiCalculator from "../components/bmi/BmiCalculator";
 import Button from "../components/common/Button";
 import MealPlanSchedule from "../components/mealplan/MealPlanSchedule";
+import ProLockModal from "../components/common/ProLockModal";
+import { useAuth } from "../context/useAuth";
 import { useBmi } from "../context/useBmi";
 import { createMealPlan, deleteMealPlan, getMealPlans } from "../services/mealPlanServices";
 import { formatBmiValue, getBmiCategoryLabel } from "../utils/bmi";
@@ -18,6 +20,7 @@ const goalOptions = [
 const goalLabels = Object.fromEntries(goalOptions.map(({ value, label }) => [value, label]));
 
 function MealPlanPage() {
+  const { user } = useAuth();
   const location = useLocation();
   const [returnPlan, setReturnPlan] = useState(() => location.state);
   const { bmiRecord, initialized: bmiInitialized } = useBmi();
@@ -31,6 +34,7 @@ function MealPlanPage() {
   const [dietaryPreference, setDietaryPreference] = useState("");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState(null);
   const [error, setError] = useState("");
   const [allergyStatus, setAllergyStatus] = useState({
@@ -119,6 +123,12 @@ function MealPlanPage() {
 
   async function handleGenerate(event) {
     event.preventDefault();
+
+    if (!user?.isPro) {
+      setShowProModal(true);
+      return;
+    }
+
     setError("");
     setGenerating(true);
 
@@ -259,6 +269,32 @@ function MealPlanPage() {
                 </p>
               )}
 
+              {!user?.isPro && (
+                <div className="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                      <Crown className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-900 text-sm">Tính năng Dành riêng cho Gói Pro</h4>
+                        <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">PRO VIP</span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-600 leading-relaxed">
+                        Tạo thực đơn cá nhân hóa chuẩn calo theo BMI và dị ứng là đặc quyền của gói ChayBook Pro. Nâng cấp ngay để mở khóa!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowProModal(true)}
+                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-colors cursor-pointer"
+                      >
+                        <Zap className="h-3.5 w-3.5" /> Nâng cấp Pro để tạo thực đơn
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 disabled={
@@ -272,7 +308,7 @@ function MealPlanPage() {
                 className="mt-1 h-12 gap-2"
               >
                 <Sparkles className="h-4 w-4" />
-                {generating ? "Đang tạo thực đơn…" : "Tạo thực đơn"}
+                {generating ? "Đang tạo thực đơn…" : user?.isPro ? "Tạo thực đơn" : "Tạo thực đơn (Yêu cầu Pro 👑)"}
               </Button>
             </form>
 
@@ -372,6 +408,13 @@ function MealPlanPage() {
           )}
         </section>
       </div>
+
+      <ProLockModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName="Tạo thực đơn cá nhân hóa (Meal Plan)"
+        customMessage="Tính năng tự động tạo thực đơn cá nhân hóa theo chỉ số BMI và sở thích ăn chay chỉ dành riêng cho thành viên ChayBook Pro. Hãy nâng cấp để trải nghiệm ngay!"
+      />
     </div>
   );
 }

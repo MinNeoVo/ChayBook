@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   CalendarDays,
+  Crown,
   FileText,
   Heart,
   Plus,
   Edit3,
   KeyRound,
+  Zap,
 } from "lucide-react";
 
 import Button from "../common/Button";
@@ -205,6 +208,13 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
                     >
                       {roleLabel}
                     </span>
+
+                    {profile?.isPro && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-2.5 py-0.5 text-xs font-bold text-white shadow-2xs">
+                        <Crown size={13} className="text-yellow-100" />
+                        PRO VIP
+                      </span>
+                    )}
                   </div>
 
                   {/* Username */}
@@ -269,6 +279,35 @@ function ProfileHeader({ profile, onProfileUpdated, onCreatePost }) {
 
               {/* Actions */}
               <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap md:w-auto">
+                {profile?.isPro ? (
+                  <Link to="/upgrade-pro" className="w-full sm:flex-1 md:w-auto md:flex-none">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-amber-300 bg-amber-50/50 text-amber-800 hover:bg-amber-100"
+                    >
+                      <span className="flex items-center justify-center gap-1.5 font-semibold">
+                        <Crown size={16} className="text-amber-600" />
+                        Gói Pro (Quản lý)
+                      </span>
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/upgrade-pro" className="w-full sm:flex-1 md:w-auto md:flex-none">
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold shadow-xs"
+                    >
+                      <span className="flex items-center justify-center gap-1.5">
+                        <Zap size={16} />
+                        Nâng cấp Pro
+                      </span>
+                    </Button>
+                  </Link>
+                )}
+
                 <Button
                   type="button"
                   variant="outline"

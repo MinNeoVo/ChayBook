@@ -41,3 +41,9 @@ build/
 # Local Spring Boot configuration
 application-local.properties
 application-local.yml
+
+# Runtime storage & local scripts
+uploads/
+private-data/
+*.bat
+*.ps1

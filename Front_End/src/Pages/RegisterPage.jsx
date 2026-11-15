@@ -1,9 +1,17 @@
+import { Link } from "react-router-dom";
 import RegisterForm from "../components/auth/RegisterForm";
+import ChayBookLogo from "../components/common/ChayBookLogo";
 
 function RegisterPage() {
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+        <div className="mb-4 flex justify-center">
+          <Link to="/" className="inline-block transition-transform hover:scale-105">
+            <ChayBookLogo size="lg" withText />
+          </Link>
+        </div>
+
         <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
           Tạo tài khoản
         </h1>

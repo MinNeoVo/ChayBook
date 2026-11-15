@@ -1,6 +1,7 @@
 import LoginForm from "../components/auth/LoginForm";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import ChayBookLogo from "../components/common/ChayBookLogo";
 
 function LoginPage() {
   const location = useLocation();
@@ -34,6 +35,12 @@ function LoginPage() {
 
       {/* LOGIN CARD */}
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-8">
+        <div className="mb-4 flex justify-center">
+          <Link to="/" className="inline-block transition-transform hover:scale-105">
+            <ChayBookLogo size="lg" withText />
+          </Link>
+        </div>
+
         <h1 className="mb-2 text-center text-2xl font-bold text-gray-800 sm:text-3xl">
           Chào mừng bạn trở lại!
         </h1>

@@ -7,6 +7,7 @@ import {
   ChefHat,
   CircleAlert,
   Clock3,
+  Crown,
   ImagePlus,
   Leaf,
   Loader2,
@@ -15,10 +16,12 @@ import {
   Sparkles,
   Trash2,
   Upload,
+  Zap,
 } from "lucide-react";
 
 import Button from "../components/common/Button";
 import RecipeImage from "../components/recipes/RecipeImage";
+import ProLockModal from "../components/common/ProLockModal";
 import { useAuth } from "../context/useAuth";
 import {
   checkRecognitionConnection,
@@ -127,9 +130,10 @@ function SuggestedRecipeCard({ recipe }) {
 }
 
 function IngredientRecognitionPage() {
-  const { isLoggedIn } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [showProModal, setShowProModal] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState(
     () => recognitionSessionCache.selectedFile
@@ -258,6 +262,11 @@ function IngredientRecognitionPage() {
       return;
     }
 
+    if (!user?.isPro) {
+      setShowProModal(true);
+      return;
+    }
+
     setIsScanning(true);
     setScanError("");
     setIngredientNotice(null);
@@ -269,11 +278,16 @@ function IngredientRecognitionPage() {
       updateSessionCache({ scanResult: response });
     } catch (error) {
       console.error("Failed to recognize ingredients:", error);
+      if (error.status === 403) {
+        setShowProModal(true);
+      }
       const message =
-        error.status === 401 || error.status === 403
+        error.status === 401
           ? "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại."
-          : error.message ||
-            "Không thể nhận diện nguyên liệu lúc này. Vui lòng thử lại.";
+          : error.status === 403
+            ? "Tính năng nhận diện ảnh chỉ dành riêng cho tài khoản Pro."
+            : error.message ||
+              "Không thể nhận diện nguyên liệu lúc này. Vui lòng thử lại.";
       setScanError(message);
       updateSessionCache({ scanError: message });
     } finally {
@@ -486,6 +500,33 @@ function IngredientRecognitionPage() {
               </div>
             )}
 
+            {/* Pro Promotion Banner */}
+            {!user?.isPro && (
+              <div className="rounded-2xl border border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                    <Crown className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-gray-900 text-sm">Tính năng Dành riêng cho Gói Pro</h4>
+                      <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-800">PRO VIP</span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-600 leading-relaxed">
+                      Nhận diện nguyên liệu từ hình ảnh qua AI Vision là đặc quyền của gói ChayBook Pro. Nâng cấp ngay để mở khóa!
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowProModal(true)}
+                      className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-colors cursor-pointer"
+                    >
+                      <Zap className="h-3.5 w-3.5" /> Nâng cấp Pro để quét ảnh
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
@@ -502,7 +543,7 @@ function IngredientRecognitionPage() {
                 ) : (
                   <>
                     <ScanSearch className="h-5 w-5" />
-                    Quét nguyên liệu
+                    {user?.isPro ? "Quét nguyên liệu" : "Quét nguyên liệu (Yêu cầu Pro 👑)"}
                   </>
                 )}
               </Button>
@@ -854,6 +895,13 @@ function IngredientRecognitionPage() {
           </section>
         )}
       </div>
+
+      <ProLockModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName="Nhận diện nguyên liệu qua hình ảnh (AI Vision)"
+        customMessage="Tính năng nhận diện nguyên liệu và gợi ý công thức từ ảnh chụp tủ lạnh/món ăn chỉ dành riêng cho thành viên ChayBook Pro. Nâng cấp ngay để trải nghiệm!"
+      />
     </main>
   );
 }

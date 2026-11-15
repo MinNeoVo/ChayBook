@@ -8,23 +8,42 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     const checkAuth = async () => {
       try {
-        const data = await getCurrentUser();
-
-        setUser(data);
+        const data = await getCurrentUser({ signal: controller.signal });
+        if (isMounted) setUser(data);
       } catch (error) {
-        console.error("Failed to load the current user:", error);
-        setUser(null);
+        if (isMounted) setUser(null);
       } finally {
-        setLoading(false);
+        clearTimeout(timeoutId);
+        if (isMounted) setLoading(false);
       }
     };
 
     checkAuth();
+    return () => {
+      isMounted = false;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const isLoggedIn = user !== null;
+
+  const refreshUser = async () => {
+    try {
+      const data = await getCurrentUser();
+      setUser(data);
+      return data;
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+      return null;
+    }
+  };
 
   const login = (userData) => {
     setUser(userData);
@@ -46,6 +65,7 @@ function AuthProvider({ children }) {
         loading,
         login,
         logout,
+        refreshUser,
       }}
     >
       {children}

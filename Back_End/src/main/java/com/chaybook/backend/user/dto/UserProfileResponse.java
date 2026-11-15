@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * DTO trả về cho trang Profile: thông tin user + danh sách bài viết của user.
+ * DTO trả về cho trang Profile: thông tin user + danh sách bài viết của user + trạng thái Pro.
  */
 public record UserProfileResponse(
         Integer userId,
@@ -16,6 +16,8 @@ public record UserProfileResponse(
         String avatarUrl,
         String role,
         String status,
+        boolean isPro,
+        LocalDateTime proExpiresAt,
         LocalDateTime createdAt,
         List<PostResponse> posts
 ) {

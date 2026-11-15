@@ -153,7 +153,9 @@ public class SocialWebSupport {
                 user.getEmail(),
                 user.getFullName(),
                 user.getAvatarUrl(),
-                user.getRole()
+                user.getRole(),
+                user.isPro(),
+                user.getProExpiresAt()
         );
     }
 

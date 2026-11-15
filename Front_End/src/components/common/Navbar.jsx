@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   BookMarked,
+  Crown,
   LogIn,
   LogOut,
   Menu,
   User,
   X,
+  Zap,
 } from "lucide-react";
 import Avatar from "./Avatar.jsx";
 import NotificationBell from "./NotificationBell.jsx";
@@ -14,6 +16,7 @@ import NotificationBell from "./NotificationBell.jsx";
 import { useAuth } from "../../context/useAuth";
 
 import Button from "./Button";
+import ChayBookLogo from "./ChayBookLogo";
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,15 +64,9 @@ function Navbar() {
         <Link
           to="/"
           onClick={closeMobileMenu}
-          className="flex shrink-0 items-center gap-2.5"
+          className="flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-95"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-chaybook-primary text-lg font-bold text-white shadow-sm">
-            C
-          </div>
-
-          <span className="text-lg font-bold tracking-tight text-chaybook-primary sm:text-xl">
-            ChayBook
-          </span>
+          <ChayBookLogo size="md" withText />
         </Link>
 
         {/* Desktop navigation (enough room for all nine links and admin actions) */}
@@ -124,6 +121,36 @@ function Navbar() {
               >
                 Đăng nhập / Đăng ký
               </Button>
+            </Link>
+          )}
+
+          {/* Pro Status / Upgrade Button */}
+          {isLoggedIn ? (
+            user?.isPro ? (
+              <Link
+                to="/upgrade-pro"
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 px-3 py-1 text-xs font-bold text-white shadow-xs hover:from-amber-500 hover:to-amber-600 transition-all shrink-0"
+                title="Tài khoản ChayBook Pro"
+              >
+                <Crown className="h-3.5 w-3.5 text-yellow-100" />
+                <span>PRO</span>
+              </Link>
+            ) : (
+              <Link
+                to="/upgrade-pro"
+                className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-700 shadow-2xs hover:bg-amber-100 transition-all shrink-0"
+              >
+                <Zap className="h-3.5 w-3.5 text-amber-600 fill-amber-500" />
+                <span className="hidden sm:inline">Nâng cấp </span>PRO
+              </Link>
+            )
+          ) : (
+            <Link
+              to="/upgrade-pro"
+              className="hidden sm:inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50/80 px-2.5 py-1 text-xs font-bold text-amber-700 hover:bg-amber-100 transition-all shrink-0"
+            >
+              <Crown className="h-3.5 w-3.5 text-amber-500" />
+              <span>Gói PRO</span>
             </Link>
           )}
 
