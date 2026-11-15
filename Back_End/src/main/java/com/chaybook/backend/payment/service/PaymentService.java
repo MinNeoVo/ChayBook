@@ -260,7 +260,6 @@ public class PaymentService {
                 payment.getUser().isPro(),
                 payment.getUser().getProExpiresAt(),
                 "Đang chờ thanh toán...");
-                "Đang chờ thanh toán...");
     }
 
     @Transactional
