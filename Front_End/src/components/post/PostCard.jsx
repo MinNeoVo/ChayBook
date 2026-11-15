@@ -57,6 +57,7 @@ function PostCard({
     normalizedStatus === "REJECTED" || normalizedStatus === "DENIED";
   const isPending = normalizedStatus === "PENDING";
 
+  
   return (
     <article className="flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-6">
       {/* ================= AUTHOR HEADER ================= */}
