@@ -63,6 +63,7 @@ class MealPlanServiceTest {
                 userRepository
         );
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(user.isPro()).thenReturn(true);
     }
 
     @Test
@@ -133,6 +134,19 @@ class MealPlanServiceTest {
         );
 
         assertEquals(422, exception.getStatusCode().value());
+        verify(mealPlanRepository, never()).save(any(MealPlan.class));
+    }
+
+    @Test
+    void generateRejectsWhenUserIsNotPro() {
+        when(user.isPro()).thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.generate(USER_ID, request(3))
+        );
+
+        assertEquals(403, exception.getStatusCode().value());
         verify(mealPlanRepository, never()).save(any(MealPlan.class));
     }
 
