@@ -4,7 +4,7 @@ GO
 
 /* =========================================================
    CHAYBOOK - DATABASE REBUILD
-   21 TABLES
+   22 TABLES
    All text columns use NVARCHAR
    WARNING: Existing tables and their data will be deleted.
    ========================================================= */
@@ -15,6 +15,7 @@ GO
 -- =========================================================
 
 DROP TABLE IF EXISTS AI_MODERATION;
+DROP TABLE IF EXISTS CHATBOT_PROMPT;
 DROP TABLE IF EXISTS AI_RECOGNITION_ITEM;
 DROP TABLE IF EXISTS AI_MESSAGE;
 DROP TABLE IF EXISTS MEAL_PLAN_ITEM;
@@ -433,6 +434,23 @@ GO
 
 
 -- =========================================================
+-- CHATBOT PROMPT CONFIGURATION
+-- =========================================================
+
+CREATE TABLE CHATBOT_PROMPT (
+    prompt_id INT NOT NULL PRIMARY KEY,
+    prompt_text NVARCHAR(MAX) NOT NULL,
+    updated_at DATETIME2 NOT NULL CONSTRAINT DF_CHATBOT_PROMPT_UPDATED_AT DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT CK_CHATBOT_PROMPT_SINGLETON CHECK (prompt_id = 1)
+);
+
+INSERT INTO CHATBOT_PROMPT (prompt_id, prompt_text)
+VALUES (1, N'Bạn là trợ lý dinh dưỡng của mạng xã hội ẩm thực chay ChayBook.
+QUAN TRỌNG: Chỉ tư vấn về ăn chay, công thức món chay, thực đơn và dinh dưỡng thực vật. Nếu người dùng hỏi các chủ đề không liên quan (như chính trị, lập trình, game, toán học...), hãy từ chối trả lời một cách lịch sự, ngắn gọn và nhắc lại vai trò của bạn.');
+GO
+
+
+-- =========================================================
 -- 19. AI_RECOGNITION
 -- =========================================================
 
@@ -505,7 +523,7 @@ GO
 -- VERIFY
 -- =========================================================
 
-PRINT N'ChayBook: 21 tables created successfully with NVARCHAR.';
+PRINT N'ChayBook: 22 tables created successfully with NVARCHAR.';
 GO
 
 SELECT
@@ -519,6 +537,7 @@ WHERE TABLE_NAME IN (
     'RECIPE_INGREDIENT', 'ALLERGY_INGREDIENT',
     'BMI_RECORD', 'MEAL_PLAN', 'MEAL_PLAN_ITEM',
     'AI_CONVERSATION', 'AI_MESSAGE',
+    'CHATBOT_PROMPT',
     'AI_RECOGNITION', 'AI_RECOGNITION_ITEM',
     'AI_MODERATION'
 )
