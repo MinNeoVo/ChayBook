@@ -8,7 +8,6 @@ export default function PaymentSuccessPage() {
   const { refreshUser } = useAuth();
   const location = useLocation();
   const orderCode = location.state?.orderCode;
-  const isDemo = location.state?.isDemo;
 
   useEffect(() => {
     refreshUser();
@@ -36,7 +35,7 @@ export default function PaymentSuccessPage() {
 
         {orderCode && (
           <div className="mt-4 inline-block rounded-xl bg-gray-100 px-4 py-1.5 text-xs text-gray-600 font-mono">
-            Mã đơn hàng: #{orderCode} {isDemo && "(Kích hoạt chế độ Demo)"}
+            Mã đơn hàng: #{orderCode}
           </div>
         )}
 

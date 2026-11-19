@@ -240,7 +240,7 @@ function RegisterForm() {
         </Button>
       </form>}
 
-      {/* Google + Facebook */}
+      {/* Google Login */}
       <SocialLogin />
 
       {/* Login */}

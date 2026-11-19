@@ -141,7 +141,7 @@ function LoginForm() {
         <Link to="/forgot-password" className="text-sm font-medium text-chaybook-primary hover:underline">Quên mật khẩu?</Link>
       </div>
 
-      {/* Google + Facebook */}
+      {/* Google Login */}
       <SocialLogin />
 
       {/* Register */}

@@ -263,25 +263,6 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentStatusResponse simulatePaymentSuccess(Integer userId, Long orderCode) {
-        UserPayment payment = paymentRepository.findByOrderCode(orderCode)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy giao dịch"));
-
-        if (!payment.getUser().getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem đơn hàng này");
-        }
-
-        activateProSubscription(payment);
-
-        return new PaymentStatusResponse(
-                orderCode,
-                "PAID",
-                payment.getUser().isPro(),
-                payment.getUser().getProExpiresAt(),
-                "Kích hoạt gói Pro thành công (chế độ demo/thử nghiệm)!");
-    }
-
-    @Transactional
     public boolean handleWebhook(PayosWebhookRequest request) {
         if (request == null || request.data() == null) {
             log.warn("Webhook request body is empty");

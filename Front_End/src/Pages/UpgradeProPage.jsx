@@ -17,7 +17,6 @@ import { useAuth } from "../context/useAuth";
 import {
   createPaymentLink,
   checkPaymentStatus,
-  simulatePaymentSuccess,
   getMySubscription,
 } from "../services/paymentServices";
 
@@ -113,23 +112,6 @@ export default function UpgradeProPage() {
       }
     } catch (err) {
       alert("Lỗi kiểm tra trạng thái: " + (err.message || "Thử lại sau."));
-    } finally {
-      setCheckingStatus(false);
-    }
-  };
-
-  const handleSimulateDemo = async () => {
-    if (!paymentData?.orderCode) return;
-    try {
-      setCheckingStatus(true);
-      const statusRes = await simulatePaymentSuccess(paymentData.orderCode);
-      if (statusRes.status === "PAID") {
-        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-        await refreshUser();
-        navigate("/payment/success", { state: { orderCode: paymentData.orderCode, isDemo: true } });
-      }
-    } catch (err) {
-      alert("Lỗi demo: " + (err.message || "Không thể kích hoạt demo"));
     } finally {
       setCheckingStatus(false);
     }
@@ -514,16 +496,6 @@ export default function UpgradeProPage() {
                 {checkingStatus ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 Tôi đã chuyển khoản thành công
               </Button>
-
-              {/* Nút Demo dành cho Giảng viên / Ban giám khảo chấm đồ án */}
-              <button
-                type="button"
-                onClick={handleSimulateDemo}
-                disabled={checkingStatus}
-                className="w-full rounded-xl border border-dashed border-gray-300 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              >
-                ⚡ Kích hoạt nhanh ngay (Chế độ Demo / Test đồ án)
-              </button>
             </div>
           </div>
         </div>
