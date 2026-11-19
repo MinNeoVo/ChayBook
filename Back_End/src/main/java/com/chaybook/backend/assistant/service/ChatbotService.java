@@ -1,6 +1,7 @@
 package com.chaybook.backend.assistant.service;
 
 import com.chaybook.backend.assistant.client.GeminiClient;
+import com.chaybook.backend.admin.chatbot.service.ChatbotPromptService;
 import com.chaybook.backend.assistant.dto.ChatMessageRequest;
 import com.chaybook.backend.assistant.dto.ChatMessageResponse;
 import com.chaybook.backend.assistant.entity.AiConversation;
@@ -31,6 +32,9 @@ public class ChatbotService {
 
     @Autowired
     private GeminiClient geminiClient;
+
+    @Autowired
+    private ChatbotPromptService chatbotPromptService;
 
     @Autowired
     private GuestTrialLimiter trialLimiter;
@@ -289,10 +293,7 @@ public class ChatbotService {
     private String buildPrompt(String contextData, String userMessage) {
         StringBuilder prompt = new StringBuilder();
 
-        prompt.append("Bạn là trợ lý dinh dưỡng của mạng xã hội ẩm thực chay ChayBook.\n");
-        prompt.append("QUAN TRỌNG: Chỉ tư vấn về ăn chay, công thức món chay, thực đơn và dinh dưỡng thực vật. ");
-        prompt.append("Nếu người dùng hỏi các chủ đề KHÔNG liên quan (như chính trị, lập trình, game, toán học...), ");
-        prompt.append("hãy từ chối trả lời một cách lịch sự, ngắn gọn và nhắc lại vai trò của bạn.\n\n");
+        prompt.append(chatbotPromptService.getActivePrompt()).append("\n\n");
 
         if (contextData != null && !contextData.isEmpty()) {
             prompt.append("Dữ liệu món ăn tham khảo từ hệ thống ChayBook:\n");

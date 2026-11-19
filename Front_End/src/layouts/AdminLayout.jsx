@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Tags,
+  Bot,
 } from "lucide-react";
 
 import { useAuth } from "../context/useAuth";
@@ -59,6 +60,11 @@ function AdminLayout() {
       name: "Nguyên liệu",
       path: "/admin/ingredients",
       icon: Leaf,
+    },
+    {
+      name: "ChatbotAI",
+      path: "/admin/chatbot",
+      icon: Bot,
     },
   ];
 

@@ -44,6 +44,7 @@ import AdminArticleManagement, {
 } from "./Pages/admin/AdminArticleManagement";
 import AdminCategoryPage from "./Pages/admin/AdminCategoryPage";
 import AdminIngredientPage from "./Pages/admin/AdminIngredientPage";
+import AdminChatbotPromptPage from "./Pages/admin/AdminChatbotPromptPage";
 import ScrollToTop from "./components/common/ScrollToTop";
 import VideoAnalysisPage from "./Pages/VideoAnalysisPage";
 import MyRecipesPage from "./Pages/MyRecipesPage";
@@ -113,6 +114,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="categories" element={<AdminCategoryPage />} />
             <Route path="ingredients" element={<AdminIngredientPage />} />
+            <Route path="chatbot" element={<AdminChatbotPromptPage />} />
             <Route path="recipes" element={<AdminRecipeManagement />}>
               <Route index element={<AdminRecipeListPage />} />
               <Route path="new" element={<AdminRecipeCreatePage />} />
