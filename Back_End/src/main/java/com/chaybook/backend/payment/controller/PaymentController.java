@@ -39,15 +39,6 @@ public class PaymentController {
         return ResponseEntity.ok(paymentService.checkPaymentStatus(userId, orderCode));
     }
 
-    @PostMapping("/simulate-success/{orderCode}")
-    public ResponseEntity<PaymentStatusResponse> simulateSuccess(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable Long orderCode
-    ) {
-        Integer userId = requireUserId(jwt);
-        return ResponseEntity.ok(paymentService.simulatePaymentSuccess(userId, orderCode));
-    }
-
     @GetMapping("/my-subscription")
     public ResponseEntity<UserSubscriptionResponse> getMySubscription(@AuthenticationPrincipal Jwt jwt) {
         Integer userId = requireUserId(jwt);

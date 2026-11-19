@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
 
 import Button from "../common/Button";
 import { getSocialProviders, startSocialLogin } from "../../services/socialAuthServices";
@@ -53,34 +52,19 @@ function SocialLogin() {
         <div className="flex-1 h-px bg-gray-200"></div>
       </div>
 
-      {/* Google + Facebook */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Google */}
+      {/* Google Login */}
+      <div>
         <Button
           type="button"
           variant="outline"
           size="md"
-          className="flex items-center justify-center gap-2"
+          className="w-full flex items-center justify-center gap-2"
           disabled={loading || redirecting || !isEnabled("google")}
           onClick={() => handleLogin("google")}
         >
           <FcGoogle className="text-xl" />
 
-          <span>Google</span>
-        </Button>
-
-        {/* Facebook */}
-        <Button
-          type="button"
-          variant="outline"
-          size="md"
-          className="flex items-center justify-center gap-2"
-          disabled={loading || redirecting || !isEnabled("facebook")}
-          onClick={() => handleLogin("facebook")}
-        >
-          <FaFacebook className="text-xl text-[#1877F2]" />
-
-          <span>Facebook</span>
+          <span>Đăng nhập bằng Google</span>
         </Button>
       </div>
       {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}

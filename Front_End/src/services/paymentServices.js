@@ -12,12 +12,6 @@ export const checkPaymentStatus = async (orderCode) => {
   });
 };
 
-export const simulatePaymentSuccess = async (orderCode) => {
-  return apiFetch(`/payment/simulate-success/${orderCode}`, {
-    method: "POST",
-  });
-};
-
 export const getMySubscription = async () => {
   return apiFetch("/payment/my-subscription", {
     method: "GET",
